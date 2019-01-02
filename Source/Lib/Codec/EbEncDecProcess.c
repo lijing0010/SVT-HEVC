@@ -47,7 +47,8 @@ EB_ERRORTYPE EncDecContextCtor(
     EbFifo_t                *packetizationOutputFifoPtr,
     EbFifo_t                *feedbackFifoPtr,
     EbFifo_t                *pictureDemuxFifoPtr,
-    EB_BOOL                  is16bit)
+    EB_BOOL                  is16bit,
+    EB_COLOR_FORMAT          colorFormat)
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
     EncDecContext_t *contextPtr;
@@ -55,6 +56,7 @@ EB_ERRORTYPE EncDecContextCtor(
     *contextDblPtr = contextPtr;
 
     contextPtr->is16bit = is16bit;
+    contextPtr->colorFormat = colorFormat;
 
     // Input/Output System Resource Manager FIFOs
     contextPtr->modeDecisionInputFifoPtr = modeDecisionConfigurationInputFifoPtr;
@@ -86,6 +88,7 @@ EB_ERRORTYPE EncDecContextCtor(
         initData.topPadding = 0;
         initData.botPadding = 0;
         initData.splitMode = EB_FALSE;
+        initData.colorFormat = colorFormat;
 
         contextPtr->inputSample16bitBuffer = (EbPictureBufferDesc_t *)EB_NULL;
         if (is16bit) {
@@ -109,6 +112,7 @@ EB_ERRORTYPE EncDecContextCtor(
         initData.maxWidth = MAX_LCU_SIZE;
         initData.maxHeight = MAX_LCU_SIZE;
         initData.bitDepth = EB_16BIT;
+        initData.colorFormat = colorFormat; //store 422
         initData.leftPadding = 0;
         initData.rightPadding = 0;
         initData.topPadding = 0;
@@ -1743,6 +1747,11 @@ void PadRefAndSetFlags(
     EbPictureBufferDesc_t *refPic16BitPtr = (EbPictureBufferDesc_t*)referenceObject->referencePicture16bit;
     EB_BOOL                is16bit = (sequenceControlSetPtr->staticConfig.encoderBitDepth > EB_8BIT);
 
+    EB_COLOR_FORMAT colorFormat = pictureControlSetPtr->colorFormat;
+    EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+
+
     if (!is16bit) {
         // Y samples
         GeneratePadding(
@@ -1757,19 +1766,19 @@ void PadRefAndSetFlags(
         GeneratePadding(
             refPicPtr->bufferCb,
             refPicPtr->strideCb,
-            refPicPtr->width >> 1,
-            refPicPtr->height >> 1,
-            refPicPtr->originX >> 1,
-            refPicPtr->originY >> 1);
+            refPicPtr->width >> subWidthCMinus1,
+            refPicPtr->height >> subHeightCMinus1,
+            refPicPtr->originX >> subWidthCMinus1,
+            refPicPtr->originY >> subHeightCMinus1);
 
         // Cr samples
         GeneratePadding(
             refPicPtr->bufferCr,
             refPicPtr->strideCr,
-            refPicPtr->width >> 1,
-            refPicPtr->height >> 1,
-            refPicPtr->originX >> 1,
-            refPicPtr->originY >> 1);
+            refPicPtr->width >> subWidthCMinus1,
+            refPicPtr->height >> subHeightCMinus1,
+            refPicPtr->originX >> subWidthCMinus1,
+            refPicPtr->originY >> subHeightCMinus1);
     }
 
     //We need this for MCP
@@ -1777,29 +1786,29 @@ void PadRefAndSetFlags(
         // Y samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferY,
-            refPic16BitPtr->strideY << 1,
-            refPic16BitPtr->width << 1,
+            refPic16BitPtr->strideY << subWidthCMinus1,
+            refPic16BitPtr->width << subWidthCMinus1,
             refPic16BitPtr->height,
-            refPic16BitPtr->originX << 1,
+            refPic16BitPtr->originX << subWidthCMinus1,
             refPic16BitPtr->originY);
 
         // Cb samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferCb,
-            refPic16BitPtr->strideCb << 1,
+            refPic16BitPtr->strideCb << subWidthCMinus1,
             refPic16BitPtr->width,
-            refPic16BitPtr->height >> 1,
+            refPic16BitPtr->height >> subHeightCMinus1,
             refPic16BitPtr->originX,
-            refPic16BitPtr->originY >> 1);
+            refPic16BitPtr->originY >> subHeightCMinus1);
 
         // Cr samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferCr,
-            refPic16BitPtr->strideCr << 1,
+            refPic16BitPtr->strideCr << subWidthCMinus1,
             refPic16BitPtr->width,
-            refPic16BitPtr->height >> 1,
+            refPic16BitPtr->height >> subHeightCMinus1,
             refPic16BitPtr->originX,
-            refPic16BitPtr->originY >> 1);   
+            refPic16BitPtr->originY >> subHeightCMinus1);   
     }
 
     // set up TMVP flag for the reference picture
@@ -3824,18 +3833,21 @@ void* EncDecKernel(void *inputPtr)
                     pictureControlSetPtr,
                     sequenceControlSetPtr);
 
-            if (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag == EB_TRUE && pictureControlSetPtr->ParentPcsPtr->referencePictureWrapperPtr)
-            {
+            if (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag == EB_TRUE &&
+                    pictureControlSetPtr->ParentPcsPtr->referencePictureWrapperPtr) {
                 EbPictureBufferDesc_t *inputPicturePtr = (EbPictureBufferDesc_t*)pictureControlSetPtr->ParentPcsPtr->enhancedPicturePtr;
-                const EB_U32  SrclumaOffSet = inputPicturePtr->originX + inputPicturePtr->originY    *inputPicturePtr->strideY;
-                const EB_U32  SrccbOffset = (inputPicturePtr->originX >> 1) + (inputPicturePtr->originY >> 1)*inputPicturePtr->strideCb;
-                const EB_U32  SrccrOffset = (inputPicturePtr->originX >> 1) + (inputPicturePtr->originY >> 1)*inputPicturePtr->strideCr;
+                EB_COLOR_FORMAT colorFormat = inputPicturePtr->colorFormat;
+                EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+                EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
 
+                const EB_U32 SrclumaOffSet = inputPicturePtr->originX + inputPicturePtr->originY    *inputPicturePtr->strideY;
+                const EB_U32 SrccbOffset = (inputPicturePtr->originX >> subWidthCMinus1) + (inputPicturePtr->originY >> subHeightCMinus1) * inputPicturePtr->strideCb;
+                const EB_U32 SrccrOffset = (inputPicturePtr->originX >> subWidthCMinus1) + (inputPicturePtr->originY >> subHeightCMinus1) * inputPicturePtr->strideCr;
                 EbReferenceObject_t   *referenceObject = (EbReferenceObject_t*)pictureControlSetPtr->ParentPcsPtr->referencePictureWrapperPtr->objectPtr;
                 EbPictureBufferDesc_t *refDenPic = referenceObject->refDenSrcPicture;
-                const EB_U32           ReflumaOffSet = refDenPic->originX + refDenPic->originY    *refDenPic->strideY;
-                const EB_U32           RefcbOffset = (refDenPic->originX >> 1) + (refDenPic->originY >> 1)*refDenPic->strideCb;
-                const EB_U32           RefcrOffset = (refDenPic->originX >> 1) + (refDenPic->originY >> 1)*refDenPic->strideCr;
+                const EB_U32 ReflumaOffSet = refDenPic->originX + refDenPic->originY    *refDenPic->strideY;
+                const EB_U32 RefcbOffset = (refDenPic->originX >> subWidthCMinus1) + (refDenPic->originY >> subHeightCMinus1) * refDenPic->strideCb;
+                const EB_U32 RefcrOffset = (refDenPic->originX >> subWidthCMinus1) + (refDenPic->originY >> subHeightCMinus1) * refDenPic->strideCr;
 
                 EB_U16  verticalIdx;
 
@@ -3846,15 +3858,15 @@ void* EncDecKernel(void *inputPtr)
                         inputPicturePtr->width);
                 }
 
-                for (verticalIdx = 0; verticalIdx < inputPicturePtr->height / 2; ++verticalIdx)
+                for (verticalIdx = 0; verticalIdx < inputPicturePtr->height >> subHeightCMinus1; ++verticalIdx)
                 {
                     EB_MEMCPY(refDenPic->bufferCb + RefcbOffset + verticalIdx*refDenPic->strideCb,
                         inputPicturePtr->bufferCb + SrccbOffset + verticalIdx* inputPicturePtr->strideCb,
-                        inputPicturePtr->width / 2);
+                        inputPicturePtr->width >> subWidthCMinus1);
 
                     EB_MEMCPY(refDenPic->bufferCr + RefcrOffset + verticalIdx*refDenPic->strideCr,
                         inputPicturePtr->bufferCr + SrccrOffset + verticalIdx* inputPicturePtr->strideCr,
-                        inputPicturePtr->width / 2);
+                        inputPicturePtr->width >> subWidthCMinus1 );
                 }
 
                 GeneratePadding(
@@ -3868,18 +3880,18 @@ void* EncDecKernel(void *inputPtr)
                 GeneratePadding(
                     refDenPic->bufferCb,
                     refDenPic->strideCb,
-                    refDenPic->width >> 1,
-                    refDenPic->height >> 1,
-                    refDenPic->originX >> 1,
-                    refDenPic->originY >> 1);
+                    refDenPic->width >> subWidthCMinus1,
+                    refDenPic->height >> subHeightCMinus1,
+                    refDenPic->originX >> subWidthCMinus1,
+                    refDenPic->originY >> subHeightCMinus1);
 
                 GeneratePadding(
                     refDenPic->bufferCr,
                     refDenPic->strideCr,
-                    refDenPic->width >> 1,
-                    refDenPic->height >> 1,
-                    refDenPic->originX >> 1,
-                    refDenPic->originY >> 1);
+                    refDenPic->width >> subWidthCMinus1,
+                    refDenPic->height >> subHeightCMinus1,
+                    refDenPic->originX >> subWidthCMinus1,
+                    refDenPic->originY >> subHeightCMinus1);
             }
 
             if (sequenceControlSetPtr->staticConfig.reconEnabled) {
