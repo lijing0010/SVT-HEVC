@@ -42,6 +42,14 @@ typedef enum EB_ASM {
     EB_ASM_TYPE_INVALID = ~0
 } EB_ASM;
 
+typedef enum EB_COLOR_FORMAT {
+    EB_YUV400,
+    EB_YUV420,
+    EB_YUV422,
+    EB_YUV444
+} EB_COLOR_FORMAT;
+
+
 #define EB_SLICE           unsigned int
 #define EB_B_SLICE         0
 #define EB_P_SLICE         1
@@ -148,6 +156,7 @@ typedef struct EB_H265_ENC_CONFIGURATION
     signed int                frameRateNumerator;
     signed int                frameRateDenominator;
     unsigned int              encoderBitDepth;
+	EB_COLOR_FORMAT           colorFormat;
     unsigned int              compressedTenBitFormat;
     unsigned long long        framesToBeEncoded;
 
