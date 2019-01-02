@@ -154,6 +154,7 @@ typedef struct PictureControlSet_s
     EB_U8                                 temporalLayerIndex;
     EB_U8                                 temporalId;
 
+    EB_COLOR_FORMAT                       colorFormat;
 
     EncDecSegments_t                     *encDecSegmentCtrl;
 
@@ -346,6 +347,7 @@ typedef struct PictureParentControlSet_s
     EB_U64                                pictureNumber;                                
 
     EbPictureBufferDesc_t                *enhancedPicturePtr; 
+    EbPictureBufferDesc_t                *chromaDownSamplePicturePtr;
 
     EB_PICNOISE_CLASS                     picNoiseClass;
 
@@ -579,6 +581,8 @@ typedef struct PictureControlSetInitData_s
 	EB_U16                           topPadding;
 	EB_U16                           botPadding;
     EB_BITDEPTH                      bitDepth;
+    EB_COLOR_FORMAT                  colorFormat;
+
     EB_U32                           lcuSize;
     EB_U32                           maxDepth;
     EB_BOOL                          is16bit;
