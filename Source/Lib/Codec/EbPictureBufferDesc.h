@@ -26,36 +26,37 @@ extern "C" {
  ************************************/
 typedef struct EbPictureBufferDesc_s
 {        
-	// Buffer Ptrs
-	EB_BYTE         bufferY;        // Pointer to the Y luma buffer
-	EB_BYTE         bufferCb;       // Pointer to the U chroma buffer
-	EB_BYTE         bufferCr;       // Pointer to the V chroma buffer 
-	//Bit increment 
-	EB_BYTE         bufferBitIncY;  // Pointer to the Y luma buffer Bit increment
-	EB_BYTE         bufferBitIncCb; // Pointer to the U chroma buffer Bit increment
-	EB_BYTE         bufferBitIncCr; // Pointer to the V chroma buffer Bit increment
+    // Buffer Ptrs
+    EB_BYTE         bufferY;        // Pointer to the Y luma buffer
+    EB_BYTE         bufferCb;       // Pointer to the U chroma buffer
+    EB_BYTE         bufferCr;       // Pointer to the V chroma buffer
+    //Bit increment
+    EB_BYTE         bufferBitIncY;  // Pointer to the Y luma buffer Bit increment
+    EB_BYTE         bufferBitIncCb; // Pointer to the U chroma buffer Bit increment
+    EB_BYTE         bufferBitIncCr; // Pointer to the V chroma buffer Bit increment
 
-	EB_U16          strideY;        // Pointer to the Y luma buffer
-	EB_U16          strideCb;       // Pointer to the U chroma buffer
-	EB_U16          strideCr;       // Pointer to the V chroma buffer 
+    EB_U16          strideY;        // Pointer to the Y luma buffer
+    EB_U16          strideCb;       // Pointer to the U chroma buffer
+    EB_U16          strideCr;       // Pointer to the V chroma buffer
 
-	EB_U16          strideBitIncY;  // Pointer to the Y luma buffer Bit increment
-	EB_U16          strideBitIncCb; // Pointer to the U chroma buffer Bit increment
-	EB_U16          strideBitIncCr; // Pointer to the V chroma buffer Bit increment
+    EB_U16          strideBitIncY;  // Pointer to the Y luma buffer Bit increment
+    EB_U16          strideBitIncCb; // Pointer to the U chroma buffer Bit increment
+    EB_U16          strideBitIncCr; // Pointer to the V chroma buffer Bit increment
 
-	// Picture Parameters
-	EB_U16          originX;        // Horizontal padding distance
-	EB_U16          originY;        // Vertical padding distance
-	EB_U16          width;          // Luma picture width which excludes the padding
-	EB_U16          height;         // Luma picture height which excludes the padding
-	EB_U16          maxWidth;       // Luma picture width
-	EB_U16          maxHeight;      // Luma picture height
-	EB_BITDEPTH     bitDepth;       // Pixel Bit Depth
+    // Picture Parameters
+    EB_U16          originX;        // Horizontal padding distance
+    EB_U16          originY;        // Vertical padding distance
+    EB_U16          width;          // Luma picture width which excludes the padding
+    EB_U16          height;         // Luma picture height which excludes the padding
+    EB_U16          maxWidth;       // Luma picture width
+    EB_U16          maxHeight;      // Luma picture height
+    EB_BITDEPTH     bitDepth;       // Pixel Bit Depth
+    EB_COLOR_FORMAT colorFormat;    // Chroma format
 
-	// Buffer Parameters
-	EB_U32          lumaSize;       // Size of the luma buffer
-	EB_U32          chromaSize;     // Size of the chroma buffers                
-	EB_BOOL         packedFlag;     // Indicates if sample buffers are packed or not
+    // Buffer Parameters
+    EB_U32          lumaSize;       // Size of the luma buffer
+    EB_U32          chromaSize;     // Size of the chroma buffers
+    EB_BOOL         packedFlag;     // Indicates if sample buffers are packed or not
 
 } EbPictureBufferDesc_t;
 
@@ -67,24 +68,24 @@ typedef struct EbPictureBufferDescInitData_s
     EB_U16          maxWidth;
     EB_U16          maxHeight;
     EB_BITDEPTH     bitDepth;
+    EB_COLOR_FORMAT colorFormat;    // Chroma format
     EB_U32          bufferEnableMask;
-	EB_U16          leftPadding;
-	EB_U16          rightPadding;
-	EB_U16          topPadding;
-	EB_U16          botPadding;
+    EB_U16          leftPadding;
+    EB_U16          rightPadding;
+    EB_U16          topPadding;
+    EB_U16          botPadding;
     EB_BOOL         splitMode;         //ON: allocate 8bit data separately from nbit data
-	
 } EbPictureBufferDescInitData_t;
 
 /**************************************
  * Extern Function Declarations
  **************************************/
 extern EB_ERRORTYPE EbPictureBufferDescCtor(
-    EB_PTR *objectDblPtr, 
+    EB_PTR *objectDblPtr,
     EB_PTR objectInitDataPtr);
 
 extern EB_ERRORTYPE EbReconPictureBufferDescCtor(
-    EB_PTR *objectDblPtr, 
+    EB_PTR *objectDblPtr,
     EB_PTR objectInitDataPtr);
 
 #ifdef __cplusplus
