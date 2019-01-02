@@ -42,10 +42,10 @@ EB_ERRORTYPE PictureControlSetCtor(
     inputPictureBufferDescInitData.bitDepth            = initDataPtr->bitDepth;
     inputPictureBufferDescInitData.colorFormat         = initDataPtr->colorFormat;
     inputPictureBufferDescInitData.bufferEnableMask    = PICTURE_BUFFER_DESC_FULL_MASK;
-	inputPictureBufferDescInitData.leftPadding			= 0;
-	inputPictureBufferDescInitData.rightPadding		= 0;
-	inputPictureBufferDescInitData.topPadding			= 0;
-	inputPictureBufferDescInitData.botPadding			= 0;
+    inputPictureBufferDescInitData.leftPadding          = 0;
+    inputPictureBufferDescInitData.rightPadding     = 0;
+    inputPictureBufferDescInitData.topPadding           = 0;
+    inputPictureBufferDescInitData.botPadding           = 0;
     inputPictureBufferDescInitData.splitMode           = EB_FALSE;
     
     coeffBufferDescInitData.maxWidth                            = initDataPtr->pictureWidth;
@@ -53,10 +53,10 @@ EB_ERRORTYPE PictureControlSetCtor(
     coeffBufferDescInitData.bitDepth                            = EB_16BIT;
     coeffBufferDescInitData.colorFormat                         = initDataPtr->colorFormat;
     coeffBufferDescInitData.bufferEnableMask                    = PICTURE_BUFFER_DESC_FULL_MASK;
-	coeffBufferDescInitData.leftPadding							= 0;
-	coeffBufferDescInitData.rightPadding						= 0;
-	coeffBufferDescInitData.topPadding							= 0;
-	coeffBufferDescInitData.botPadding							= 0;
+    coeffBufferDescInitData.leftPadding                         = 0;
+    coeffBufferDescInitData.rightPadding                        = 0;
+    coeffBufferDescInitData.topPadding                          = 0;
+    coeffBufferDescInitData.botPadding                          = 0;
     coeffBufferDescInitData.splitMode                           = EB_FALSE;
 
 
@@ -89,11 +89,11 @@ EB_ERRORTYPE PictureControlSetCtor(
         &objectPtr->entropyCoderPtr,
         SEGMENT_ENTROPY_BUFFER_SIZE);
 
-	if (return_error == EB_ErrorInsufficientResources){
+    if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
     }
-	
-	// Cabaccost
+    
+    // Cabaccost
     EB_MALLOC(CabacCost_t*, objectPtr->cabacCost, sizeof(CabacCost_t), EB_N_PTR);
 
     // Packetization process Bitstream 
@@ -164,12 +164,12 @@ EB_ERRORTYPE PictureControlSetCtor(
         EB_MALLOC(EB_U8*, objectPtr->horizontalEdgeBSArray[lcuIndex], sizeof(EB_U8) * HORIZONTAL_EDGE_BS_ARRAY_SIZE, EB_N_PTR);
     }
 
-	// Allocate memory for qp array (used by DLF)
+    // Allocate memory for qp array (used by DLF)
     EB_MALLOC(EB_U8*, objectPtr->qpArray, sizeof(EB_U8) * objectPtr->qpArraySize, EB_N_PTR);
 
     EB_MALLOC(EB_U8*, objectPtr->entropyQpArray, sizeof(EB_U8) * objectPtr->qpArraySize, EB_N_PTR);
     
-	// Allocate memory for cbf array (used by DLF)
+    // Allocate memory for cbf array (used by DLF)
     EB_MALLOC(EB_U8*, objectPtr->cbfMapArray, sizeof(EB_U8) * ((initDataPtr->pictureWidth >> 2) * (initDataPtr->pictureHeight >> 2)), EB_N_PTR);
 
     // Mode Decision Neighbor Arrays
@@ -274,43 +274,43 @@ EB_ERRORTYPE PictureControlSetCtor(
         }
     }
 
-	return_error = NeighborArrayUnitCtor(
-		&objectPtr->mdRefinementIntraLumaModeNeighborArray,
-		MAX_PICTURE_WIDTH_SIZE,
-		MAX_PICTURE_HEIGHT_SIZE,
-		sizeof(EB_U8),
-		PU_NEIGHBOR_ARRAY_GRANULARITY,
-		PU_NEIGHBOR_ARRAY_GRANULARITY,
-		NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+    return_error = NeighborArrayUnitCtor(
+        &objectPtr->mdRefinementIntraLumaModeNeighborArray,
+        MAX_PICTURE_WIDTH_SIZE,
+        MAX_PICTURE_HEIGHT_SIZE,
+        sizeof(EB_U8),
+        PU_NEIGHBOR_ARRAY_GRANULARITY,
+        PU_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
-	if (return_error == EB_ErrorInsufficientResources){
-		return EB_ErrorInsufficientResources;
-	}
+    if (return_error == EB_ErrorInsufficientResources){
+        return EB_ErrorInsufficientResources;
+    }
 
-	return_error = NeighborArrayUnitCtor(
-		&objectPtr->mdRefinementModeTypeNeighborArray,
-		MAX_PICTURE_WIDTH_SIZE,
-		MAX_PICTURE_HEIGHT_SIZE,
-		sizeof(EB_U8),
-		PU_NEIGHBOR_ARRAY_GRANULARITY,
-		PU_NEIGHBOR_ARRAY_GRANULARITY,
-		NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+    return_error = NeighborArrayUnitCtor(
+        &objectPtr->mdRefinementModeTypeNeighborArray,
+        MAX_PICTURE_WIDTH_SIZE,
+        MAX_PICTURE_HEIGHT_SIZE,
+        sizeof(EB_U8),
+        PU_NEIGHBOR_ARRAY_GRANULARITY,
+        PU_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
 
-	if (return_error == EB_ErrorInsufficientResources){
-		return EB_ErrorInsufficientResources;
-	}
+    if (return_error == EB_ErrorInsufficientResources){
+        return EB_ErrorInsufficientResources;
+    }
 
-	return_error = NeighborArrayUnitCtor(
-		&objectPtr->mdRefinementLumaReconNeighborArray,
-		MAX_PICTURE_WIDTH_SIZE,
-		MAX_PICTURE_HEIGHT_SIZE,
-		sizeof(EB_U8),
-		SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-		SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-		NEIGHBOR_ARRAY_UNIT_FULL_MASK);
-	if (return_error == EB_ErrorInsufficientResources){
-		return EB_ErrorInsufficientResources;
-	}
+    return_error = NeighborArrayUnitCtor(
+        &objectPtr->mdRefinementLumaReconNeighborArray,
+        MAX_PICTURE_WIDTH_SIZE,
+        MAX_PICTURE_HEIGHT_SIZE,
+        sizeof(EB_U8),
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+    if (return_error == EB_ErrorInsufficientResources){
+        return EB_ErrorInsufficientResources;
+    }
 
     // Encode Pass Neighbor Arrays
     return_error = NeighborArrayUnitCtor(
@@ -524,7 +524,7 @@ EB_ERRORTYPE PictureControlSetCtor(
         CU_NEIGHBOR_ARRAY_GRANULARITY,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
-	if (return_error == EB_ErrorInsufficientResources){
+    if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
     }
     
@@ -545,9 +545,9 @@ EB_ERRORTYPE PictureControlSetCtor(
     objectPtr->crQpOffset = 0;
 
     objectPtr->sliceLevelChromaQpFlag = EB_TRUE;
-	// slice level chroma QP offsets
-	objectPtr->sliceCbQpOffset = 0;
-	objectPtr->sliceCrQpOffset = 0;
+    // slice level chroma QP offsets
+    objectPtr->sliceCbQpOffset = 0;
+    objectPtr->sliceCrQpOffset = 0;
 
 
     //objectPtr->totalNumBits = 0;
@@ -585,8 +585,8 @@ EB_ERRORTYPE PictureParentControlSetCtor(
     const EB_U16 pictureLcuWidth    = (EB_U16)((initDataPtr->pictureWidth + initDataPtr->lcuSize - 1) / initDataPtr->lcuSize);
     const EB_U16 pictureLcuHeight   = (EB_U16)((initDataPtr->pictureHeight + initDataPtr->lcuSize - 1) / initDataPtr->lcuSize);
     EB_U16 lcuIndex;
-	EB_U32 regionInPictureWidthIndex;
-	EB_U32 regionInPictureHeightIndex;
+    EB_U32 regionInPictureWidthIndex;
+    EB_U32 regionInPictureHeightIndex;
 
     EB_MALLOC(PictureParentControlSet_t*, objectPtr, sizeof(PictureParentControlSet_t), EB_N_PTR);
     *objectDblPtr = (EB_PTR)objectPtr;
@@ -637,39 +637,39 @@ EB_ERRORTYPE PictureParentControlSetCtor(
 
     objectPtr->lcuTotalCount            = pictureLcuWidth * pictureLcuHeight;
 
-	EB_MALLOC(EB_U16**, objectPtr->variance, sizeof(EB_U16*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	EB_MALLOC(EB_U8**, objectPtr->yMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	EB_MALLOC(EB_U8**, objectPtr->cbMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	EB_MALLOC(EB_U8**, objectPtr->crMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex) {
-		EB_MALLOC(EB_U16*, objectPtr->variance[lcuIndex], sizeof(EB_U16) * MAX_ME_PU_COUNT, EB_N_PTR);
-		EB_MALLOC(EB_U8*, objectPtr->yMean[lcuIndex], sizeof(EB_U8) * MAX_ME_PU_COUNT, EB_N_PTR);
-		EB_MALLOC(EB_U8*, objectPtr->cbMean[lcuIndex], sizeof(EB_U8) * 21, EB_N_PTR);
-		EB_MALLOC(EB_U8*, objectPtr->crMean[lcuIndex], sizeof(EB_U8) * 21, EB_N_PTR);
-	}
+    EB_MALLOC(EB_U16**, objectPtr->variance, sizeof(EB_U16*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_U8**, objectPtr->yMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_U8**, objectPtr->cbMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_U8**, objectPtr->crMean, sizeof(EB_U8*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex) {
+        EB_MALLOC(EB_U16*, objectPtr->variance[lcuIndex], sizeof(EB_U16) * MAX_ME_PU_COUNT, EB_N_PTR);
+        EB_MALLOC(EB_U8*, objectPtr->yMean[lcuIndex], sizeof(EB_U8) * MAX_ME_PU_COUNT, EB_N_PTR);
+        EB_MALLOC(EB_U8*, objectPtr->cbMean[lcuIndex], sizeof(EB_U8) * 21, EB_N_PTR);
+        EB_MALLOC(EB_U8*, objectPtr->crMean[lcuIndex], sizeof(EB_U8) * 21, EB_N_PTR);
+    }
     // Histograms
     EB_U32 videoComponent;
 
     EB_MALLOC(EB_U32****, objectPtr->pictureHistogram, sizeof(EB_U32***) * MAX_NUMBER_OF_REGIONS_IN_WIDTH, EB_N_PTR);
 
-	for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
+    for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
         EB_MALLOC(EB_U32***, objectPtr->pictureHistogram[regionInPictureWidthIndex], sizeof(EB_U32**) * MAX_NUMBER_OF_REGIONS_IN_HEIGHT, EB_N_PTR);
-	}
+    }
 
-	for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
-		for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < MAX_NUMBER_OF_REGIONS_IN_HEIGHT; regionInPictureHeightIndex++){ // loop over vertical regions
+    for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
+        for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < MAX_NUMBER_OF_REGIONS_IN_HEIGHT; regionInPictureHeightIndex++){ // loop over vertical regions
             EB_MALLOC(EB_U32**, objectPtr->pictureHistogram[regionInPictureWidthIndex][regionInPictureHeightIndex], sizeof(EB_U32*) * 3, EB_N_PTR);
-		}
-	}
+        }
+    }
 
 
-	for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
-		for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < MAX_NUMBER_OF_REGIONS_IN_HEIGHT; regionInPictureHeightIndex++){ // loop over vertical regions
-			for (videoComponent = 0; videoComponent < 3; ++videoComponent) {
+    for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < MAX_NUMBER_OF_REGIONS_IN_WIDTH; regionInPictureWidthIndex++){  // loop over horizontal regions
+        for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < MAX_NUMBER_OF_REGIONS_IN_HEIGHT; regionInPictureHeightIndex++){ // loop over vertical regions
+            for (videoComponent = 0; videoComponent < 3; ++videoComponent) {
                 EB_MALLOC(EB_U32*, objectPtr->pictureHistogram[regionInPictureWidthIndex][regionInPictureHeightIndex][videoComponent], sizeof(EB_U32) * HISTOGRAM_NUMBER_OF_BINS, EB_N_PTR);
-			}
-		}
-	}
+            }
+        }
+    }
 
     EB_U32 maxOisCand;
     if ((initDataPtr->pictureWidth * initDataPtr->pictureHeight) >= INPUT_SIZE_4K_TH) {
@@ -679,34 +679,34 @@ EB_ERRORTYPE PictureParentControlSetCtor(
         maxOisCand = MAX(MAX_OIS_0, MAX_OIS_2);
     }
 
-	EB_MALLOC(OisCu32Cu16Results_t**, objectPtr->oisCu32Cu16Results, sizeof(OisCu32Cu16Results_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(OisCu32Cu16Results_t**, objectPtr->oisCu32Cu16Results, sizeof(OisCu32Cu16Results_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
 
-	for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex){
+    for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex){
 
-		EB_MALLOC(OisCu32Cu16Results_t*, objectPtr->oisCu32Cu16Results[lcuIndex], sizeof(OisCu32Cu16Results_t), EB_N_PTR);
+        EB_MALLOC(OisCu32Cu16Results_t*, objectPtr->oisCu32Cu16Results[lcuIndex], sizeof(OisCu32Cu16Results_t), EB_N_PTR);
 
-		OisCandidate_t* contigousCand;
-		EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 21, EB_N_PTR);
+        OisCandidate_t* contigousCand;
+        EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 21, EB_N_PTR);
 
-		EB_U32 cuIdx;
-		for (cuIdx = 0; cuIdx < 21; ++cuIdx){
-			objectPtr->oisCu32Cu16Results[lcuIndex]->sortedOisCandidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
-		}
-	}
+        EB_U32 cuIdx;
+        for (cuIdx = 0; cuIdx < 21; ++cuIdx){
+            objectPtr->oisCu32Cu16Results[lcuIndex]->sortedOisCandidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
+        }
+    }
 
-	EB_MALLOC(OisCu8Results_t**, objectPtr->oisCu8Results, sizeof(OisCu8Results_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex){
+    EB_MALLOC(OisCu8Results_t**, objectPtr->oisCu8Results, sizeof(OisCu8Results_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex){
 
-		EB_MALLOC(OisCu8Results_t*, objectPtr->oisCu8Results[lcuIndex], sizeof(OisCu8Results_t), EB_N_PTR);
+        EB_MALLOC(OisCu8Results_t*, objectPtr->oisCu8Results[lcuIndex], sizeof(OisCu8Results_t), EB_N_PTR);
 
-		OisCandidate_t* contigousCand;
-		EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 64, EB_N_PTR);
+        OisCandidate_t* contigousCand;
+        EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 64, EB_N_PTR);
 
-		EB_U32 cuIdx;
-		for (cuIdx = 0; cuIdx < 64; ++cuIdx){
-			objectPtr->oisCu8Results[lcuIndex]->sortedOisCandidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
-		}
-	}
+        EB_U32 cuIdx;
+        for (cuIdx = 0; cuIdx < 64; ++cuIdx){
+            objectPtr->oisCu8Results[lcuIndex]->sortedOisCandidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
+        }
+    }
 
 
     // Motion Estimation Results
@@ -714,16 +714,16 @@ EB_ERRORTYPE PictureParentControlSetCtor(
     objectPtr->maxNumberOfMeCandidatesPerPU =   3;
    
 
-	EB_MALLOC(MeCuResults_t**, objectPtr->meResults, sizeof(MeCuResults_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
-	for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex) {
-		EB_MALLOC(MeCuResults_t*, objectPtr->meResults[lcuIndex], sizeof(MeCuResults_t) * 85, EB_N_PTR);
-	}
+    EB_MALLOC(MeCuResults_t**, objectPtr->meResults, sizeof(MeCuResults_t*) * objectPtr->lcuTotalCount, EB_N_PTR);
+    for (lcuIndex = 0; lcuIndex < objectPtr->lcuTotalCount; ++lcuIndex) {
+        EB_MALLOC(MeCuResults_t*, objectPtr->meResults[lcuIndex], sizeof(MeCuResults_t) * 85, EB_N_PTR);
+    }
 
-	EB_MALLOC(EB_U32*, objectPtr->rcMEdistortion, sizeof(EB_U32) * objectPtr->lcuTotalCount, EB_N_PTR);
-	
+    EB_MALLOC(EB_U32*, objectPtr->rcMEdistortion, sizeof(EB_U32) * objectPtr->lcuTotalCount, EB_N_PTR);
+    
 
 
-	// ME and OIS Distortion Histograms
+    // ME and OIS Distortion Histograms
     EB_MALLOC(EB_U16*, objectPtr->meDistortionHistogram, sizeof(EB_U16) * NUMBER_OF_SAD_INTERVALS, EB_N_PTR);
 
     EB_MALLOC(EB_U16*, objectPtr->oisDistortionHistogram, sizeof(EB_U16) * NUMBER_OF_INTRA_SAD_INTERVALS, EB_N_PTR);
@@ -731,10 +731,10 @@ EB_ERRORTYPE PictureParentControlSetCtor(
     EB_MALLOC(EB_U32*, objectPtr->intraSadIntervalIndex, sizeof(EB_U32) * objectPtr->lcuTotalCount, EB_N_PTR);
     EB_MALLOC(EB_U32*, objectPtr->interSadIntervalIndex, sizeof(EB_U32) * objectPtr->lcuTotalCount, EB_N_PTR);
 
-	// Enhance background for base layer frames:  zz SAD array
-	EB_MALLOC(EB_U8*, objectPtr->zzCostArray, sizeof(EB_U8) * objectPtr->lcuTotalCount * 64, EB_N_PTR);
+    // Enhance background for base layer frames:  zz SAD array
+    EB_MALLOC(EB_U8*, objectPtr->zzCostArray, sizeof(EB_U8) * objectPtr->lcuTotalCount * 64, EB_N_PTR);
 
-	// Non moving index array
+    // Non moving index array
 
     EB_MALLOC(EB_U8*, objectPtr->nonMovingIndexArray, sizeof(EB_U8) * objectPtr->lcuTotalCount, EB_N_PTR);
 
@@ -745,15 +745,15 @@ EB_ERRORTYPE PictureParentControlSetCtor(
     EB_MALLOC(EB_BOOL*, objectPtr->similarColocatedLcuArrayAllLayers, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
 
     // LCU noise variance array
-	EB_MALLOC(EB_U8*, objectPtr->lcuFlatNoiseArray, sizeof(EB_U8) * objectPtr->lcuTotalCount, EB_N_PTR);
-	EB_MALLOC(EB_U64*, objectPtr->lcuVarianceOfVarianceOverTime, sizeof(EB_U64) * objectPtr->lcuTotalCount, EB_N_PTR);
-	EB_MALLOC(EB_BOOL*, objectPtr->isLcuHomogeneousOverTime, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_U8*, objectPtr->lcuFlatNoiseArray, sizeof(EB_U8) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_U64*, objectPtr->lcuVarianceOfVarianceOverTime, sizeof(EB_U64) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_BOOL*, objectPtr->isLcuHomogeneousOverTime, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
     EB_MALLOC(EdgeLcuResults_t*, objectPtr->edgeResultsPtr, sizeof(EdgeLcuResults_t) * objectPtr->lcuTotalCount, EB_N_PTR);
     EB_MALLOC(EB_U8*, objectPtr->sharpEdgeLcuFlag, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
 
     EB_MALLOC(EB_U8*, objectPtr->failingMotionLcuFlag, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
 
-	EB_MALLOC(EB_BOOL*, objectPtr->uncoveredAreaLcuFlag, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(EB_BOOL*, objectPtr->uncoveredAreaLcuFlag, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
     EB_MALLOC(EB_BOOL*, objectPtr->lcuHomogeneousAreaArray, sizeof(EB_BOOL) * objectPtr->lcuTotalCount, EB_N_PTR);
     
     EB_MALLOC(EB_U64**, objectPtr->varOfVar32x32BasedLcuArray, sizeof(EB_U64*) * objectPtr->lcuTotalCount, EB_N_PTR);
@@ -775,7 +775,7 @@ EB_ERRORTYPE PictureParentControlSetCtor(
 
     EB_MALLOC(EB_U8*, objectPtr->lcuCmplxContrastArray, sizeof(EB_U8) * objectPtr->lcuTotalCount, EB_N_PTR);
 
-	EB_MALLOC(LcuStat_t*, objectPtr->lcuStatArray, sizeof(LcuStat_t) * objectPtr->lcuTotalCount, EB_N_PTR);
+    EB_MALLOC(LcuStat_t*, objectPtr->lcuStatArray, sizeof(LcuStat_t) * objectPtr->lcuTotalCount, EB_N_PTR);
 
     EB_MALLOC(EB_LCU_COMPLEXITY_STATUS*, objectPtr->complexLcuArray, sizeof(EB_LCU_COMPLEXITY_STATUS) * objectPtr->lcuTotalCount, EB_N_PTR);
 
