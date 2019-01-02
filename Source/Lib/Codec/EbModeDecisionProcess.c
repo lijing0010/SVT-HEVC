@@ -109,6 +109,7 @@ EB_ERRORTYPE ModeDecisionContextCtor(
         initData.maxWidth          = MAX_LCU_SIZE;
         initData.maxHeight         = MAX_LCU_SIZE;
         initData.bitDepth          = EB_8BIT;
+        initData.colorFormat       = EB_YUV420;
 		initData.leftPadding	   = 0;
 		initData.rightPadding      = 0;
 		initData.topPadding        = 0;
@@ -147,6 +148,7 @@ EB_ERRORTYPE ModeDecisionContextCtor(
         initData.maxWidth          = MAX_LCU_SIZE;
         initData.maxHeight         = MAX_LCU_SIZE;
         initData.bitDepth          = EB_8BIT;
+        initData.colorFormat       = EB_YUV420;
 		initData.leftPadding	   = 0;
 		initData.rightPadding      = 0;
 		initData.topPadding        = 0;
