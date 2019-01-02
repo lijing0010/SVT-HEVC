@@ -65,24 +65,24 @@ EB_ERRORTYPE ResourceCoordinationContextCtor(
         contextPtr->pictureNumberArray[instanceIndex] = 0;
     }
 
-	contextPtr->averageEncMod = 0;
-	contextPtr->prevEncMod = 0;
-	contextPtr->prevEncModeDelta = 0;
-	contextPtr->curSpeed = 0; // speed x 1000
-	contextPtr->previousModeChangeBuffer = 0;
+    contextPtr->averageEncMod = 0;
+    contextPtr->prevEncMod = 0;
+    contextPtr->prevEncModeDelta = 0;
+    contextPtr->curSpeed = 0; // speed x 1000
+    contextPtr->previousModeChangeBuffer = 0;
     contextPtr->firstInPicArrivedTimeSeconds = 0;
     contextPtr->firstInPicArrivedTimeuSeconds = 0;
-	contextPtr->previousFrameInCheck1 = 0;
-	contextPtr->previousFrameInCheck2 = 0;
-	contextPtr->previousFrameInCheck3 = 0;
-	contextPtr->previousModeChangeFrameIn = 0;
+    contextPtr->previousFrameInCheck1 = 0;
+    contextPtr->previousFrameInCheck2 = 0;
+    contextPtr->previousFrameInCheck3 = 0;
+    contextPtr->previousModeChangeFrameIn = 0;
     contextPtr->prevsTimeSeconds = 0;
     contextPtr->prevsTimeuSeconds = 0;
-	contextPtr->prevFrameOut = 0;
-	contextPtr->startFlag = EB_FALSE;
+    contextPtr->prevFrameOut = 0;
+    contextPtr->startFlag = EB_FALSE;
 
-	contextPtr->previousBufferCheck1 = 0;
-	contextPtr->prevChangeCond = 0;
+    contextPtr->previousBufferCheck1 = 0;
+    contextPtr->prevChangeCond = 0;
     return EB_ErrorNone;
 }
 
@@ -92,33 +92,33 @@ EB_ERRORTYPE ResourceCoordinationContextCtor(
 // Output: EncMod
 //******************************************************************************//
 void SpeedBufferControl(
-	ResourceCoordinationContext_t   *contextPtr,
-	PictureParentControlSet_t       *pictureControlSetPtr,
-	SequenceControlSet_t            *sequenceControlSetPtr)
+    ResourceCoordinationContext_t   *contextPtr,
+    PictureParentControlSet_t       *pictureControlSetPtr,
+    SequenceControlSet_t            *sequenceControlSetPtr)
 {
 
     EB_U64 cursTimeSeconds = 0;
     EB_U64 cursTimeuSeconds = 0;
     double overallDuration = 0.0;
     double instDuration = 0.0;
-	EB_S8  encoderModeDelta = 0;
-	EB_S64 inputFramesCount = 0;
-	EB_S8 changeCond        = 0;
-	EB_S64 targetFps        = (sequenceControlSetPtr->staticConfig.injectorFrameRate >> 16);
+    EB_S8  encoderModeDelta = 0;
+    EB_S64 inputFramesCount = 0;
+    EB_S8 changeCond        = 0;
+    EB_S64 targetFps        = (sequenceControlSetPtr->staticConfig.injectorFrameRate >> 16);
 
     
     EB_S64 bufferTrshold1 = SC_FRAMES_INTERVAL_T1;
     EB_S64 bufferTrshold2 = SC_FRAMES_INTERVAL_T2;
     EB_S64 bufferTrshold3 = SC_FRAMES_INTERVAL_T3;
     EB_S64 bufferTrshold4 = MAX(SC_FRAMES_INTERVAL_T1, targetFps);
-	EbBlockOnMutex(sequenceControlSetPtr->encodeContextPtr->scBufferMutex);
+    EbBlockOnMutex(sequenceControlSetPtr->encodeContextPtr->scBufferMutex);
 
-	if (sequenceControlSetPtr->encodeContextPtr->scFrameIn == 0) {
+    if (sequenceControlSetPtr->encodeContextPtr->scFrameIn == 0) {
         EbStartTime((unsigned long long*)&contextPtr->firstInPicArrivedTimeSeconds, (unsigned long long*)&contextPtr->firstInPicArrivedTimeuSeconds);
-	}
-	else if (sequenceControlSetPtr->encodeContextPtr->scFrameIn == SC_FRAMES_TO_IGNORE) {
-		contextPtr->startFlag = EB_TRUE;
-	}
+    }
+    else if (sequenceControlSetPtr->encodeContextPtr->scFrameIn == SC_FRAMES_TO_IGNORE) {
+        contextPtr->startFlag = EB_TRUE;
+    }
 
     // Compute duration since the start of the encode and since the previous checkpoint
     EbFinishTime((unsigned long long*)&cursTimeSeconds, (unsigned long long*)&cursTimeuSeconds);
@@ -138,121 +138,121 @@ void SpeedBufferControl(
         &instDuration);
 
     inputFramesCount = (EB_S64)overallDuration *(sequenceControlSetPtr->staticConfig.injectorFrameRate >> 16) / 1000;
-	sequenceControlSetPtr->encodeContextPtr->scBuffer = inputFramesCount - sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+    sequenceControlSetPtr->encodeContextPtr->scBuffer = inputFramesCount - sequenceControlSetPtr->encodeContextPtr->scFrameIn;
 
-	encoderModeDelta = 0;
+    encoderModeDelta = 0;
 
-	// Check every bufferTsshold1 for the changes (previousFrameInCheck1 variable)
-	if ((sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousFrameInCheck1 + bufferTrshold1 && sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE)) {
-		// Go to a slower mode based on the fullness and changes of the buffer
+    // Check every bufferTsshold1 for the changes (previousFrameInCheck1 variable)
+    if ((sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousFrameInCheck1 + bufferTrshold1 && sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE)) {
+        // Go to a slower mode based on the fullness and changes of the buffer
         if (sequenceControlSetPtr->encodeContextPtr->scBuffer < bufferTrshold4 && (contextPtr->prevEncModeDelta >-1 || (contextPtr->prevEncModeDelta < 0 && sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold4 * 2))) {
-			if (contextPtr->previousBufferCheck1 > sequenceControlSetPtr->encodeContextPtr->scBuffer + bufferTrshold1) {
-				encoderModeDelta += -1;
-				changeCond = 2;
-			}
-			else if (contextPtr->previousModeChangeBuffer > bufferTrshold1 + sequenceControlSetPtr->encodeContextPtr->scBuffer && sequenceControlSetPtr->encodeContextPtr->scBuffer < bufferTrshold1) {
-				encoderModeDelta += -1;
-				changeCond = 4;
-			}
-		}
+            if (contextPtr->previousBufferCheck1 > sequenceControlSetPtr->encodeContextPtr->scBuffer + bufferTrshold1) {
+                encoderModeDelta += -1;
+                changeCond = 2;
+            }
+            else if (contextPtr->previousModeChangeBuffer > bufferTrshold1 + sequenceControlSetPtr->encodeContextPtr->scBuffer && sequenceControlSetPtr->encodeContextPtr->scBuffer < bufferTrshold1) {
+                encoderModeDelta += -1;
+                changeCond = 4;
+            }
+        }
 
-		// Go to a faster mode based on the fullness and changes of the buffer
-		if (sequenceControlSetPtr->encodeContextPtr->scBuffer >bufferTrshold1 + contextPtr->previousBufferCheck1) {
-			encoderModeDelta += +1;
-			changeCond = 1;
-		}
-		else if (sequenceControlSetPtr->encodeContextPtr->scBuffer > bufferTrshold1 + contextPtr->previousModeChangeBuffer) {
-			encoderModeDelta += +1;
-			changeCond = 3;
-		}
+        // Go to a faster mode based on the fullness and changes of the buffer
+        if (sequenceControlSetPtr->encodeContextPtr->scBuffer >bufferTrshold1 + contextPtr->previousBufferCheck1) {
+            encoderModeDelta += +1;
+            changeCond = 1;
+        }
+        else if (sequenceControlSetPtr->encodeContextPtr->scBuffer > bufferTrshold1 + contextPtr->previousModeChangeBuffer) {
+            encoderModeDelta += +1;
+            changeCond = 3;
+        }
 
-		// Update the encode mode based on the fullness of the buffer
+        // Update the encode mode based on the fullness of the buffer
         // If previous ChangeCond was the same, double the threshold2
-		if (sequenceControlSetPtr->encodeContextPtr->scBuffer > bufferTrshold3 &&
-			(contextPtr->prevChangeCond != 7 || sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 * 2) &&
-			sequenceControlSetPtr->encodeContextPtr->scBuffer > contextPtr->previousModeChangeBuffer) {
-			encoderModeDelta += 1;
-			changeCond = 7;
-		}
-		encoderModeDelta = CLIP3(-1, 1, encoderModeDelta);
+        if (sequenceControlSetPtr->encodeContextPtr->scBuffer > bufferTrshold3 &&
+            (contextPtr->prevChangeCond != 7 || sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 * 2) &&
+            sequenceControlSetPtr->encodeContextPtr->scBuffer > contextPtr->previousModeChangeBuffer) {
+            encoderModeDelta += 1;
+            changeCond = 7;
+        }
+        encoderModeDelta = CLIP3(-1, 1, encoderModeDelta);
         sequenceControlSetPtr->encodeContextPtr->encMode = (EB_ENC_MODE)CLIP3(ENC_MODE_0, sequenceControlSetPtr->maxEncMode, (EB_S8)sequenceControlSetPtr->encodeContextPtr->encMode + encoderModeDelta);
 
-		// Update previous stats
-		contextPtr->previousFrameInCheck1 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
-		contextPtr->previousBufferCheck1 = sequenceControlSetPtr->encodeContextPtr->scBuffer;
+        // Update previous stats
+        contextPtr->previousFrameInCheck1 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+        contextPtr->previousBufferCheck1 = sequenceControlSetPtr->encodeContextPtr->scBuffer;
 
-		if (encoderModeDelta) {
-			contextPtr->previousModeChangeBuffer = sequenceControlSetPtr->encodeContextPtr->scBuffer;
-			contextPtr->previousModeChangeFrameIn = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
-			contextPtr->prevEncModeDelta = encoderModeDelta;
-		}
-	}
+        if (encoderModeDelta) {
+            contextPtr->previousModeChangeBuffer = sequenceControlSetPtr->encodeContextPtr->scBuffer;
+            contextPtr->previousModeChangeFrameIn = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+            contextPtr->prevEncModeDelta = encoderModeDelta;
+        }
+    }
 
-	// Check every bufferTrshold2 for the changes (previousFrameInCheck2 variable)
-	if ((sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousFrameInCheck2 + bufferTrshold2 && sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE)) {
-		encoderModeDelta = 0;
+    // Check every bufferTrshold2 for the changes (previousFrameInCheck2 variable)
+    if ((sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousFrameInCheck2 + bufferTrshold2 && sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE)) {
+        encoderModeDelta = 0;
 
-		// if no change in the encoder mode and buffer is low enough and level is not increasing, switch to a slower encoder mode
+        // if no change in the encoder mode and buffer is low enough and level is not increasing, switch to a slower encoder mode
         // If previous ChangeCond was the same, double the threshold2
-		if (encoderModeDelta == 0 && sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 &&
-			(contextPtr->prevChangeCond != 8 || sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 * 2) &&
+        if (encoderModeDelta == 0 && sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 &&
+            (contextPtr->prevChangeCond != 8 || sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousModeChangeFrameIn + bufferTrshold2 * 2) &&
             ((sequenceControlSetPtr->encodeContextPtr->scBuffer - contextPtr->previousModeChangeBuffer < (bufferTrshold4 / 3)) || contextPtr->previousModeChangeBuffer == 0) &&
-			sequenceControlSetPtr->encodeContextPtr->scBuffer < bufferTrshold3) {
-			encoderModeDelta = -1;
-			changeCond = 8;
-		}
+            sequenceControlSetPtr->encodeContextPtr->scBuffer < bufferTrshold3) {
+            encoderModeDelta = -1;
+            changeCond = 8;
+        }
 
-		encoderModeDelta = CLIP3(-1, 1, encoderModeDelta);
+        encoderModeDelta = CLIP3(-1, 1, encoderModeDelta);
         sequenceControlSetPtr->encodeContextPtr->encMode = (EB_ENC_MODE)CLIP3(ENC_MODE_0, sequenceControlSetPtr->maxEncMode, (EB_S8)sequenceControlSetPtr->encodeContextPtr->encMode + encoderModeDelta);
-		// Update previous stats
-		contextPtr->previousFrameInCheck2 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+        // Update previous stats
+        contextPtr->previousFrameInCheck2 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
 
-		if (encoderModeDelta) {
-			contextPtr->previousModeChangeBuffer = sequenceControlSetPtr->encodeContextPtr->scBuffer;
-			contextPtr->previousModeChangeFrameIn = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
-			contextPtr->prevEncModeDelta = encoderModeDelta;
-		}
+        if (encoderModeDelta) {
+            contextPtr->previousModeChangeBuffer = sequenceControlSetPtr->encodeContextPtr->scBuffer;
+            contextPtr->previousModeChangeFrameIn = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+            contextPtr->prevEncModeDelta = encoderModeDelta;
+        }
 
-	}
-	// Check every SC_FRAMES_INTERVAL_SPEED frames for the speed calculation (previousFrameInCheck3 variable)
+    }
+    // Check every SC_FRAMES_INTERVAL_SPEED frames for the speed calculation (previousFrameInCheck3 variable)
     if (contextPtr->startFlag || (sequenceControlSetPtr->encodeContextPtr->scFrameIn > contextPtr->previousFrameInCheck3 + SC_FRAMES_INTERVAL_SPEED && sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE)) {
-		if (contextPtr->startFlag) {
-			contextPtr->curSpeed = (EB_U64)(sequenceControlSetPtr->encodeContextPtr->scFrameOut - 0) * 1000 / (EB_U64)(overallDuration);
-		}
-		else {
+        if (contextPtr->startFlag) {
+            contextPtr->curSpeed = (EB_U64)(sequenceControlSetPtr->encodeContextPtr->scFrameOut - 0) * 1000 / (EB_U64)(overallDuration);
+        }
+        else {
             if (instDuration != 0)
                 contextPtr->curSpeed = (EB_U64)(sequenceControlSetPtr->encodeContextPtr->scFrameOut - contextPtr->prevFrameOut) * 1000 / (EB_U64)(instDuration);
-		}
-		contextPtr->startFlag = EB_FALSE;
+        }
+        contextPtr->startFlag = EB_FALSE;
 
-		// Update previous stats
-		contextPtr->previousFrameInCheck3 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
+        // Update previous stats
+        contextPtr->previousFrameInCheck3 = sequenceControlSetPtr->encodeContextPtr->scFrameIn;
         contextPtr->prevsTimeSeconds = cursTimeSeconds;
         contextPtr->prevsTimeuSeconds = cursTimeuSeconds;
-		contextPtr->prevFrameOut = sequenceControlSetPtr->encodeContextPtr->scFrameOut;
+        contextPtr->prevFrameOut = sequenceControlSetPtr->encodeContextPtr->scFrameOut;
 
-	}
+    }
     else if (sequenceControlSetPtr->encodeContextPtr->scFrameIn < SC_FRAMES_TO_IGNORE && (overallDuration != 0)) {
         contextPtr->curSpeed = (EB_U64)(sequenceControlSetPtr->encodeContextPtr->scFrameOut - 0) * 1000 / (EB_U64)(overallDuration);
-	}
+    }
 
-	if (changeCond) {
-		contextPtr->prevChangeCond = changeCond;
-	}
-	sequenceControlSetPtr->encodeContextPtr->scFrameIn++;
-	if (sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE) {
-		contextPtr->averageEncMod += sequenceControlSetPtr->encodeContextPtr->encMode;
-	}
-	else {
-		contextPtr->averageEncMod = 0;
-	}
+    if (changeCond) {
+        contextPtr->prevChangeCond = changeCond;
+    }
+    sequenceControlSetPtr->encodeContextPtr->scFrameIn++;
+    if (sequenceControlSetPtr->encodeContextPtr->scFrameIn >= SC_FRAMES_TO_IGNORE) {
+        contextPtr->averageEncMod += sequenceControlSetPtr->encodeContextPtr->encMode;
+    }
+    else {
+        contextPtr->averageEncMod = 0;
+    }
 
-	// Set the encoder level
-	pictureControlSetPtr->encMode = sequenceControlSetPtr->encodeContextPtr->encMode;
+    // Set the encoder level
+    pictureControlSetPtr->encMode = sequenceControlSetPtr->encodeContextPtr->encMode;
 
-	EbReleaseMutex(sequenceControlSetPtr->encodeContextPtr->scBufferMutex);
+    EbReleaseMutex(sequenceControlSetPtr->encodeContextPtr->scBufferMutex);
 
-	contextPtr->prevEncMod = sequenceControlSetPtr->encodeContextPtr->encMode;
+    contextPtr->prevEncMod = sequenceControlSetPtr->encodeContextPtr->encMode;
 }
 
 
@@ -292,8 +292,8 @@ EB_ERRORTYPE SignalDerivationPreAnalysisSq(
         pictureControlSetPtr->noiseDetectionMethod = NOISE_DETECT_FULL_PRECISION;
     }
 
-	pictureControlSetPtr->enableDenoiseSrcFlag = pictureControlSetPtr->encMode <= ENC_MODE_11 ? sequenceControlSetPtr->enableDenoiseFlag :	EB_FALSE;
-	pictureControlSetPtr->disableVarianceFlag =  (pictureControlSetPtr->encMode <= ENC_MODE_11) ? EB_FALSE : EB_TRUE;
+    pictureControlSetPtr->enableDenoiseSrcFlag = pictureControlSetPtr->encMode <= ENC_MODE_11 ? sequenceControlSetPtr->enableDenoiseFlag :  EB_FALSE;
+    pictureControlSetPtr->disableVarianceFlag =  (pictureControlSetPtr->encMode <= ENC_MODE_11) ? EB_FALSE : EB_TRUE;
     // Derive Noise Detection Threshold
     if (pictureControlSetPtr->encMode <= ENC_MODE_8) {
         pictureControlSetPtr->noiseDetectionTh = 0;
@@ -404,8 +404,8 @@ EB_ERRORTYPE SignalDerivationPreAnalysisOq(
         pictureControlSetPtr->enableHmeLevel2Flag   = sequenceControlSetPtr->staticConfig.enableHmeLevel2Flag;
     }
 
-	pictureControlSetPtr->enableDenoiseSrcFlag      =  sequenceControlSetPtr->enableDenoiseFlag;
-	pictureControlSetPtr->disableVarianceFlag       = EB_FALSE;
+    pictureControlSetPtr->enableDenoiseSrcFlag      =  sequenceControlSetPtr->enableDenoiseFlag;
+    pictureControlSetPtr->disableVarianceFlag       = EB_FALSE;
 
     return return_error;
 }
@@ -438,8 +438,8 @@ void* ResourceCoordinationKernel(void *inputPtr)
 
     EB_BOOL                          is16BitInput;
 
-	EB_U32							inputSize = 0;
-	EbObjectWrapper_t              *prevPictureControlSetWrapperPtr = 0;
+    EB_U32                          inputSize = 0;
+    EbObjectWrapper_t              *prevPictureControlSetWrapperPtr = 0;
 
     EB_U32                          chromaFormat = EB_YUV420;
     EB_U32                          subWidthCMinus1 = 1;
@@ -461,7 +461,7 @@ void* ResourceCoordinationKernel(void *inputPtr)
         // Get source video bit depth
         is16BitInput =  (EB_BOOL)(sequenceControlSetPtr->staticConfig.encoderBitDepth > EB_8BIT);
 
-		// Get chroma info
+        // Get chroma info
         chromaFormat = sequenceControlSetPtr->chromaFormatIdc;
         subWidthCMinus1 = (chromaFormat == EB_YUV444 ? 1 : 2) - 1;
         subHeightCMinus1 = (chromaFormat >= EB_YUV422 ? 1 : 2) - 1;
@@ -494,7 +494,7 @@ void* ResourceCoordinationKernel(void *inputPtr)
                     contextPtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->conformanceWindowFlag = 0;
                 }
                 
-				inputSize = contextPtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lumaWidth * contextPtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lumaHeight;
+                inputSize = contextPtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lumaWidth * contextPtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lumaHeight;
             }
 
             // HDR BT2020
@@ -554,7 +554,7 @@ void* ResourceCoordinationKernel(void *inputPtr)
         // Set the current SequenceControlSet
         sequenceControlSetPtr   = (SequenceControlSet_t*) contextPtr->sequenceControlSetActiveArray[instanceIndex]->objectPtr;
         
-		// Init LCU Params
+        // Init LCU Params
         if (contextPtr->sequenceControlSetInstanceArray[instanceIndex]->encodeContextPtr->initialPicture) {
             DeriveInputResolution(
                 sequenceControlSetPtr,
@@ -580,12 +580,12 @@ void* ResourceCoordinationKernel(void *inputPtr)
         // Set the Encoder mode
         pictureControlSetPtr->encMode = sequenceControlSetPtr->staticConfig.encMode; 
 
-		// Keep track of the previous input for the ZZ SADs computation
-		pictureControlSetPtr->previousPictureControlSetWrapperPtr = (contextPtr->sequenceControlSetInstanceArray[instanceIndex]->encodeContextPtr->initialPicture) ?
-			pictureControlSetWrapperPtr :
-			sequenceControlSetPtr->encodeContextPtr->previousPictureControlSetWrapperPtr;
+        // Keep track of the previous input for the ZZ SADs computation
+        pictureControlSetPtr->previousPictureControlSetWrapperPtr = (contextPtr->sequenceControlSetInstanceArray[instanceIndex]->encodeContextPtr->initialPicture) ?
+            pictureControlSetWrapperPtr :
+            sequenceControlSetPtr->encodeContextPtr->previousPictureControlSetWrapperPtr;
 
-		sequenceControlSetPtr->encodeContextPtr->previousPictureControlSetWrapperPtr = pictureControlSetWrapperPtr;
+        sequenceControlSetPtr->encodeContextPtr->previousPictureControlSetWrapperPtr = pictureControlSetWrapperPtr;
 
         // Copy data from the buffer to the input frame
         // *Note - Assumes 4:2:0 planar
@@ -604,15 +604,15 @@ void* ResourceCoordinationKernel(void *inputPtr)
 
         // Setup new input picture buffer
         inputPicturePtr->bitDepth           = sequenceControlSetPtr->inputBitdepth;
-		inputPicturePtr->originX			= sequenceControlSetPtr->leftPadding;
+        inputPicturePtr->originX            = sequenceControlSetPtr->leftPadding;
 
         inputPicturePtr->originY            = sequenceControlSetPtr->topPadding;
 
         inputPicturePtr->maxWidth           = sequenceControlSetPtr->maxInputLumaWidth;
         inputPicturePtr->maxHeight          = sequenceControlSetPtr->maxInputLumaHeight;
         inputPicturePtr->lumaSize           =
-			((sequenceControlSetPtr->maxInputLumaWidth - sequenceControlSetPtr->maxInputPadRight) + sequenceControlSetPtr->leftPadding + sequenceControlSetPtr->rightPadding) *
-			((sequenceControlSetPtr->maxInputLumaHeight - sequenceControlSetPtr->maxInputPadBottom) + sequenceControlSetPtr->topPadding + sequenceControlSetPtr->botPadding);
+            ((sequenceControlSetPtr->maxInputLumaWidth - sequenceControlSetPtr->maxInputPadRight) + sequenceControlSetPtr->leftPadding + sequenceControlSetPtr->rightPadding) *
+            ((sequenceControlSetPtr->maxInputLumaHeight - sequenceControlSetPtr->maxInputPadBottom) + sequenceControlSetPtr->topPadding + sequenceControlSetPtr->botPadding);
         inputPicturePtr->chromaSize         = inputPicturePtr->lumaSize >> (3 - chromaFormat);       
 
         inputPicturePtr->width              = sequenceControlSetPtr->lumaWidth;
@@ -620,9 +620,9 @@ void* ResourceCoordinationKernel(void *inputPtr)
         inputPicturePtr->strideY            = sequenceControlSetPtr->lumaWidth + sequenceControlSetPtr->leftPadding + sequenceControlSetPtr->rightPadding;
         inputPicturePtr->strideCb           = inputPicturePtr->strideCr = inputPicturePtr->strideY >> subWidthCMinus1;
 
-		inputPicturePtr->strideBitIncY      = inputPicturePtr->strideY;
-		inputPicturePtr->strideBitIncCb     = inputPicturePtr->strideCb;
-		inputPicturePtr->strideBitIncCr     = inputPicturePtr->strideCr;
+        inputPicturePtr->strideBitIncY      = inputPicturePtr->strideY;
+        inputPicturePtr->strideBitIncCb     = inputPicturePtr->strideCb;
+        inputPicturePtr->strideBitIncCr     = inputPicturePtr->strideCr;
         
         pictureControlSetPtr->ebInputPtr    = ebInputPtr;
         pictureControlSetPtr->ebInputWrapperPtr = ebInputWrapperPtr;
@@ -639,22 +639,22 @@ void* ResourceCoordinationKernel(void *inputPtr)
 
         pictureControlSetPtr->qpOnTheFly                      = EB_FALSE;
            
-		pictureControlSetPtr->lcuTotalCount					  = sequenceControlSetPtr->lcuTotalCount;
+        pictureControlSetPtr->lcuTotalCount                   = sequenceControlSetPtr->lcuTotalCount;
 
-		if (sequenceControlSetPtr->staticConfig.speedControlFlag) {
-			SpeedBufferControl(
-				contextPtr,
-				pictureControlSetPtr,
-				sequenceControlSetPtr);
-		}
-		else {
-			pictureControlSetPtr->encMode = (EB_ENC_MODE)sequenceControlSetPtr->staticConfig.encMode;
-		}
+        if (sequenceControlSetPtr->staticConfig.speedControlFlag) {
+            SpeedBufferControl(
+                contextPtr,
+                pictureControlSetPtr,
+                sequenceControlSetPtr);
+        }
+        else {
+            pictureControlSetPtr->encMode = (EB_ENC_MODE)sequenceControlSetPtr->staticConfig.encMode;
+        }
 
-		// Set the SCD Mode
-		sequenceControlSetPtr->scdMode = sequenceControlSetPtr->staticConfig.sceneChangeDetection == 0 ?
-			SCD_MODE_0 :
-			SCD_MODE_1 ;
+        // Set the SCD Mode
+        sequenceControlSetPtr->scdMode = sequenceControlSetPtr->staticConfig.sceneChangeDetection == 0 ?
+            SCD_MODE_0 :
+            SCD_MODE_1 ;
      
 
         // Pre-Analysis Signal(s) derivation
@@ -669,13 +669,13 @@ void* ResourceCoordinationKernel(void *inputPtr)
                 pictureControlSetPtr);
         }
 
-	    // Rate Control                                            
-		// Set the ME Distortion and OIS Historgrams to zero
+        // Rate Control                                            
+        // Set the ME Distortion and OIS Historgrams to zero
         if (sequenceControlSetPtr->staticConfig.rateControlMode){
-	            EB_MEMSET(pictureControlSetPtr->meDistortionHistogram, 0, NUMBER_OF_SAD_INTERVALS*sizeof(EB_U16));
-	            EB_MEMSET(pictureControlSetPtr->oisDistortionHistogram, 0, NUMBER_OF_INTRA_SAD_INTERVALS*sizeof(EB_U16));
+                EB_MEMSET(pictureControlSetPtr->meDistortionHistogram, 0, NUMBER_OF_SAD_INTERVALS*sizeof(EB_U16));
+                EB_MEMSET(pictureControlSetPtr->oisDistortionHistogram, 0, NUMBER_OF_INTRA_SAD_INTERVALS*sizeof(EB_U16));
         }
-	    pictureControlSetPtr->fullLcuCount                    = 0;
+        pictureControlSetPtr->fullLcuCount                    = 0;
 
         if (sequenceControlSetPtr->staticConfig.useQpFile == 1){
             pictureControlSetPtr->qpOnTheFly = EB_TRUE;
@@ -713,7 +713,7 @@ void* ResourceCoordinationKernel(void *inputPtr)
 
         // Give the new Reference a nominal liveCount of 1
         EbObjectIncLiveCount(
-        	pictureControlSetPtr->paReferencePictureWrapperPtr,
+            pictureControlSetPtr->paReferencePictureWrapperPtr,
             2);
    
         EbObjectIncLiveCount(
@@ -723,22 +723,22 @@ void* ResourceCoordinationKernel(void *inputPtr)
         ((EbPaReferenceObject_t*)pictureControlSetPtr->paReferencePictureWrapperPtr->objectPtr)->inputPaddedPicturePtr->bufferY = inputPicturePtr->bufferY;
 
         // Get Empty Output Results Object
-		if (pictureControlSetPtr->pictureNumber > 0)
-		{
-			((PictureParentControlSet_t       *)prevPictureControlSetWrapperPtr->objectPtr)->endOfSequenceFlag = endOfSequenceFlag;
+        if (pictureControlSetPtr->pictureNumber > 0)
+        {
+            ((PictureParentControlSet_t       *)prevPictureControlSetWrapperPtr->objectPtr)->endOfSequenceFlag = endOfSequenceFlag;
 
-			EbGetEmptyObject(
-				contextPtr->resourceCoordinationResultsOutputFifoPtr,
-				&outputWrapperPtr);
-			outputResultsPtr = (ResourceCoordinationResults_t*)outputWrapperPtr->objectPtr;
-			outputResultsPtr->pictureControlSetWrapperPtr = prevPictureControlSetWrapperPtr;
+            EbGetEmptyObject(
+                contextPtr->resourceCoordinationResultsOutputFifoPtr,
+                &outputWrapperPtr);
+            outputResultsPtr = (ResourceCoordinationResults_t*)outputWrapperPtr->objectPtr;
+            outputResultsPtr->pictureControlSetWrapperPtr = prevPictureControlSetWrapperPtr;
 
-			// Post the finished Results Object
-			EbPostFullObject(outputWrapperPtr);
+            // Post the finished Results Object
+            EbPostFullObject(outputWrapperPtr);
 
-		}
+        }
 
-		prevPictureControlSetWrapperPtr = pictureControlSetWrapperPtr;
+        prevPictureControlSetWrapperPtr = pictureControlSetWrapperPtr;
 
 
 
