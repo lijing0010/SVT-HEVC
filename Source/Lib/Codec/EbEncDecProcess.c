@@ -1297,7 +1297,7 @@ static void ResetEncDec(
     contextPtr->qp = pictureControlSetPtr->pictureQp;
     // Asuming cb and cr offset to be the same for chroma QP in both slice and pps for lambda computation 
 
-    EB_U8	qpScaled = CLIP3(MIN_QP_VALUE, MAX_CHROMA_MAP_QP_VALUE, (EB_S32)(contextPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
+    EB_U8   qpScaled = CLIP3(MIN_QP_VALUE, MAX_CHROMA_MAP_QP_VALUE, (EB_S32)(contextPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
     contextPtr->chromaQp = (EB_U8)MapChromaQp(qpScaled);
 
     // Lambda Assignement
@@ -1404,7 +1404,7 @@ static void EncDecConfigureLcu(
     }
 
     // Asuming cb and cr offset to be the same for chroma QP in both slice and pps for lambda computation
-    EB_U8	qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(contextPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
+    EB_U8   qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(contextPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
     contextPtr->chromaQp = MapChromaQp(qpScaled);
 
     /* Note(CHKN) : when Qp modulation varies QP on a sub-LCU(CU) basis,  Lamda has to change based on Cu->QP , and then this code has to move inside the CU loop in MD */
@@ -2159,7 +2159,7 @@ EB_ERRORTYPE SignalDerivationEncDecKernelSq(
         contextPtr->fastEl = EB_TRUE;
     }
 
-	contextPtr->yBitsThsld = YBITS_THSHLD_1(pictureControlSetPtr->encMode);
+    contextPtr->yBitsThsld = YBITS_THSHLD_1(pictureControlSetPtr->encMode);
     // Set SAO Mode
     contextPtr->saoMode = 0;
    
@@ -2947,7 +2947,7 @@ EB_ERRORTYPE SignalDerivationEncDecKernelOq(
 
     // Set Fast EL Flag
     contextPtr->fastEl = EB_FALSE;
-	contextPtr->yBitsThsld = YBITS_THSHLD_1(0);
+    contextPtr->yBitsThsld = YBITS_THSHLD_1(0);
     
     // Set SAO Mode
     if (pictureControlSetPtr->encMode <= ENC_MODE_7) {
@@ -3642,13 +3642,13 @@ void* EncDecKernel(void *inputPtr)
                     lcuRowIndexCount = (xLcuIndex == pictureWidthInLcu - 1) ? lcuRowIndexCount + 1 : lcuRowIndexCount;
                     mdcPtr = &pictureControlSetPtr->mdcLcuArray[lcuIndex];
                     contextPtr->lcuIndex = lcuIndex;
-					
+                    
                     // Derive cuUseRefSrcFlag Flag
                     contextPtr->mdContext->cuUseRefSrcFlag = (pictureControlSetPtr->ParentPcsPtr->useSrcRef) && (pictureControlSetPtr->ParentPcsPtr->edgeResultsPtr[lcuIndex].edgeBlockNum == EB_FALSE || pictureControlSetPtr->ParentPcsPtr->lcuFlatNoiseArray[lcuIndex]) ? EB_TRUE : EB_FALSE;
                     // Derive restrictIntraGlobalMotion Flag
                     contextPtr->mdContext->restrictIntraGlobalMotion = ((pictureControlSetPtr->ParentPcsPtr->isPan || pictureControlSetPtr->ParentPcsPtr->isTilt) && pictureControlSetPtr->ParentPcsPtr->nonMovingIndexArray[lcuIndex] < INTRA_GLOBAL_MOTION_NON_MOVING_INDEX_TH && pictureControlSetPtr->ParentPcsPtr->yMean[lcuIndex][RASTER_SCAN_CU_INDEX_64x64] < INTRA_GLOBAL_MOTION_DARK_LCU_TH);
 
-					// Configure the LCU
+                    // Configure the LCU
                     ModeDecisionConfigureLcu(  // HT done
                         contextPtr->mdContext,
                         lcuPtr,
