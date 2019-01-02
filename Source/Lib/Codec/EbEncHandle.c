@@ -726,6 +726,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
 		inputData.topPadding			= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->topPadding;
 		inputData.botPadding			= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->botPadding;
         inputData.bitDepth              = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->outputBitdepth;
+        inputData.colorFormat           = (EB_COLOR_FORMAT)encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->chromaFormatIdc;
         inputData.lcuSize               = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize;
         inputData.maxDepth              = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxLcuDepth;
         inputData.is16bit               = is16bit;
@@ -780,6 +781,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
 		inputData.topPadding		= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->topPadding;
 		inputData.botPadding		= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->botPadding;
         inputData.bitDepth          = EB_8BIT;
+        inputData.colorFormat       = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->chromaFormatIdc;
         inputData.lcuSize           = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize;
         inputData.maxDepth          = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxLcuDepth;
         inputData.is16bit           = is16bit;
@@ -831,6 +833,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
         referencePictureBufferDescInitData.maxWidth               =  encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaWidth;
         referencePictureBufferDescInitData.maxHeight              =  encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaHeight;
         referencePictureBufferDescInitData.bitDepth               =  encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->inputBitdepth;
+        referencePictureBufferDescInitData.colorFormat            =  encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->chromaFormatIdc;
         referencePictureBufferDescInitData.bufferEnableMask       =  PICTURE_BUFFER_DESC_FULL_MASK;
 		referencePictureBufferDescInitData.leftPadding			  =  MAX_LCU_SIZE + MCPXPaddingOffset;
 		referencePictureBufferDescInitData.rightPadding			  =  MAX_LCU_SIZE + MCPXPaddingOffset;
@@ -865,6 +868,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
         referencePictureBufferDescInitData.maxWidth               = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaWidth;
         referencePictureBufferDescInitData.maxHeight              = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaHeight;
         referencePictureBufferDescInitData.bitDepth               = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->inputBitdepth;
+        referencePictureBufferDescInitData.colorFormat            = EB_YUV420;
         referencePictureBufferDescInitData.bufferEnableMask = 0;
 		referencePictureBufferDescInitData.leftPadding            = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize + ME_FILTER_TAP;
 		referencePictureBufferDescInitData.rightPadding           = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize + ME_FILTER_TAP;
@@ -875,6 +879,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
         quarterDecimPictureBufferDescInitData.maxWidth              = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaWidth  >> 1;
         quarterDecimPictureBufferDescInitData.maxHeight             = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaHeight >> 1;
         quarterDecimPictureBufferDescInitData.bitDepth              = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->inputBitdepth;
+        quarterDecimPictureBufferDescInitData.colorFormat           = EB_YUV420;
         quarterDecimPictureBufferDescInitData.bufferEnableMask      = PICTURE_BUFFER_DESC_LUMA_MASK;
 		quarterDecimPictureBufferDescInitData.leftPadding			= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize >> 1;
 		quarterDecimPictureBufferDescInitData.rightPadding			= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize >> 1;
@@ -885,6 +890,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
         sixteenthDecimPictureBufferDescInitData.maxWidth            = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaWidth  >> 2;
         sixteenthDecimPictureBufferDescInitData.maxHeight           = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxInputLumaHeight >> 2;
         sixteenthDecimPictureBufferDescInitData.bitDepth            = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->inputBitdepth;
+        sixteenthDecimPictureBufferDescInitData.colorFormat         = EB_YUV420;
         sixteenthDecimPictureBufferDescInitData.bufferEnableMask    = PICTURE_BUFFER_DESC_LUMA_MASK;
 		sixteenthDecimPictureBufferDescInitData.leftPadding			= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize >> 2;
 		sixteenthDecimPictureBufferDescInitData.rightPadding		= encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize >> 2;
@@ -1244,6 +1250,7 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
 		pictureBufferDescConf.maxWidth = encHandlePtr->sequenceControlSetInstanceArray[0]->sequenceControlSetPtr->maxInputLumaWidth;
 		pictureBufferDescConf.maxHeight = encHandlePtr->sequenceControlSetInstanceArray[0]->sequenceControlSetPtr->maxInputLumaHeight;
 		pictureBufferDescConf.bitDepth = EB_8BIT;
+        pictureBufferDescConf.colorFormat = (EB_COLOR_FORMAT)encHandlePtr->sequenceControlSetInstanceArray[0]->sequenceControlSetPtr->chromaFormatIdc;
 		pictureBufferDescConf.bufferEnableMask = PICTURE_BUFFER_DESC_Y_FLAG;
 		pictureBufferDescConf.leftPadding = 0;
 		pictureBufferDescConf.rightPadding = 0;
@@ -2076,6 +2083,12 @@ void CopyApiFromApp(
 
     // Misc
     sequenceControlSetPtr->staticConfig.encoderBitDepth = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->encoderBitDepth;
+    sequenceControlSetPtr->staticConfig.colorFormat = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->colorFormat;
+    if (sequenceControlSetPtr->staticConfig.colorFormat == EB_YUV400) {
+        SVT_LOG("Color format EB_YUV400 not supported, set to EB_YUV420\n");
+        sequenceControlSetPtr->staticConfig.colorFormat = EB_YUV420;
+    }
+    sequenceControlSetPtr->chromaFormatIdc = (EB_U32)(sequenceControlSetPtr->staticConfig.colorFormat);
     sequenceControlSetPtr->staticConfig.compressedTenBitFormat = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->compressedTenBitFormat;
 	sequenceControlSetPtr->staticConfig.videoUsabilityInfo = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->videoUsabilityInfo;
     sequenceControlSetPtr->staticConfig.highDynamicRangeInput = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->highDynamicRangeInput;
@@ -3066,17 +3079,22 @@ static EB_ERRORTYPE CopyFrameBuffer(
     EB_U16                           inputRowIndex;
     EB_BOOL                          is16BitInput = (EB_BOOL)(config->encoderBitDepth > EB_8BIT);
 
+    EB_U16                           colorFormat = (EB_U16)(config->colorFormat);
+    EB_U16                           subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    EB_U16                           subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+
     // Need to include for Interlacing on the fly with pictureScanType = 1
 
     if (!is16BitInput) {
 
-        EB_U32                           lumaBufferOffset = (inputPicturePtr->strideY*sequenceControlSetPtr->topPadding + sequenceControlSetPtr->leftPadding) << is16BitInput;
-        EB_U32                           chromaBufferOffset = (inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> 1) + (sequenceControlSetPtr->leftPadding >> 1)) << is16BitInput;
-        EB_U16                           lumaStride = inputPicturePtr->strideY << is16BitInput;
-        EB_U16                           chromaStride = inputPicturePtr->strideCb << is16BitInput;
-        EB_U16                           lumaWidth = (EB_U16)(inputPicturePtr->width - sequenceControlSetPtr->maxInputPadRight) << is16BitInput;
-        EB_U16                           chromaWidth = (lumaWidth >> 1) << is16BitInput;
+        EB_U32                           lumaBufferOffset = inputPicturePtr->strideY*sequenceControlSetPtr->topPadding + sequenceControlSetPtr->leftPadding;
+        EB_U32                           chromaBufferOffset = inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> subHeightCMinus1) + (sequenceControlSetPtr->leftPadding >> subWidthCMinus1);
+        EB_U16                           lumaStride = inputPicturePtr->strideY;
+        EB_U16                           chromaStride = inputPicturePtr->strideCb;
+        EB_U16                           lumaWidth = (EB_U16)(inputPicturePtr->width - sequenceControlSetPtr->maxInputPadRight);
+        EB_U16                           chromaWidth = lumaWidth >> subWidthCMinus1;
         EB_U16                           lumaHeight = (EB_U16)(inputPicturePtr->height - sequenceControlSetPtr->maxInputPadBottom);
+        EB_U16                           chromaHeight = lumaHeight >> subHeightCMinus1;
 
         EB_U16                           sourceLumaStride = (EB_U16)(inputPtr->yStride);
         EB_U16                           sourceCrStride   = (EB_U16)(inputPtr->crStride);
@@ -3092,14 +3110,14 @@ static EB_ERRORTYPE CopyFrameBuffer(
         }
 
         // U
-        for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+        for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
             EB_MEMCPY((inputPicturePtr->bufferCb + chromaBufferOffset + chromaStride * inputRowIndex),
                 (inputPtr->cb + (sourceCbStride*inputRowIndex)),
                 chromaWidth);
         }
 
         // V
-        for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+        for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
             EB_MEMCPY((inputPicturePtr->bufferCr + chromaBufferOffset + chromaStride * inputRowIndex),
                 (inputPtr->cr + (sourceCrStride*inputRowIndex)),
                 chromaWidth);
@@ -3110,12 +3128,13 @@ static EB_ERRORTYPE CopyFrameBuffer(
     {
         {
             EB_U32  lumaBufferOffset = (inputPicturePtr->strideY*sequenceControlSetPtr->topPadding + sequenceControlSetPtr->leftPadding);
-            EB_U32  chromaBufferOffset = (inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> 1) + (sequenceControlSetPtr->leftPadding >> 1));
+            EB_U32  chromaBufferOffset = (inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> subHeightCMinus1) + (sequenceControlSetPtr->leftPadding >> subWidthCMinus1));
             EB_U16  lumaStride = inputPicturePtr->strideY;
             EB_U16  chromaStride = inputPicturePtr->strideCb;
             EB_U16  lumaWidth = (EB_U16)(inputPicturePtr->width - sequenceControlSetPtr->maxInputPadRight);
-            EB_U16  chromaWidth = (lumaWidth >> 1);
+            EB_U16  chromaWidth = (lumaWidth >> subWidthCMinus1);
             EB_U16  lumaHeight = (EB_U16)(inputPicturePtr->height - sequenceControlSetPtr->maxInputPadBottom);
+            EB_U16  chromaHeight = lumaHeight >> subHeightCMinus1;
 
             EB_U16 sourceLumaStride = (EB_U16)(inputPtr->yStride);
             EB_U16 sourceCrStride   = (EB_U16)(inputPtr->crStride);
@@ -3131,7 +3150,7 @@ static EB_ERRORTYPE CopyFrameBuffer(
             }
 
             // U 8bit
-            for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+            for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
 
                 EB_MEMCPY((inputPicturePtr->bufferCb + chromaBufferOffset + chromaStride * inputRowIndex),
                     (inputPtr->cb + (sourceCbStride*inputRowIndex)),
@@ -3140,7 +3159,7 @@ static EB_ERRORTYPE CopyFrameBuffer(
             }
 
             // V 8bit
-            for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+            for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
 
                 EB_MEMCPY((inputPicturePtr->bufferCr + chromaBufferOffset + chromaStride * inputRowIndex),
                     (inputPtr->cr + (sourceCrStride*inputRowIndex)),
@@ -3160,10 +3179,10 @@ static EB_ERRORTYPE CopyFrameBuffer(
                 for (inputRowIndex = 0; inputRowIndex < lumaHeight; inputRowIndex++) {
                     EB_MEMCPY(inputPicturePtr->bufferBitIncY + luma2BitWidth * inputRowIndex, inputPtr->lumaExt + sourceLuma2BitStride * inputRowIndex, luma2BitWidth);
                 }
-                for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+                for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
                     EB_MEMCPY(inputPicturePtr->bufferBitIncCb + (luma2BitWidth >> 1)*inputRowIndex, inputPtr->cbExt + sourceChroma2BitStride * inputRowIndex, luma2BitWidth >> 1);
                 }
-                for (inputRowIndex = 0; inputRowIndex < lumaHeight >> 1; inputRowIndex++) {
+                for (inputRowIndex = 0; inputRowIndex < chromaHeight; inputRowIndex++) {
                     EB_MEMCPY(inputPicturePtr->bufferBitIncCr + (luma2BitWidth >> 1)*inputRowIndex, inputPtr->crExt + sourceChroma2BitStride * inputRowIndex, luma2BitWidth >> 1);
                 }
             }
@@ -3175,10 +3194,11 @@ static EB_ERRORTYPE CopyFrameBuffer(
 
         EB_U32 lumaOffset = 0, chromaOffset = 0;
         EB_U32 lumaBufferOffset = (inputPicturePtr->strideY*sequenceControlSetPtr->topPadding + sequenceControlSetPtr->leftPadding);
-        EB_U32 chromaBufferOffset = (inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> 1) + (sequenceControlSetPtr->leftPadding >> 1));
+        EB_U32 chromaBufferOffset = (inputPicturePtr->strideCr*(sequenceControlSetPtr->topPadding >> subHeightCMinus1) + (sequenceControlSetPtr->leftPadding >> subWidthCMinus1));
         EB_U16 lumaWidth = (EB_U16)(inputPicturePtr->width - sequenceControlSetPtr->maxInputPadRight);
-        EB_U16 chromaWidth = (lumaWidth >> 1);
+        EB_U16 chromaWidth = (lumaWidth >> subWidthCMinus1);
         EB_U16 lumaHeight = (EB_U16)(inputPicturePtr->height - sequenceControlSetPtr->maxInputPadBottom);
+        EB_U16 chromaHeight = lumaHeight >> subHeightCMinus1;
 
         EB_U16 sourceLumaStride = (EB_U16)(inputPtr->yStride);
         EB_U16 sourceCrStride = (EB_U16)(inputPtr->crStride);
@@ -3202,7 +3222,7 @@ static EB_ERRORTYPE CopyFrameBuffer(
             inputPicturePtr->bufferBitIncCb + chromaBufferOffset,
             inputPicturePtr->strideBitIncCb,
             chromaWidth,
-            (lumaHeight >> 1));
+            chromaHeight);
 
         UnPack2D(
             (EB_U16*)(inputPtr->cr + chromaOffset),
@@ -3212,7 +3232,7 @@ static EB_ERRORTYPE CopyFrameBuffer(
             inputPicturePtr->bufferBitIncCr + chromaBufferOffset,
             inputPicturePtr->strideBitIncCr,
             chromaWidth,
-            (lumaHeight >> 1));
+            chromaHeight);
     }
     return return_error;
 }
@@ -3484,6 +3504,7 @@ EB_ERRORTYPE AllocateFrameBuffer(
     inputPictureBufferDescInitData.maxWidth  = (EB_U16)sequenceControlSetPtr->maxInputLumaWidth;
     inputPictureBufferDescInitData.maxHeight = (EB_U16)sequenceControlSetPtr->maxInputLumaHeight;
     inputPictureBufferDescInitData.bitDepth = (EB_BITDEPTH)config->encoderBitDepth;
+    inputPictureBufferDescInitData.colorFormat = (EB_COLOR_FORMAT)config->colorFormat;
 
     if (config->compressedTenBitFormat == 1) {
         inputPictureBufferDescInitData.bufferEnableMask = 0;
