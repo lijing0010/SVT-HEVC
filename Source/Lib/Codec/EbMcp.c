@@ -188,7 +188,7 @@ void EncodeUniPredInterpolation(
     EB_U8    fracPosx;
     EB_U8    fracPosy;
 
-    EB_COLOR_FORMAT colorFormat = dst->colorFormat;
+    EB_COLOR_FORMAT colorFormat=dst->colorFormat;
     EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
     EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
     EB_U32 chromaPuWidth = puWidth >> subWidthCMinus1;
@@ -199,11 +199,10 @@ void EncodeUniPredInterpolation(
     
     //luma
     //compute the luma fractional position
-    integPosx = (posX >> (2 + subWidthCMinus1));
-    integPosy = (posY >> (2 + subHeightCMinus1));
-    fracPosx  = (posX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-    fracPosy  = (posY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
-
+    integPosx = (posX >> 2);
+    integPosy = (posY >> 2);
+    fracPosx  = posX & 0x03;
+    fracPosy  = posY & 0x03;
 
 	uniPredLumaIFFunctionPtrArrayNew[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 2)](
 		refPic->bufferY + integPosx + integPosy*refPic->strideY,
@@ -216,10 +215,10 @@ void EncodeUniPredInterpolation(
 
     //chroma
     //compute the chroma fractional position
-    integPosx = (posX >> 3);
-    integPosy = (posY >> 3);
-    fracPosx  = posX & 0x07;
-    fracPosy  = posY & 0x07;
+    integPosx = (posX >> (2 + subWidthCMinus1));
+    integPosy = (posY >> (2 + subHeightCMinus1));
+    fracPosx  = (posX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+    fracPosy  = (posY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
         
 	uniPredChromaIFFunctionPtrArrayNew[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
@@ -276,7 +275,7 @@ void UniPredInterpolation16bit(
     fracPosy  = posY & 0x03;
 
 	uniPredLuma16bitIFFunctionPtrArray[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 2)](
-		(EB_U16 *)fullPelBlock->bufferY + 4 + 4 * fullPelBlock->strideY,
+		(EB_U16 *)fullPelBlock->bufferY + 4 + 4 * fullPelBlock->strideY, //Jing, why 4 here?
 		fullPelBlock->strideY,
 		(EB_U16*)(dst->bufferY) + dstLumaIndex,
 		dst->strideY,
@@ -580,9 +579,9 @@ void EncodeBiPredInterpolation(
     EB_COLOR_FORMAT colorFormat=biDst->colorFormat;
     EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
     EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+
     EB_U32   chromaPuWidth      = puWidth >> subWidthCMinus1;
     EB_U32   chromaPuHeight     = puHeight >> subHeightCMinus1;
-
     EB_U32   lumaTempBufSize    = puWidth * puHeight;
     EB_U32   chromaTempBufSize = chromaPuWidth * chromaPuHeight;
 
@@ -668,19 +667,18 @@ void EncodeBiPredInterpolation(
 
 	//uni-prediction List0 chroma
 	//compute the chroma fractional position
-    integPosL0x = (refList0PosX >> (2 + subWidthCMinus1));
-    integPosL0y = (refList0PosY >> (2 + subHeightCMinus1));
-    fracPosL0x = (refList0PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-    fracPosL0y = (refList0PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
+	integPosL0x = (refList0PosX >> (2 + subWidthCMinus1));
+	integPosL0y = (refList0PosY >> (2 + subHeightCMinus1));
+	fracPosL0x = (refList0PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+	fracPosL0y = (refList0PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 
 	//uni-prediction List1 chroma
 	//compute the chroma fractional position
-    integPosL1x = (refList1PosX >> (2 + subWidthCMinus1));
-    integPosL1y = (refList1PosY >> (2 + subHeightCMinus1));
-    fracPosL1x = (refList1PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-    fracPosL1y = (refList1PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
-
+	integPosL1x = (refList1PosX >> (2 + subWidthCMinus1));
+	integPosL1y = (refList1PosY >> (2 + subHeightCMinus1));
+	fracPosL1x = (refList1PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+	fracPosL1y = (refList1PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 	if (((fracPosL0x + (fracPosL0y << 3)) == 0) && ((fracPosL1x + (fracPosL1y << 3)) == 0))
 	{
@@ -707,17 +705,17 @@ void EncodeBiPredInterpolation(
 			biDst->strideCr,
 			chromaPuWidth,
 			chromaPuHeight,
-			ChromaOffset5,
+			ChromaOffset5, //Jing: figure out what this is later
 			EB_FALSE);
 	}
 	else
 	{
 		//uni-prediction List0 chroma
 		//compute the chroma fractional position
-        integPosx = (refList0PosX >> (2 + subWidthCMinus1));
-        integPosy = (refList0PosY >> (2 + subHeightCMinus1));
-        fracPosx = (refList0PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-        fracPosy = (refList0PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
+		integPosx = (refList0PosX >> (2 + subWidthCMinus1));
+		integPosy = (refList0PosY >> (2 + subHeightCMinus1));
+		fracPosx = (refList0PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+		fracPosy = (refList0PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 		//doing the chroma Cb interpolation
 		biPredChromaIFFunctionPtrArrayNew[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
@@ -744,11 +742,15 @@ void EncodeBiPredInterpolation(
 
 		//uni-prediction List1 chroma
 		//compute the chroma fractional position
-        integPosx = (refList1PosX >> (2 + subWidthCMinus1));
-        integPosy = (refList1PosY >> (2 + subHeightCMinus1));
-        fracPosx = (refList1PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-        fracPosy = (refList1PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
+		//integPosx = (refList1PosX >> 3);
+		//integPosy = (refList1PosY >> 3);
+		//fracPosx = refList1PosX & 0x07;
+		//fracPosy = refList1PosY & 0x07;
 
+		integPosx = (refList1PosX >> (2 + subWidthCMinus1));
+		integPosy = (refList1PosY >> (2 + subHeightCMinus1));
+		fracPosx = (refList1PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+		fracPosy = (refList1PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 		//doing the chroma Cb interpolation
 		biPredChromaIFFunctionPtrArrayNew[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
