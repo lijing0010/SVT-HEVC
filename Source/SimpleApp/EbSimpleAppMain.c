@@ -173,24 +173,27 @@ void ReadInputFrames(
     FILE   *inputFile = config->inputFile;
     unsigned char  *ebInputPtr;
     EB_H265_ENC_INPUT* inputPtr = (EB_H265_ENC_INPUT*)headerPtr->pBuffer;
+    unsigned int colorFormat = (unsigned int)(config->colorFormat);
+    unsigned int subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
     inputPtr->yStride  = inputPaddedWidth;
-    inputPtr->cbStride = inputPaddedWidth >> 1;
-    inputPtr->crStride = inputPaddedWidth >> 1;
+    inputPtr->cbStride = inputPaddedWidth >> subWidthCMinus1;
+    inputPtr->crStride = inputPaddedWidth >> subWidthCMinus1;
     {
         if (is16bit == 0 || (is16bit == 1 && config->compressedTenBitFormat == 0)) {
 
-            readSize = (unsigned long long)SIZE_OF_ONE_FRAME_IN_BYTES(inputPaddedWidth, inputPaddedHeight, is16bit);
+            unsigned long long lumaReadSize = (unsigned long long)inputPaddedWidth*inputPaddedHeight << is16bit;
+            unsigned long long chromaReadSize = lumaReadSize >> (3-colorFormat);
+            readSize = lumaReadSize + (chromaReadSize << 1);
 
             headerPtr->nFilledLen = 0;
 
             {
-                unsigned long long lumaReadSize = (unsigned long long)inputPaddedWidth*inputPaddedHeight << is16bit;
                 ebInputPtr = inputPtr->luma;
                 headerPtr->nFilledLen += (unsigned int)fread(ebInputPtr, 1, lumaReadSize, inputFile);
                 ebInputPtr = inputPtr->cb;
-                headerPtr->nFilledLen += (unsigned int)fread(ebInputPtr, 1, lumaReadSize >> 2, inputFile);
+                headerPtr->nFilledLen += (unsigned int)fread(ebInputPtr, 1, chromaReadSize, inputFile);
                 ebInputPtr = inputPtr->cr;
-                headerPtr->nFilledLen += (unsigned int)fread(ebInputPtr, 1, lumaReadSize >> 2, inputFile);
+                headerPtr->nFilledLen += (unsigned int)fread(ebInputPtr, 1, chromaReadSize, inputFile);
                 inputPtr->luma = inputPtr->luma + ((config->inputPaddedWidth*TOP_INPUT_PADDING + LEFT_INPUT_PADDING) << is16bit);
                 inputPtr->cb = inputPtr->cb + (((config->inputPaddedWidth >> 1)*(TOP_INPUT_PADDING >> 1) + (LEFT_INPUT_PADDING >> 1)) << is16bit);
                 inputPtr->cr = inputPtr->cr + (((config->inputPaddedWidth >> 1)*(TOP_INPUT_PADDING >> 1) + (LEFT_INPUT_PADDING >> 1)) << is16bit);
@@ -328,8 +331,8 @@ int main(int argc, char* argv[])
         // Initialize config
         config = (EbConfig_t*)malloc(sizeof(EbConfig_t));
         EbConfigCtor(config);
-        if (argc != 6 && argc != 7) {
-            printf("Usage: ./HevcEncoderSimpleApp in.yuv out.265 width height bitdepth recon.yuv(optional)\n");
+        if (argc != 7 && argc != 8) {
+            printf("Usage: ./HevcEncoderSimpleApp in.yuv out.265 width height bitdepth colorFormat recon.yuv(optional)\n");
             return_error = EB_ErrorBadParameter;
         }
         else {
@@ -365,9 +368,13 @@ int main(int argc, char* argv[])
             if ((bdepth != 8) && (bdepth != 10)) {printf("Invalid bit depth\n"); return_error = EB_ErrorBadParameter; }
             config->encoderBitDepth = bdepth;
 
-            if (argc == 7) {
+            unsigned int chromaIdx = strtoul(argv[6], NULL, 0);
+            if (chromaIdx < EB_YUV420 || chromaIdx >= EB_YUV444) {printf("Invalid chromaIdx value %d. 1: 420, 2:422, 3:444(not supported)\n", chromaIdx); return_error = EB_ErrorBadParameter;}
+            config->colorFormat = chromaIdx;
+
+            if (argc == 8) {
                 FILE * frec;
-                FOPEN(frec, argv[6], "wb");
+                FOPEN(frec, argv[7], "wb");
                 if (!frec) {
                     printf("Invalid recon file \n");
                     return_error = EB_ErrorBadParameter;

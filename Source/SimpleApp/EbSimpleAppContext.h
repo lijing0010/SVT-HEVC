@@ -32,6 +32,7 @@ typedef struct EbConfig_s
     unsigned int           injector;
     unsigned int           speedControlFlag;
     unsigned int           encoderBitDepth;
+    unsigned int           colorFormat;
     unsigned int           compressedTenBitFormat;
     unsigned int           sourceWidth;
     unsigned int           sourceHeight;

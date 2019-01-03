@@ -22,7 +22,7 @@ EB_ERRORTYPE AllocateFrameBuffer(
         config->inputPaddedHeight   *
         (1 << tenBitPackedMode);
 
-    const size_t chroma8bitSize = luma8bitSize >> 2;
+    const size_t chroma8bitSize = luma8bitSize >> (3- config->colorFormat);
     const size_t luma10bitSize = (config->encoderBitDepth > 8 && tenBitPackedMode == 0) ? luma8bitSize : 0;
     const size_t chroma10bitSize = (config->encoderBitDepth > 8 && tenBitPackedMode == 0) ? chroma8bitSize : 0;
     
@@ -170,7 +170,9 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.sourceWidth       = config->sourceWidth;
     callbackData->ebEncParameters.sourceHeight      = config->sourceHeight;
     callbackData->ebEncParameters.encoderBitDepth   = config->encoderBitDepth;
+    callbackData->ebEncParameters.colorFormat = config->colorFormat;
     callbackData->ebEncParameters.codeVpsSpsPps     = 0;
+    callbackData->ebEncParameters.asmType= config->asmType;
     callbackData->ebEncParameters.reconEnabled      = config->reconFile ? 1 : 0;
     
     return return_error;
