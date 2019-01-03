@@ -116,12 +116,14 @@ extern EB_ERRORTYPE GenerateIntraReferenceSamplesEncodePass(
     EB_U32                      originX,
     EB_U32                      originY,
     EB_U32                      size,
+    EB_U32                      lcuSize,
     EB_U32                      cuDepth,
     NeighborArrayUnit_t        *modeTypeNeighborArray,
     NeighborArrayUnit_t        *lumaReconNeighborArray,
     NeighborArrayUnit_t        *cbReconNeighborArray,
     NeighborArrayUnit_t        *crReconNeighborArray,
     void                       *refWrapperPtr,
+    EB_COLOR_FORMAT             colorFormat,
     EB_BOOL                     pictureLeftBoundary,
     EB_BOOL                     pictureTopBoundary,
     EB_BOOL                     pictureRightBoundary);
@@ -157,6 +159,8 @@ extern EB_ERRORTYPE GenerateChromaIntraReferenceSamplesEncodePass(
     NeighborArrayUnit_t        *cbReconNeighborArray,
     NeighborArrayUnit_t        *crReconNeighborArray,
     void                       *refWrapperPtr,
+    EB_COLOR_FORMAT             colorFormat,
+    EB_BOOL                     secondChroma,
     EB_BOOL                     pictureLeftBoundary,
     EB_BOOL                     pictureTopBoundary,
     EB_BOOL                     pictureRightBoundary);
@@ -168,12 +172,14 @@ extern EB_ERRORTYPE GenerateIntraReference16bitSamplesEncodePass(
     EB_U32                      originX,
     EB_U32                      originY,
     EB_U32                      size,
+    EB_U32                      lcuSize,
     EB_U32                      cuDepth,
     NeighborArrayUnit_t        *modeTypeNeighborArray,
     NeighborArrayUnit_t        *lumaReconNeighborArray,
     NeighborArrayUnit_t        *cbReconNeighborArray,
     NeighborArrayUnit_t        *crReconNeighborArray,
     void                       *refWrapperPtr,
+    EB_COLOR_FORMAT             colorFormat,
     EB_BOOL                     pictureLeftBoundary,
     EB_BOOL                     pictureTopBoundary,
     EB_BOOL                     pictureRightBoundary);
@@ -210,6 +216,8 @@ extern EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
     NeighborArrayUnit_t        *cbReconNeighborArray,
     NeighborArrayUnit_t        *crReconNeighborArray,
     void                       *refWrapperPtr,
+    EB_COLOR_FORMAT             colorFormat,
+    EB_BOOL                     secondChroma,
     EB_BOOL                     pictureLeftBoundary,
     EB_BOOL                     pictureTopBoundary,
     EB_BOOL                     pictureRightBoundary);
@@ -231,18 +239,28 @@ extern EB_ERRORTYPE EncodePassIntraPrediction(
     EB_U32                                  originX,
     EB_U32                                  originY,
     EB_U32                                  puSize,
+    EB_U32                                  puChromaSize,
     EbPictureBufferDesc_t                  *predictionPtr,
-    EB_U32                                  lumaMode);
+    EB_COLOR_FORMAT                         colorFormat,
+    EB_BOOL                                 secondChroma,
+    EB_U32                                  lumaMode,
+    EB_U32                                  chromaMode,
+    EB_U32                                  componentMask);
 extern EB_ERRORTYPE EncodePassIntraPrediction16bit(
     void                                   *refSamples,
     EB_U32                                  originX,
     EB_U32                                  originY,
     EB_U32                                  puSize,
+    EB_U32                                  puChromaSize,
     EbPictureBufferDesc_t                  *predictionPtr,
-    EB_U32                                  lumaMode);
+    EB_COLOR_FORMAT                         colorFormat,
+    EB_BOOL                                 secondChroma,
+    EB_U32                                  lumaMode,
+    EB_U32                                  chromaMode,
+    EB_U32                                  componentMask);
 
 extern EB_ERRORTYPE EncodePassIntra4x4Prediction(
-    IntraReferenceSamples_t                *referenceSamples,
+    void                                   *referenceSamples,
     EB_U32                                  originX,
     EB_U32                                  originY,
     EB_U32                                  puSize,
@@ -250,10 +268,12 @@ extern EB_ERRORTYPE EncodePassIntra4x4Prediction(
     EbPictureBufferDesc_t                  *predictionPtr,
     EB_U32                                  lumaMode,
     EB_U32                                  chromaMode,
+    EB_COLOR_FORMAT                         colorFormat,
+    EB_BOOL                                 secondChroma,
     EB_U32                                  componentMask);
 
 extern EB_ERRORTYPE EncodePassIntra4x4Prediction16bit(
-    IntraReference16bitSamples_t           *referenceSamples,
+    void                                   *referenceSamples,
     EB_U32                                  originX,
     EB_U32                                  originY,
     EB_U32                                  puSize,
@@ -261,12 +281,13 @@ extern EB_ERRORTYPE EncodePassIntra4x4Prediction16bit(
     EbPictureBufferDesc_t                  *predictionPtr,
     EB_U32                                  lumaMode,
     EB_U32                                  chromaMode,
+    EB_COLOR_FORMAT                         colorFormat,
+    EB_BOOL                                 secondChroma,
     EB_U32                                  componentMask);
 
 
-
 static const EB_U32 intra422PredModeMap[] = {
-        0, 1, 2, 2, 2, 2, 3, 5, 7, 8, 10, 12,13,15,17,18,19,20,21,22,23,23,24,24,25,25,26,27,27,28,28,29,29,30,31};
+    0, 1, 2, 2, 2, 2, 3, 5, 7, 8, 10, 12,13,15,17,18,19,20,21,22,23,23,24,24,25,25,26,27,27,28,28,29,29,30,31};
 
 static const EB_U32 intraLumaModeNumber[] = {
     18,

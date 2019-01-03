@@ -18,6 +18,7 @@
 #include "EbErrorHandling.h"
 
 
+
 EB_ERRORTYPE InterPredictionContextCtor(
     InterPredictionContext_t **interPredictionContext,
 	EB_U16                     maxCUWidth,
@@ -95,7 +96,7 @@ EB_ERRORTYPE Inter2Nx2NPuPredictionInterpolationFree(
         if (is16bit) {
 
             puOriginIndex = ((puOriginY  & (63)) * 64) + (puOriginX & (63));
-            puChromaOriginIndex = (((puOriginY  & (63)) * 32) + (puOriginX & (63))) >> 1;
+            puChromaOriginIndex = (((puOriginY  & (63)) * 32) + (puOriginX & (63))) >> 1; //Jing: here
             referenceObject = (EbReferenceObject_t*)pictureControlSetPtr->refPicPtrArray[REF_LIST_0]->objectPtr;
             refPicList0 = (EbPictureBufferDesc_t*)referenceObject->referencePicture16bit;
 
@@ -777,8 +778,12 @@ EB_ERRORTYPE EncodePassInterPrediction(
 	EB_U16                  refList1PosX = 0;
 	EB_U16                  refList1PosY = 0;
 
+    EB_COLOR_FORMAT colorFormat=predictionPtr->colorFormat;
+    EB_U16 subWidthCMinus1  = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+
     EB_U32                  puOriginIndex           = ((predictionPtr->originY +puOriginY) * predictionPtr->strideY)  + (predictionPtr->originX+puOriginX);
-    EB_U32                  puChromaOriginIndex     = (((predictionPtr->originY+puOriginY) * predictionPtr->strideCb) + (predictionPtr->originX+puOriginX)) >> 1;
+    EB_U32                  puChromaOriginIndex     = (((predictionPtr->originY+puOriginY) * predictionPtr->strideCb) >> subHeightCMinus1) + ((predictionPtr->originX+puOriginX) >> subWidthCMinus1);
     SequenceControlSet_t   *sequenceControlSetPtr  = (SequenceControlSet_t*)pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr;
 	EncodeContext_t        *encodeContextPtr       = sequenceControlSetPtr->encodeContextPtr;
 
