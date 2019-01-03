@@ -172,8 +172,16 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.encoderBitDepth   = config->encoderBitDepth;
     callbackData->ebEncParameters.colorFormat = config->colorFormat;
     callbackData->ebEncParameters.codeVpsSpsPps     = 0;
-    callbackData->ebEncParameters.asmType= config->asmType;
     callbackData->ebEncParameters.reconEnabled      = config->reconFile ? 1 : 0;
+
+    callbackData->ebEncParameters.asmType= 0;
+    callbackData->ebEncParameters.disableDlfFlag = 1;
+    callbackData->ebEncParameters.enableSaoFlag = 0;
+    callbackData->ebEncParameters.qp=20;
+    callbackData->ebEncParameters.rateControlMode=0;
+    callbackData->ebEncParameters.encMode = 1;
+    callbackData->ebEncParameters.hierarchicalLevels = 2;
+
     
     return return_error;
 

@@ -372,6 +372,7 @@ int main(int argc, char* argv[])
             if (chromaIdx < EB_YUV420 || chromaIdx >= EB_YUV444) {printf("Invalid chromaIdx value %d. 1: 420, 2:422, 3:444(not supported)\n", chromaIdx); return_error = EB_ErrorBadParameter;}
             config->colorFormat = chromaIdx;
 
+
             if (argc == 8) {
                 FILE * frec;
                 FOPEN(frec, argv[7], "wb");

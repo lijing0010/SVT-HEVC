@@ -3,6 +3,7 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -4061,7 +4062,7 @@ EB_ERRORTYPE CheckAndCodeDeltaQp(
 }
 
 /************************************
-******* EncodeTuCoeff
+******* EncodeCoeff
 **************************************/
 static EB_ERRORTYPE EncodeCoeff(
 	CabacEncodeContext_t   *cabacEncodeCtxPtr,
@@ -4252,6 +4253,8 @@ static EB_ERRORTYPE EncodeTuCoeff(
 	}
 
 	if (tuPtr->splitFlag) {
+        // Jing: only comes here for inter 64x64
+        assert(cuStatsPtr->size == 64);
 
 		// Cb CBF  
 		EncodeOneBin(
@@ -4284,6 +4287,7 @@ static EB_ERRORTYPE EncodeTuCoeff(
 			}
 
 			if (tuPtr->splitFlag) {
+                assert(0);
 				cbfContext = tuPtr->chromaCbfContext;
 
 				if (cuPtr->transformUnitArray[0].cbCbf | cuPtr->transformUnitArray[0].cbCbf2) {
