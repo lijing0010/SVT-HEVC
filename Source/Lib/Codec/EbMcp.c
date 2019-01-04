@@ -36,13 +36,14 @@ EB_ERRORTYPE MotionCompensationPredictionContextCtor(
     EB_MALLOC(MotionCompensationPredictionContext_t *, contextPtr, sizeof(MotionCompensationPredictionContext_t), EB_N_PTR);
     *(contextDblPtr) = contextPtr;
 
-    EB_MALLOC(EB_S16*, contextPtr->motionCompensationIntermediateResultBuf0, sizeof(EB_S16)*(maxCUWidth*maxCUHeight * 3 / 2 + 8), EB_N_PTR);        //Y + U + V
+    // Jing: increase the size for 422/444
+    EB_MALLOC(EB_S16*, contextPtr->motionCompensationIntermediateResultBuf0, sizeof(EB_S16)*(maxCUWidth*maxCUHeight * 3 + 8), EB_N_PTR);        //Y + U + V
 
-    EB_MALLOC(EB_S16*, contextPtr->motionCompensationIntermediateResultBuf1, sizeof(EB_S16)*(maxCUWidth*maxCUHeight * 3 / 2 + 8), EB_N_PTR);        //Y + U + V
+    EB_MALLOC(EB_S16*, contextPtr->motionCompensationIntermediateResultBuf1, sizeof(EB_S16)*(maxCUWidth*maxCUHeight * 3 + 8), EB_N_PTR);        //Y + U + V
 
-    EB_MALLOC(EB_BYTE, contextPtr->avcStyleMcpIntermediateResultBuf0, sizeof(EB_U8)*maxCUWidth*maxCUHeight * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
+    EB_MALLOC(EB_BYTE, contextPtr->avcStyleMcpIntermediateResultBuf0, sizeof(EB_U8)*maxCUWidth*maxCUHeight * 6 * 3 + 16, EB_N_PTR);        //Y + U + V;
 
-    EB_MALLOC(EB_BYTE, contextPtr->avcStyleMcpIntermediateResultBuf1, sizeof(EB_U8)*maxCUWidth*maxCUHeight * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
+    EB_MALLOC(EB_BYTE, contextPtr->avcStyleMcpIntermediateResultBuf1, sizeof(EB_U8)*maxCUWidth*maxCUHeight * 6 * 3 + 16, EB_N_PTR);        //Y + U + V;
 
 #if !USE_PRE_COMPUTE
     EB_MALLOC(EB_S16*, contextPtr->TwoDInterpolationFirstPassFilterResultBuf, sizeof(EB_S16)*(maxCUWidth + MaxHorizontalLumaFliterTag - 1)*(maxCUHeight + MaxVerticalLumaFliterTag - 1), EB_N_PTR);   // to be modified
