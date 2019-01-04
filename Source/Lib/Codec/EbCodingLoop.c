@@ -3145,6 +3145,14 @@ EB_EXTERN void EncodePass(
             EB_U16   yCountNonZeroCoeffs = 0;
 			EB_U32   yBitsThsld = (contextPtr->cuStats->size > 32) ? contextPtr->yBitsThsld : (contextPtr->cuStats->size > 16) ? (contextPtr->yBitsThsld >> 1) : (contextPtr->yBitsThsld >> 2);
 
+            EB_U8	 qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
+            EB_U8	 cbQp = 0;
+
+            if (colorFormat == EB_YUV420) {
+                cbQp = MapChromaQp(qpScaled);
+            } else {
+                cbQp = MIN(qpScaled, 51);
+            }
 
             if (cuPtr->predictionModeFlag == INTRA_MODE && cuPtr->predictionUnitArray->intraLumaMode != EB_INTRA_MODE_4x4){
                 contextPtr->totIntraCodedArea += cuStats->size*cuStats->size;
@@ -3248,9 +3256,6 @@ EB_EXTERN void EncodePass(
 
                         // Encode Transform Unit -INTRA-
                         {
-
-                            EB_U8	         qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
-                            EB_U8	         cbQp = MapChromaQp(qpScaled); //TODO: Jing, here changed qp for chroma, also need to indicate at bitstream level
 
                             contextPtr->forceCbfFlag = (contextPtr->skipQpmFlag) ?
                                 EB_FALSE :
@@ -3386,10 +3391,6 @@ EB_EXTERN void EncodePass(
 
 						//EncodeLoop
 						{
-
-							EB_U8               qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
-							EB_U8               cbQp = MapChromaQp(qpScaled);
-
 							EncodeLoopFunctionTable[is16bit](
 									contextPtr,
 									lcuPtr,
@@ -3599,9 +3600,6 @@ EB_EXTERN void EncodePass(
                     }
                     
                     // Encode Transform Unit -INTRA-
-                    EB_U8	         qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
-                    EB_U8	         cbQp = MapChromaQp(qpScaled);
-
                     contextPtr->forceCbfFlag = (contextPtr->skipQpmFlag) ?
                         EB_FALSE :
                         lcuPtr->pictureLeftEdgeFlag && ((contextPtr->cuOriginX & (63)) == 0) && (contextPtr->cuOriginY == lcuOriginY);
@@ -3898,9 +3896,6 @@ EB_EXTERN void EncodePass(
             //printf("sizeof %i \n",sizeof(CodingUnit_t));
             EB_U32  totTu = (cuStats->size < MAX_LCU_SIZE) ? 1 : 4;
             EB_U8   tuIt;
-
-            EB_U8	qpScaled        = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
-            EB_U8	cbQp            = MapChromaQp(qpScaled);
 
             EB_U32  componentMask   = PICTURE_BUFFER_DESC_FULL_MASK;
             EB_MODETYPE predictionModeFlag = (EB_MODETYPE)cuPtr->predictionModeFlag;
