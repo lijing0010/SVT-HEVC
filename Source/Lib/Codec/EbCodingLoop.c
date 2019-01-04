@@ -1023,9 +1023,9 @@ static void EncodeLoop(
 	}
 #ifdef DEBUG_TMP
     //allowEncDecMismatch 
-    if (lcuPtr->pictureControlSetPtr->pictureNumber == 1) {
+    if (lcuPtr->pictureControlSetPtr->pictureNumber == 4) {
         if (secondChroma) {
-            printf("-----2nd loop, dump coeff for Chroma (%d, %d) @POC 1----\n", originX, originY);
+            printf("-----2nd loop, dump coeff for Chroma (%d, %d) @POC %d----\n", originX, originY, lcuPtr->pictureControlSetPtr->pictureNumber);
             dump_block_from_desc(tuSize,    coeffSamplesTB, originX&63, originY&63, 0);
             dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, originY&63, 1);
             dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, (originY&63)+(tuSize>>1), 1);
@@ -2993,6 +2993,7 @@ EB_EXTERN void EncodePass(
         pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag ||
         sequenceControlSetPtr->staticConfig.reconEnabled;
 
+    assert(sequenceControlSetPtr->staticConfig.reconEnabled == 0);
     CabacCost_t     *cabacCost = pictureControlSetPtr->cabacCost;
     EntropyCoder_t  *coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
     EB_U8            cuItr;
@@ -3493,7 +3494,11 @@ EB_EXTERN void EncodePass(
                     EB_BOOL pictureRightBoundary = (lcuPtr->pictureRightEdgeFlag == EB_TRUE && (((partitionOriginX + MIN_PU_SIZE) & (MAX_LCU_SIZE - 1)) == 0)) ? EB_TRUE : EB_FALSE;
 
                     EB_U8   intraLumaMode = lcuPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuItr] - 21) << 2) + partitionIndex];
-
+                    EB_U8   intraLumaModeForChroma = lcuPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuItr] - 21) << 2)];
+#ifdef DEBUG_TMP
+                    printf("Intra 4x4 block (%d, %d), luma mode is %d\n", partitionOriginX, partitionOriginY, intraLumaMode);
+                    //assert(intraLumaMode == 0);
+#endif
                     // Set the PU Loop Variables
                     puPtr = cuPtr->predictionUnitArray;
 
@@ -3551,21 +3556,47 @@ EB_EXTERN void EncodePass(
                                 pictureLeftBoundary,
                                 partitionIndex ? EB_FALSE : pictureTopBoundary, //2nd chroma will always have top
                                 pictureRightBoundary);
+#ifdef DEBUG_TMP
+                            printf("\n----Dump Cb intra reference info at (%d, %d) for 1st Chroma block-----\n",
+                                    partitionOriginX, partitionOriginY);
+                            dump_left_array(epCbReconNeighborArray, contextPtr->cuOriginY, cuStats->size+2);
+                            dump_intra_ref(contextPtr->intraRefPtr, cuStats->size*2+2, 1);
+                            printf("---------------------------------------------\n");
+#endif
                     }
 
 					// Prediction                  
-                    EncodePassIntraPredictionFuncTable[is16bit](
-                        is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr,
-                        partitionOriginX + reconBuffer->originX,
-                        partitionOriginY + reconBuffer->originY,
-                        MIN_PU_SIZE,
-                        MIN_PU_SIZE,
-                        reconBuffer,
-                        colorFormat,
-                        EB_FALSE, //4x4, always 1st block
-                        intraLumaMode,
-                        EB_INTRA_CHROMA_DM,
-                        componentMask);
+                    if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+                        EncodePassIntraPredictionFuncTable[is16bit](
+                                is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr,
+                                partitionOriginX + reconBuffer->originX,
+                                partitionOriginY + reconBuffer->originY,
+                                MIN_PU_SIZE,
+                                MIN_PU_SIZE,
+                                reconBuffer,
+                                colorFormat,
+                                EB_FALSE, //4x4, always 1st block
+                                intraLumaMode,
+                                EB_INTRA_CHROMA_DM,
+                                PICTURE_BUFFER_DESC_LUMA_MASK);
+                    }
+
+                    if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+                        // Jing:
+                        // For intra4x4, the mode for chroma is the mode of 1st luma 4x4
+                        EncodePassIntraPredictionFuncTable[is16bit](
+                                is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr,
+                                partitionOriginX + reconBuffer->originX,
+                                partitionOriginY + reconBuffer->originY,
+                                MIN_PU_SIZE,
+                                MIN_PU_SIZE,
+                                reconBuffer,
+                                colorFormat,
+                                EB_FALSE, //4x4, always 1st block
+                                intraLumaModeForChroma, //422 Chroma use the luma mode of 1st 4x4 partition
+                                EB_INTRA_CHROMA_DM,
+                                PICTURE_BUFFER_DESC_CHROMA_MASK);
+                    }
                     
                     // Encode Transform Unit -INTRA-
                     EB_U8	         qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
