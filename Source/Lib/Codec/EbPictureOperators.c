@@ -129,7 +129,7 @@ void PictureSubSampledResidual(
     return;
 }
 /*******************************************
-* Pciture Residue
+* Picture Residue
   Computes the residual data
 *******************************************/
 void PictureResidual(

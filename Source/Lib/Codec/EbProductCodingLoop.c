@@ -4279,7 +4279,7 @@ void AddChromaEncDec(
     EB_U8 cbQp = MapChromaQp(qpScaled);
 
     qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(contextPtr->qp + pictureControlSetPtr->crQpOffset + pictureControlSetPtr->sliceCrQpOffset));
-    EB_U8 crQp = MapChromaQp(qpScaled);
+    EB_U8 crQp = MapChromaQp(qpScaled); //Jing: if using 422, needs to change here
 
     FullLoop_R(
         lcuPtr,
