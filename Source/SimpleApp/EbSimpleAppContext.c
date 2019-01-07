@@ -174,12 +174,12 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.codeVpsSpsPps     = 0;
     callbackData->ebEncParameters.reconEnabled      = config->reconFile ? 1 : 0;
 
-    callbackData->ebEncParameters.asmType= 0;
+    //callbackData->ebEncParameters.asmType= 0;
     callbackData->ebEncParameters.disableDlfFlag = 1;
     callbackData->ebEncParameters.enableSaoFlag = 0;
-    callbackData->ebEncParameters.qp=20;
+    callbackData->ebEncParameters.qp=29;
     callbackData->ebEncParameters.rateControlMode=0;
-    callbackData->ebEncParameters.encMode = 1;
+    callbackData->ebEncParameters.encMode = 8;
     callbackData->ebEncParameters.hierarchicalLevels = 2;
 
     
