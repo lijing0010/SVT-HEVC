@@ -23,7 +23,7 @@
 #include "EbModeDecisionConfiguration.h"
 #include "emmintrin.h"
 
-#define DEBUG_TMP
+//#define DEBUG_TMP
 
 #ifdef DEBUG_TMP
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
@@ -3105,7 +3105,6 @@ EB_EXTERN void EncodePass(
         pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag ||
         sequenceControlSetPtr->staticConfig.reconEnabled;
 
-    assert(sequenceControlSetPtr->staticConfig.reconEnabled == 0);
     CabacCost_t *cabacCost = pictureControlSetPtr->cabacCost;
     EntropyCoder_t *coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
     EB_U8 cuItr;
@@ -3198,9 +3197,6 @@ EB_EXTERN void EncodePass(
 
     // CU Loop 
     cuItr = 0;
-#ifdef DEBUG_TMP1
-    printf("Enter EncodePass, POC: %d, lcu addr (%d,%d)\n", pictureControlSetPtr->pictureNumber, lcuOriginX, lcuOriginY);
-#endif
     while (cuItr < CU_MAX_COUNT) {
 
         if (codedLeafArrayPtr[cuItr]->splitFlag == EB_FALSE){
@@ -4409,7 +4405,6 @@ EB_EXTERN void EncodePass(
             if (cuPtr->skipFlag == EB_FALSE &&
                 cuPtr->predictionUnitArray[0].mergeFlag == EB_TRUE && cuPtr->rootCbf == EB_FALSE )
             {
-                printf("CU (%d, %d), set to skip block\n", contextPtr->cuOriginX, contextPtr->cuOriginY);
                 cuPtr->skipFlag = EB_TRUE;
             }
 
