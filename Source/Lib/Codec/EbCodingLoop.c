@@ -39,7 +39,7 @@ static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char
     fseek(fp, 0, SEEK_END);
     long fileSize = ftell(fp);
     if (offset > fileSize) {
-        int count = (offset - fileSize) / descSize; 
+        int count = (offset - fileSize) / descSize;
         char *tmpBuf = (char*)malloc(descSize);
         for (int i=0;i<count;i++) {
             fwrite(tmpBuf, 1, descSize, fp);
@@ -196,7 +196,7 @@ typedef void (*EB_GENERATE_RECON_FUNC_PTR)(
     EB_U32                 tuSize,
 	EbPictureBufferDesc_t *predSamples,     // no basis/offset         
 	EbPictureBufferDesc_t *residual16bit,    // no basis/offset        
-	EB_S16                *transformScratchBuffer);                                   
+	EB_S16                *transformScratchBuffer);
              
 typedef void (*EB_ENCODE_LOOP_INTRA_4x4_FUNC_PTR)(
 	EncDecContext_t				*contextPtr,
@@ -224,7 +224,7 @@ typedef void (*EB_GENERATE_RECON_INTRA_4x4_FUNC_PTR)(
 	EbPictureBufferDesc_t *predSamples,     // no basis/offset         
 	EbPictureBufferDesc_t *residual16bit,    // no basis/offset        
 	EB_S16                *transformScratchBuffer,                     
-	EB_U32                 componentMask);       
+	EB_U32                 componentMask);
 
 typedef EB_ERRORTYPE(*EB_GENERATE_INTRA_SAMPLES_FUNC_PTR)(
     EB_BOOL                     constrainedIntraFlag,   //input parameter, indicates if constrained intra is switched on/off
@@ -333,7 +333,7 @@ typedef void (*EB_LCU_PIC_EDGE_DLF_FUNC_PTR)(
     EB_U32                 lcuPos_y,                       
     EB_U32                 lcuWidth,                       
     EB_U32                 lcuHeight,                      
-    PictureControlSet_t   *pictureControlSetPtr);  
+    PictureControlSet_t   *pictureControlSetPtr);
 
 void AddChromaEncDec(
     PictureControlSet_t     *pictureControlSetPtr,
@@ -671,9 +671,9 @@ static void EncodeLoop(
 	EB_U32                 dZoffset)  
 {
     
-    EB_U32                 chromaQp           = cbQp; 
+    EB_U32                 chromaQp           = cbQp;
     CodingUnit_t		  *cuPtr              = contextPtr->cuPtr;
-    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr]; 
+    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr];
     EB_SLICE               sliceType          = lcuPtr->pictureControlSetPtr->sliceType;
     EB_U32                 temporalLayerIndex = lcuPtr->pictureControlSetPtr->temporalLayerIndex;
     EB_U32                 qp                 = cuPtr->qp;
@@ -683,7 +683,7 @@ static void EncodeLoop(
     const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
     EB_U16 tuChromaOffset = 0;
     if (colorFormat == EB_YUV422 && secondChroma) {
-        tuChromaOffset = tuSize >> 1; 
+        tuChromaOffset = tuSize >> 1;
     }
 
 	const EB_U32 inputLumaOffset    = ((originY + inputSamples->originY) * inputSamples->strideY) + (originX + inputSamples->originX);
@@ -755,7 +755,7 @@ static void EncodeLoop(
 			intraLumaMode,
 			EB_INTRA_CHROMA_DM,
 			CabacCost);
-	
+
 		tuPtr->lumaCbf = countNonZeroCoeffs[0] ? EB_TRUE : EB_FALSE;
 
         if (tuSize > MIN_PU_SIZE) {
@@ -1068,14 +1068,14 @@ static void EncodeLoop(
 #endif
 
     if ((componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) && secondChroma) {
-        tuPtr->nzCoefCount2[0] = (EB_U16)countNonZeroCoeffs[1]; 
-        tuPtr->nzCoefCount2[1] = (EB_U16)countNonZeroCoeffs[2]; 
+        tuPtr->nzCoefCount2[0] = (EB_U16)countNonZeroCoeffs[1];
+        tuPtr->nzCoefCount2[1] = (EB_U16)countNonZeroCoeffs[2];
     } else {
 	    tuPtr->transCoeffShapeLuma   = contextPtr->transCoeffShapeLuma;
 	    tuPtr->transCoeffShapeChroma = contextPtr->transCoeffShapeChroma;
-        tuPtr->nzCoefCount[0] = (EB_U16)countNonZeroCoeffs[0]; 
-        tuPtr->nzCoefCount[1] = (EB_U16)countNonZeroCoeffs[1]; 
-        tuPtr->nzCoefCount[2] = (EB_U16)countNonZeroCoeffs[2]; 
+        tuPtr->nzCoefCount[0] = (EB_U16)countNonZeroCoeffs[0];
+        tuPtr->nzCoefCount[1] = (EB_U16)countNonZeroCoeffs[1];
+        tuPtr->nzCoefCount[2] = (EB_U16)countNonZeroCoeffs[2];
     }
 	return;
 }
@@ -1119,7 +1119,7 @@ static void EncodeGenerateRecon(
 	EB_U32 reconChromaOffset;
 
     CodingUnit_t		  *cuPtr              = contextPtr->cuPtr;
-    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr]; 
+    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr];
     EbPictureBufferDesc_t *reconSamples       = predSamples;
 
     const EB_U16 subWidthCMinus1 = (colorFormat==EB_YUV444?1:2)-1;
@@ -1127,7 +1127,7 @@ static void EncodeGenerateRecon(
     const EB_U16 shift_bit = (tuSize == MIN_PU_SIZE) ? 0 : 1;
     EB_U16 tuChromaOffset = 0;
     if (colorFormat == EB_YUV422 && secondChroma) {
-        tuChromaOffset = tuSize >> 1; 
+        tuChromaOffset = tuSize >> 1;
     }
     EB_BOOL cbCbf=secondChroma?tuPtr->cbCbf2:tuPtr->cbCbf;
     EB_BOOL crCbf=secondChroma?tuPtr->crCbf2:tuPtr->crCbf;
@@ -1274,32 +1274,35 @@ static void EncodeLoop16bit(
     EB_U32                 tuSize,
 	CabacCost_t					*CabacCost,
 	EB_U32						 dZoffset) 
-
 {
-    
+    EB_U32 chromaQp = cbQp;
+    CodingUnit_t *cuPtr = contextPtr->cuPtr;
+    TransformUnit_t *tuPtr = &cuPtr->transformUnitArray[contextPtr->tuItr];
+    EB_SLICE sliceType = lcuPtr->pictureControlSetPtr->sliceType;
+    EB_U32 temporalLayerIndex = lcuPtr->pictureControlSetPtr->temporalLayerIndex;
+    EB_U32 qp = cuPtr->qp;
+    EbPictureBufferDesc_t *inputSamples16bit = contextPtr->inputSample16bitBuffer;
+    EbPictureBufferDesc_t *predSamples16bit = predSamples;
 
-    EB_U32                 chromaQp           = cbQp; 
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+    EB_U16 tuChromaOffset = 0;
+    if (colorFormat == EB_YUV422 && secondChroma) {
+        tuChromaOffset = tuSize >> 1;
+    }
 
-    CodingUnit_t		  *cuPtr              = contextPtr->cuPtr;
-    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr]; 
-    EB_SLICE               sliceType          = lcuPtr->pictureControlSetPtr->sliceType;
-    EB_U32                 temporalLayerIndex = lcuPtr->pictureControlSetPtr->temporalLayerIndex;
-    EB_U32                 qp                 = cuPtr->qp;
-    EbPictureBufferDesc_t *inputSamples16bit  = contextPtr->inputSample16bitBuffer;
-    EbPictureBufferDesc_t *predSamples16bit   = predSamples;
+    const EB_U32 inputLumaOffset = ((originY & (63)) * inputSamples16bit->strideY) + (originX & (63));
+    const EB_U32 predLumaOffset = ((predSamples16bit->originY + originY) * predSamples16bit->strideY) + (predSamples16bit->originX + originX);
+    const EB_U32 scratchLumaOffset  = ((originY & (63)) * 64) + (originX & (63));
 
-	const EB_U32           inputLumaOffset    = ((originY   & (63))          * inputSamples16bit->strideY ) + (originX  & (63));
-    const EB_U32           chromaRatio        = (colorFormat==EB_YUV420 || colorFormat==EB_YUV422)?1:0;
-	const EB_U32           inputCbOffset      = (((originY  & (63)) >> chromaRatio)    * inputSamples16bit->strideCb) + ((originX & (63)) >> chromaRatio);
-	const EB_U32           inputCrOffset      = (((originY  & (63)) >> chromaRatio)    * inputSamples16bit->strideCr) + ((originX & (63)) >> chromaRatio);
+	// Jing: double check the inputCbOffset
+	const EB_U32 inputCbOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * inputSamples16bit->strideCb) + (((originX + inputSamples16bit->originX) & 63) >> subWidthCMinus1);
+	const EB_U32 predCbOffset = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCb) + ((predSamples->originX+originX) >> subWidthCMinus1);
+	const EB_U32 scratchCbOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32) + ((originX & 63) >> subWidthCMinus1);
 
-    const EB_U32           predLumaOffset     = (( predSamples16bit->originY+originY)        * predSamples16bit->strideY ) + ( predSamples16bit->originX+originX);
-	const EB_U32           predCbOffset       = (((predSamples16bit->originY+originY) >> chromaRatio)  * predSamples16bit->strideCb) + ((predSamples16bit->originX+originX) >> chromaRatio);
-	const EB_U32           predCrOffset       = (((predSamples16bit->originY+originY) >> chromaRatio)  * predSamples16bit->strideCr) + ((predSamples16bit->originX+originX) >> chromaRatio);
-
-    const EB_U32           scratchLumaOffset  = ((originY   & (63))        * 64) + (originX  & (63));
-	const EB_U32           scratchCbOffset    = (((originY  & (63)) >> chromaRatio)  * (64>>chromaRatio)) + ((originX & (63)) >> chromaRatio);
-	const EB_U32           scratchCrOffset    = (((originY  & (63)) >> chromaRatio)  * (64>>chromaRatio)) + ((originX & (63)) >> chromaRatio);
+	const EB_U32 inputCrOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * inputSamples16bit->strideCr) + (((originX + inputSamples16bit->originX) & 63) >> subWidthCMinus1);
+	const EB_U32 predCrOffset = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCr) + ((predSamples->originX+originX) >> subWidthCMinus1);
+	const EB_U32 scratchCrOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32) + ((originX & 63) >> subWidthCMinus1);
 
     EB_U8 enableContouringQCUpdateFlag;
 
@@ -1308,42 +1311,36 @@ static void EncodeLoop16bit(
         lcuPtr->index,
         cuPtr->leafIndex) && (cuPtr->qp < lcuPtr->pictureControlSetPtr->pictureQp);
 
-	//Update QP for Quant
+    //Update QP for Quant
 	qp += QP_BD_OFFSET;
-
 	chromaQp += QP_BD_OFFSET;
-	
-    if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
 
-        //**********************************
-		// Luma
-		//**********************************
+
+    if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
 		PictureResidual16bit(
 			((EB_U16*)inputSamples16bit->bufferY) + inputLumaOffset,
 			inputSamples16bit->strideY,
 			((EB_U16*)predSamples16bit->bufferY) + predLumaOffset,
 			predSamples16bit->strideY,
-			((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-			64,
-			tuSize,
-			tuSize);
+            ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+            64,
+            tuSize,
+            tuSize);
 
-		EncodeTransform(
-			((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-			64,
-			((EB_S16*)transform16bit->bufferY) + scratchLumaOffset,
-			64,
-			tuSize,
-			transformScratchBuffer,
-			BIT_INCREMENT_10BIT,
-			(EB_BOOL)(tuSize == MIN_PU_SIZE),
+        EncodeTransform(
+            ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+            64,
+            ((EB_S16*)transform16bit->bufferY) + scratchLumaOffset,
+            64,
+            tuSize,
+            transformScratchBuffer,
+            BIT_INCREMENT_10BIT,
+            (EB_BOOL)(tuSize == MIN_PU_SIZE),
             contextPtr->transCoeffShapeLuma);
 
 		UnifiedQuantizeInvQuantize(
-
 			contextPtr,
-
-            lcuPtr->pictureControlSetPtr,
+			lcuPtr->pictureControlSetPtr,
 			((EB_S16*)transform16bit->bufferY) + scratchLumaOffset,
 			64,
 			((EB_S16*)coeffSamplesTB->bufferY) + scratchLumaOffset,
@@ -1353,10 +1350,10 @@ static void EncodeLoop16bit(
 			tuSize,
 			sliceType,
 			&(countNonZeroCoeffs[0]),
-            contextPtr->transCoeffShapeLuma,
-            contextPtr->cleanSparseCeoffPfEncDec,
-            contextPtr->pmpMaskingLevelEncDec,
-            cuPtr->predictionModeFlag,
+			contextPtr->transCoeffShapeLuma,
+			contextPtr->cleanSparseCeoffPfEncDec,
+			contextPtr->pmpMaskingLevelEncDec,
+			cuPtr->predictionModeFlag,
 			0,
 			enableContouringQCUpdateFlag,
 			COMPONENT_LUMA,
@@ -1367,25 +1364,44 @@ static void EncodeLoop16bit(
 			intraLumaMode,
 			EB_INTRA_CHROMA_DM,
 			CabacCost);
-
+	
 		tuPtr->lumaCbf = countNonZeroCoeffs[0] ? EB_TRUE : EB_FALSE;
 
+        if (tuSize > MIN_PU_SIZE) {
 		tuPtr->isOnlyDc[0] = (countNonZeroCoeffs[0] == 1 && (((EB_S16*)residual16bit->bufferY) + scratchLumaOffset)[0] != 0 && tuSize != 32) ?
 			EB_TRUE :
 			EB_FALSE;
-		if (contextPtr->transCoeffShapeLuma && tuPtr->lumaCbf && tuPtr->isOnlyDc[0] == EB_FALSE) {
-            if (contextPtr->transCoeffShapeLuma == N2_SHAPE || contextPtr->transCoeffShapeLuma == N4_SHAPE) {
-                PfZeroOutUselessQuadrants(
-                    ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-                    64,
-                    (tuSize >> 1));
-            }
 
-            if (contextPtr->transCoeffShapeLuma == N4_SHAPE) {
+            if (contextPtr->transCoeffShapeLuma && tuPtr->lumaCbf && tuPtr->isOnlyDc[0] == EB_FALSE) {
+                if (contextPtr->transCoeffShapeLuma == N2_SHAPE || contextPtr->transCoeffShapeLuma == N4_SHAPE) {
+                    PfZeroOutUselessQuadrants(
+                            ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+                            64,
+                            (tuSize >> 1));
+                }
+
+                if (contextPtr->transCoeffShapeLuma == N4_SHAPE) {
+                    PfZeroOutUselessQuadrants(
+                            ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+                            64,
+                            (tuSize >> 2));
+                }
+            }
+        } else {
+			if (contextPtr->transCoeffShapeLuma && tuPtr->lumaCbf) {
+
 				PfZeroOutUselessQuadrants(
-					((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-					64,
-					(tuSize >> 2));
+						((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+						64,
+						(tuSize >> 1));
+
+				if (contextPtr->transCoeffShapeLuma == N4_SHAPE) {
+
+					PfZeroOutUselessQuadrants(
+							((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+							64,
+							(tuSize >> 2));
+				}
 			}
 		}
 	}
@@ -1395,185 +1411,283 @@ static void EncodeLoop16bit(
 		// Cb
 		//********************************** 
 		PictureResidual16bit(
-			((EB_U16*)inputSamples16bit->bufferCb) + inputCbOffset,
-			inputSamples16bit->strideCb,
-			((EB_U16*)predSamples16bit->bufferCb) + predCbOffset,
-			predSamples16bit->strideCb,
-			((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-			64>>chromaRatio,
-			tuSize >> chromaRatio,
-			tuSize >> chromaRatio);
+				((EB_U16*)inputSamples16bit->bufferCb) + inputCbOffset,
+				inputSamples16bit->strideCb,
+				((EB_U16*)predSamples16bit->bufferCb) + predCbOffset,
+				predSamples16bit->strideCb,
+				((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+				32,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize);
 
-        // For the case that DC path chosen for chroma, we check the DC values and determine to use DC or N2Shape for chroma. Since there is only one flag for ChromaShaping, we do the prediction of Cr and Cb and decide on the chroma shaping
-        if (contextPtr->transCoeffShapeChroma == ONLY_DC_SHAPE) {
+		// For the case that DC path chosen for chroma, we check the DC values and determine to use DC or N2Shape for chroma. Since there is only one flag for ChromaShaping, we do the prediction of Cr and Cb and decide on the chroma shaping
+		if (tuSize > MIN_PU_SIZE && contextPtr->transCoeffShapeChroma == ONLY_DC_SHAPE) {
 			EB_S64 sumResidual = SumResidual_funcPtrArray[(ASM_TYPES & AVX2_MASK) && 1](
-                ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-                tuSize >> chromaRatio,
-                64>>chromaRatio);
-            sumResidual = (ABS(sumResidual) / (tuSize >> chromaRatio) / (tuSize >> chromaRatio)); // Normalized based on the size. For chroma, tusize/2 +Tusize/2
-            if (sumResidual > (1 << BIT_INCREMENT_10BIT)) {
-                contextPtr->transCoeffShapeChroma = N2_SHAPE;
-            }
-        }
-
-        PictureResidual16bit(
-            ((EB_U16*)inputSamples16bit->bufferCr) + inputCrOffset,
-            inputSamples16bit->strideCr,
-            ((EB_U16*)predSamples16bit->bufferCr) + predCrOffset,
-            predSamples16bit->strideCr,
-            ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-            64>>chromaRatio,
-            tuSize >> chromaRatio,
-            tuSize >> chromaRatio);
-
-        if (contextPtr->transCoeffShapeChroma == ONLY_DC_SHAPE) {
-
-			EB_S64 sumResidual = SumResidual_funcPtrArray[(ASM_TYPES & AVX2_MASK) && 1](
-                ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-                tuSize >> chromaRatio,
-                64>>chromaRatio);
-            sumResidual = (ABS(sumResidual) / (tuSize >> chromaRatio) / (tuSize >> chromaRatio)); // Normalized based on the size. For chroma, tusize/2 +Tusize/2
-            if (sumResidual > (1<<BIT_INCREMENT_10BIT)) {
-                contextPtr->transCoeffShapeChroma = N2_SHAPE;
-            }
-        }
-        
-
-		EncodeTransform(
-			((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-            64>>chromaRatio,
-			((EB_S16*)transform16bit->bufferCb) + scratchCbOffset,
-			64>>chromaRatio,
-			tuSize >> chromaRatio,
-			transformScratchBuffer,
-			BIT_INCREMENT_10BIT,
-			EB_FALSE,
-            contextPtr->transCoeffShapeChroma);
-
-		UnifiedQuantizeInvQuantize(
-			contextPtr,
-			lcuPtr->pictureControlSetPtr,
-			((EB_S16*)transform16bit->bufferCb) + scratchCbOffset,
-            64>>chromaRatio,
-			((EB_S16*)coeffSamplesTB->bufferCb) + scratchCbOffset,
-			((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-			chromaQp,
-			EB_10BIT,
-            tuSize >> chromaRatio,
-			sliceType,
-			&(countNonZeroCoeffs[1]),
-			contextPtr->transCoeffShapeChroma,
-			contextPtr->cleanSparseCeoffPfEncDec,
-			contextPtr->pmpMaskingLevelEncDec,
-			cuPtr->predictionModeFlag,
-			0,
-			enableContouringQCUpdateFlag,
-			COMPONENT_CHROMA,
-			temporalLayerIndex,
-			0,
-			cabacEncodeCtxPtr,
-			contextPtr->fullLambda,
-			intraLumaMode,
-			EB_INTRA_CHROMA_DM,
-			CabacCost);
-
-		tuPtr->cbCbf = countNonZeroCoeffs[1] ? EB_TRUE : EB_FALSE;
-
-		tuPtr->isOnlyDc[1] = (countNonZeroCoeffs[1] == 1 && (((EB_S16*)residual16bit->bufferCb) + scratchCbOffset)[0] != 0) ?
-			EB_TRUE :
-			EB_FALSE;
-		if (contextPtr->transCoeffShapeChroma && tuPtr->cbCbf && tuPtr->isOnlyDc[1] == EB_FALSE) {
-            if (contextPtr->transCoeffShapeChroma == PF_N2 || contextPtr->transCoeffShapeChroma == PF_N4) {
-                PfZeroOutUselessQuadrants(
-                    ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-                    residual16bit->strideCb,
-                    (tuSize >> 2));
-            }
-
-            if (contextPtr->transCoeffShapeChroma == PF_N4) {
-				PfZeroOutUselessQuadrants(
 					((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
-					residual16bit->strideCb,
-					(tuSize >> 3));
+					tuSize >> 1,
+					32);
+			sumResidual = (ABS(sumResidual) / (tuSize / 2) / (tuSize / 2)); // Normalized based on the size. For chroma, tusize/2 +Tusize/2
+			if (sumResidual > (1 << BIT_INCREMENT_10BIT)) {
+				contextPtr->transCoeffShapeChroma = N2_SHAPE;
 			}
 		}
+
+		EncodeTransform(
+				((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+				32,
+				((EB_S16*)transform16bit->bufferCb) + scratchCbOffset,
+				32,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				transformScratchBuffer,
+				BIT_INCREMENT_10BIT,
+				EB_FALSE,
+				contextPtr->transCoeffShapeChroma);
+
+		UnifiedQuantizeInvQuantize(
+				contextPtr,
+				lcuPtr->pictureControlSetPtr,
+				((EB_S16*)transform16bit->bufferCb) + scratchCbOffset,
+				32,
+				((EB_S16*)coeffSamplesTB->bufferCb) + scratchCbOffset,
+				((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+				chromaQp,
+				EB_10BIT,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				sliceType,
+				&(countNonZeroCoeffs[1]),
+				contextPtr->transCoeffShapeChroma,
+				contextPtr->cleanSparseCeoffPfEncDec,
+				contextPtr->pmpMaskingLevelEncDec,
+				cuPtr->predictionModeFlag,
+				0,
+				enableContouringQCUpdateFlag,
+				COMPONENT_CHROMA,
+				temporalLayerIndex,
+				0,
+				cabacEncodeCtxPtr,
+				contextPtr->fullLambda,
+				intraLumaMode,
+				EB_INTRA_CHROMA_DM,
+				CabacCost);
+
+
+		if ((componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) && secondChroma) {
+			//Jing: double check here for 422 2nd chroma
+			tuPtr->cbCbf2 = countNonZeroCoeffs[1] ? EB_TRUE : EB_FALSE;
+			tuPtr->isOnlyDc2[0] = (countNonZeroCoeffs[1] == 1 && (((EB_S16*)residual16bit->bufferCb) + scratchCbOffset)[0] != 0) ?
+				EB_TRUE :
+				EB_FALSE;
+        } else {
+            tuPtr->cbCbf = countNonZeroCoeffs[1] ? EB_TRUE : EB_FALSE;
+
+            if (tuSize > MIN_PU_SIZE) {
+                tuPtr->isOnlyDc[1] = (countNonZeroCoeffs[1] == 1 && (((EB_S16*)residual16bit->bufferCb) + scratchCbOffset)[0] != 0) ?
+                    EB_TRUE :
+                    EB_FALSE;
+
+                if (contextPtr->transCoeffShapeChroma && tuPtr->cbCbf && tuPtr->isOnlyDc[1] == EB_FALSE) {
+                    if (contextPtr->transCoeffShapeChroma == PF_N2 || contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+                                residual16bit->strideCb,
+                                (tuSize >> 2));
+                    }
+
+                    if (contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+                                residual16bit->strideCb,
+                                (tuSize >> 3));
+                    }
+                }
+            } else {
+                if (contextPtr->transCoeffShapeChroma && tuPtr->cbCbf) {
+                    PfZeroOutUselessQuadrants(
+                            ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+                            residual16bit->strideCb,
+                            (tuSize >> 1));
+
+                    if (contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCb) + scratchCbOffset,
+                                residual16bit->strideCb,
+                                (tuSize >> 2));
+                    }
+                }
+            }
+        }
 
 
 		//**********************************
 		// Cr
 		//********************************** 
+        PictureResidual16bit(
+				((EB_U16*)inputSamples16bit->bufferCr) + inputCrOffset,
+				inputSamples16bit->strideCr,
+				((EB_U16*)predSamples16bit->bufferCr) + predCrOffset,
+				predSamples16bit->strideCr,
+				((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+				32,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize);
+
+		if (tuSize > MIN_PU_SIZE && contextPtr->transCoeffShapeChroma == ONLY_DC_SHAPE) {
+			EB_S64 sumResidual = SumResidual_funcPtrArray[(ASM_TYPES & AVX2_MASK) && 1](
+					((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+					tuSize >> 1,
+					32);
+			sumResidual = (ABS(sumResidual) / (tuSize / 2) / (tuSize / 2)); // Normalized based on the size. For chroma, tusize/2 +Tusize/2
+			if (sumResidual > (1<<BIT_INCREMENT_10BIT)) {
+				contextPtr->transCoeffShapeChroma = N2_SHAPE;
+			}
+		}
+
 		EncodeTransform(
-			((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-            64 >> chromaRatio,
-			((EB_S16*)transform16bit->bufferCr) + scratchCrOffset,
-			64>>chromaRatio,
-			tuSize >> chromaRatio,
-			transformScratchBuffer,
-			BIT_INCREMENT_10BIT,
-            EB_FALSE,
-            contextPtr->transCoeffShapeChroma);
-
-		UnifiedQuantizeInvQuantize(
-
-			contextPtr,
-
-			lcuPtr->pictureControlSetPtr,
-			((EB_S16*)transform16bit->bufferCr) + scratchCrOffset,
-            64>>chromaRatio,
-			((EB_S16*)coeffSamplesTB->bufferCr) + scratchCrOffset,
-			((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-			chromaQp,
-			EB_10BIT,
-            tuSize >> chromaRatio,
-			sliceType,
-			&(countNonZeroCoeffs[2]),
-			contextPtr->transCoeffShapeChroma,
-
-			contextPtr->cleanSparseCeoffPfEncDec,
-			contextPtr->pmpMaskingLevelEncDec,
-			cuPtr->predictionModeFlag,
-			useDeltaQp == EB_TRUE ? contextPtr->forceCbfFlag : 0,
-			enableContouringQCUpdateFlag,
-			COMPONENT_CHROMA,
-			temporalLayerIndex,
-			0,
-			cabacEncodeCtxPtr,
-			contextPtr->fullLambda,
-			intraLumaMode,
-			EB_INTRA_CHROMA_DM,
-			CabacCost);
+				((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+				32,
+				((EB_S16*)transform16bit->bufferCr) + scratchCrOffset,
+				32,
+				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				transformScratchBuffer,
+				BIT_INCREMENT_10BIT,
+				EB_FALSE,
+				contextPtr->transCoeffShapeChroma);
 
 
-		tuPtr->crCbf = countNonZeroCoeffs[2] ? EB_TRUE : EB_FALSE;
+		{
+			UnifiedQuantizeInvQuantize(
+					contextPtr,
+					lcuPtr->pictureControlSetPtr,
+					((EB_S16*)transform16bit->bufferCr) + scratchCrOffset,
+					32,
+					((EB_S16*)coeffSamplesTB->bufferCr) + scratchCrOffset,
+					((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+					chromaQp,
+					EB_10BIT,
+					tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+					sliceType,
+					&(countNonZeroCoeffs[2]),
+					contextPtr->transCoeffShapeChroma,
+					contextPtr->cleanSparseCeoffPfEncDec,
+					contextPtr->pmpMaskingLevelEncDec,
+					cuPtr->predictionModeFlag,
+					useDeltaQp == EB_TRUE ? contextPtr->forceCbfFlag : 0, //Jing: double check here, not align with Cb
+					enableContouringQCUpdateFlag,
+					COMPONENT_CHROMA,
+					temporalLayerIndex,
+					0,
+					cabacEncodeCtxPtr,
+					contextPtr->fullLambda,
+					intraLumaMode,
+					EB_INTRA_CHROMA_DM,
+					CabacCost);
+		}
 
-		tuPtr->isOnlyDc[2] = (countNonZeroCoeffs[2] == 1 && (((EB_S16*)residual16bit->bufferCr) + scratchCbOffset)[0] != 0) ?
-			EB_TRUE :
-			EB_FALSE;
-		if (contextPtr->transCoeffShapeChroma && tuPtr->crCbf && tuPtr->isOnlyDc[2] == EB_FALSE) {
-             if (contextPtr->transCoeffShapeChroma == PF_N2 || contextPtr->transCoeffShapeChroma == PF_N4) {
-                 PfZeroOutUselessQuadrants(
-                     ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-                     residual16bit->strideCr,
-                     (tuSize >> 2));
-             }
+		if ((componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) && secondChroma) {
 
-             if (contextPtr->transCoeffShapeChroma == PF_N4) {
-                 PfZeroOutUselessQuadrants(
-                     ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
-                     residual16bit->strideCr,
-                     (tuSize >> 3));
-             }
-         }
+			tuPtr->crCbf2 = countNonZeroCoeffs[2] ? EB_TRUE : EB_FALSE;
+			tuPtr->isOnlyDc2[1] = (countNonZeroCoeffs[2] == 1 && (((EB_S16*)residual16bit->bufferCr) + scratchCbOffset)[0] != 0) ?
+				EB_TRUE :
+				EB_FALSE;
+        } else {
+            tuPtr->crCbf = countNonZeroCoeffs[2] ? EB_TRUE : EB_FALSE;
+
+            if (tuSize > MIN_PU_SIZE) {
+                tuPtr->isOnlyDc[2] = (countNonZeroCoeffs[2] == 1 && (((EB_S16*)residual16bit->bufferCr) + scratchCbOffset)[0] != 0) ?
+                    EB_TRUE :
+                    EB_FALSE;
+                if (contextPtr->transCoeffShapeChroma && tuPtr->crCbf && tuPtr->isOnlyDc[2] == EB_FALSE) {
+
+                    if (contextPtr->transCoeffShapeChroma == PF_N2 || contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+                                residual16bit->strideCr,
+                                (tuSize >> 2));
+                    }
+
+                    if (contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+                                residual16bit->strideCr,
+                                (tuSize >> 3));
+                    }
+                }
+            } else {
+                if (contextPtr->transCoeffShapeChroma && tuPtr->crCbf) {
+                    PfZeroOutUselessQuadrants(
+                            ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+                            32,
+                            (tuSize >> 1));
+
+                    if (contextPtr->transCoeffShapeChroma == PF_N4) {
+                        PfZeroOutUselessQuadrants(
+                                ((EB_S16*)residual16bit->bufferCr) + scratchCrOffset,
+                                32,
+                                (tuSize >> 2));
+                    }
+                }
+            }
+        }
 	}
+#ifdef DEBUG_TMP
+    //allowEncDecMismatch 
+    if (lcuPtr->pictureControlSetPtr->pictureNumber == 4) {
+        if (secondChroma) {
+            printf("-----2nd loop, dump coeff for Chroma (%d, %d) @POC %d----\n", originX, originY, lcuPtr->pictureControlSetPtr->pictureNumber);
+            dump_block_from_desc(tuSize,    coeffSamplesTB, originX&63, originY&63, 0);
+            dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, originY&63, 1);
+            dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, (originY&63)+(tuSize>>1), 1);
+            dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, originY&63, 2);
+            dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, (originY&63)+(tuSize>>1), 2);
 
-    //Jing: Probably can share this two shapes, but can't share the NonZeroCoeffs
-	tuPtr->transCoeffShapeLuma   = contextPtr->transCoeffShapeLuma;
-	tuPtr->transCoeffShapeChroma = contextPtr->transCoeffShapeChroma;
-    tuPtr->nzCoefCount[0] = (EB_U16)countNonZeroCoeffs[0]; 
-    tuPtr->nzCoefCount[1] = (EB_U16)countNonZeroCoeffs[1]; 
-    tuPtr->nzCoefCount[2] = (EB_U16)countNonZeroCoeffs[2]; 
-    return;
+            printf("----- Dump prediction for 2nd chroma-----\n");
+            dump_block_from_desc(tuSize>>1, predSamples, originX, originY + (tuSize>>1), 1);
+            dump_block_from_desc(tuSize>>1, predSamples, originX, originY + (tuSize>>1), 2);
+
+            printf("-----dump residual for luma&chroma----\n");
+            dump_block_from_desc(tuSize,    residual16bit, 0, 0, 0);
+            dump_block_from_desc(tuSize>>1, residual16bit, originX, originY, 1);
+            dump_block_from_desc(tuSize>>1, residual16bit, originX, originY+(tuSize>>1), 1);
+            dump_block_from_desc(tuSize>>1, residual16bit, originX, originY, 2);
+            dump_block_from_desc(tuSize>>1, residual16bit, originX, originY+(tuSize>>1), 2);
+            dump_block_from_desc(tuSize>>1, residual16bit, 0, 0, 2);
+            printf("\n\n");
+        } else {
+            printf("\n----- Dump prediction for 1st loop at (%d, %d)-----\n", originX, originY);
+            int tmp_size = tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize;
+
+            if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+                dump_block_from_desc(tuSize, predSamples, originX, originY, 0);
+            }
+            if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+                dump_block_from_desc(tmp_size, predSamples, originX, originY, 1);
+                dump_block_from_desc(tmp_size, predSamples, originX, originY, 2);
+            }
+
+            //printf("\n----- Dump coeff for 1st loop at (%d, %d)-----\n", originX, originY);
+            //if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+            //    dump_block_from_desc(tuSize, coeffSamplesTB, originX&63, originY&63, 0);
+            //}
+            //if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+            //    dump_block_from_desc(tuSize>>1, coeffSamplesTB, originX&63, originY&63, 1);
+            //}
+        }
+    }
+#endif
+
+    if ((componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) && secondChroma) {
+        tuPtr->nzCoefCount2[0] = (EB_U16)countNonZeroCoeffs[1];
+        tuPtr->nzCoefCount2[1] = (EB_U16)countNonZeroCoeffs[2];
+    } else {
+	    tuPtr->transCoeffShapeLuma   = contextPtr->transCoeffShapeLuma;
+	    tuPtr->transCoeffShapeChroma = contextPtr->transCoeffShapeChroma;
+        tuPtr->nzCoefCount[0] = (EB_U16)countNonZeroCoeffs[0];
+        tuPtr->nzCoefCount[1] = (EB_U16)countNonZeroCoeffs[1];
+        tuPtr->nzCoefCount[2] = (EB_U16)countNonZeroCoeffs[2];
+    }
+	return;
 }
+
 
 /**********************************************************
 * Encode Generate Recon
@@ -1606,39 +1720,47 @@ static void EncodeGenerateRecon16bit(
     EbPictureBufferDesc_t *residual16bit,    // no basis/offset 
     EB_S16                *transformScratchBuffer)
 {
+	EB_U32 predLumaOffset;
+	EB_U32 predChromaOffset;
+	EB_U32 scratchLumaOffset;
+	EB_U32 scratchChromaOffset;
+	EB_U32 reconLumaOffset;
+	EB_U32 reconChromaOffset;
 
-    EB_U32 predLumaOffset;
-    EB_U32 predChromaOffset;
-    EB_U32 scratchLumaOffset;
-    EB_U32 scratchChromaOffset;
-    EB_U32 reconLumaOffset;
-    EB_U32 reconChromaOffset;
+    CodingUnit_t		  *cuPtr              = contextPtr->cuPtr;
+    TransformUnit_t       *tuPtr              = &cuPtr->transformUnitArray[contextPtr->tuItr];
 
-    CodingUnit_t		  *cuPtr = contextPtr->cuPtr;
-    TransformUnit_t       *tuPtr = &cuPtr->transformUnitArray[contextPtr->tuItr];
-    const EB_U32           chromaRatio = (colorFormat==EB_YUV420 || colorFormat==EB_YUV422)?1:0;
+    const EB_U16 subWidthCMinus1 = (colorFormat==EB_YUV444?1:2)-1;
+    const EB_U16 subHeightCMinus1 = (colorFormat>=EB_YUV422?1:2)-1;
+    const EB_U16 shift_bit = (tuSize == MIN_PU_SIZE) ? 0 : 1;
+    EB_U16 tuChromaOffset = 0;
+    if (colorFormat == EB_YUV422 && secondChroma) {
+        tuChromaOffset = tuSize >> 1;
+    }
+    EB_BOOL cbCbf=secondChroma?tuPtr->cbCbf2:tuPtr->cbCbf;
+    EB_BOOL crCbf=secondChroma?tuPtr->crCbf2:tuPtr->crCbf;
+	// *Note - The prediction is built in-place in the Recon buffer. It is overwritten with Reconstructed
+	//   samples if the CBF==1 && SKIP==False
 
-    //**********************************
-    // Luma
-    //********************************** 
-
-    if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK)
-	{
-        predLumaOffset = (predSamples->originY + originY)* predSamples->strideY + (predSamples->originX + originX);
-        scratchLumaOffset = ((originY & (63)) * 64) + (originX & (63));
+	//**********************************
+	// Luma
+	//********************************** 
+    if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+        predLumaOffset = (predSamples->originY+originY) * predSamples->strideY + (predSamples->originX+originX);
+		scratchLumaOffset = ((originY & (63)) * 64) + (originX & (63));	
         reconLumaOffset = (predSamples->originY + originY)* predSamples->strideY + (predSamples->originX + originX);
-        if (tuPtr->lumaCbf == EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
 
-            EncodeInvTransform(
-				tuPtr->transCoeffShapeLuma == ONLY_DC_SHAPE || tuPtr->isOnlyDc[0],
-                ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-                64,
-                ((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
-                64,
-                tuSize,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                (EB_BOOL)(tuSize == MIN_PU_SIZE));
+		if (tuPtr->lumaCbf == EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
+			EncodeInvTransform(
+				(tuSize==MIN_PU_SIZE)?EB_FALSE:(tuPtr->transCoeffShapeLuma == ONLY_DC_SHAPE || tuPtr->isOnlyDc[0]),
+				((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+				64,
+				((EB_S16*)residual16bit->bufferY) + scratchLumaOffset,
+				64,
+				tuSize,
+				transformScratchBuffer,
+				BIT_INCREMENT_10BIT,
+				(EB_BOOL)(tuSize == MIN_PU_SIZE));
 
             AdditionKernel_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
                 (EB_U16*)predSamples->bufferY + predLumaOffset,
@@ -1649,82 +1771,76 @@ static void EncodeGenerateRecon16bit(
                 predSamples->strideY,
                 tuSize,
                 tuSize);
+		}
+	}
 
-        }
+	//**********************************
+	// Chroma
+	//********************************** 
 
-    }
+    if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+        predChromaOffset = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCb) + ((predSamples->originX + originX) >> subWidthCMinus1);
+		scratchChromaOffset = (((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32 + ((originX & 63) >> subWidthCMinus1);
+		reconChromaOffset = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCb) + ((predSamples->originX + originX) >> subWidthCMinus1);
 
-    //**********************************
-    // Chroma
-    //********************************** 
-
-    if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK)
-	{
-
-        //**********************************
-        // Cb
-        //********************************** 
-        predChromaOffset = (((predSamples->originY + originY) >> chromaRatio)  * predSamples->strideCb) + ((predSamples->originX + originX) >> chromaRatio);
-        scratchChromaOffset = (((originY & (63)) >> chromaRatio) * (64>>chromaRatio)) + ((originX & (63)) >> chromaRatio);
-        reconChromaOffset = (((predSamples->originY + originY) >> chromaRatio) * predSamples->strideCb) + ((predSamples->originX + originX) >> chromaRatio);
-
-        if (tuPtr->cbCbf == EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
-
-            EncodeInvTransform(
-				tuPtr->transCoeffShapeChroma == ONLY_DC_SHAPE || tuPtr->isOnlyDc[1],
-                ((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
-                64 >> chromaRatio,
-                ((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
-                64>>chromaRatio,
-                tuSize >> chromaRatio,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                EB_FALSE);
+		//**********************************
+		// Cb
+		//********************************** 
+		if (cbCbf== EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
+			EncodeInvTransform(
+				(tuSize==MIN_PU_SIZE)?EB_FALSE:(tuPtr->transCoeffShapeChroma == ONLY_DC_SHAPE || (secondChroma?tuPtr->isOnlyDc2[0]:tuPtr->isOnlyDc[1])),
+				((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
+				32,
+				((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
+				32,
+                tuSize >> shift_bit,
+				transformScratchBuffer,
+				BIT_INCREMENT_10BIT,
+				EB_FALSE);
 
             AdditionKernel_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
                 (EB_U16*)predSamples->bufferCb + predChromaOffset,
-                predSamples->strideCb,
-                ((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
-                64>>chromaRatio,
+				predSamples->strideCb,
+				((EB_S16*)residual16bit->bufferCb) + scratchChromaOffset,
+				32,
                 (EB_U16*)predSamples->bufferCb + reconChromaOffset,
                 predSamples->strideCb,
-                tuSize >> chromaRatio,
-                tuSize >> chromaRatio);
-        }
+                tuSize >> shift_bit,
+                tuSize >> shift_bit);
+		}
 
-        //**********************************
-        // Cr
-        //********************************** 
-        predChromaOffset = (((predSamples->originY + originY) >> chromaRatio)  * predSamples->strideCr) + ((predSamples->originX + originX) >> chromaRatio);
-        scratchChromaOffset = (((originY & (63)) >> chromaRatio) * (64>>chromaRatio)) + ((originX & (63)) >> chromaRatio);
-        reconChromaOffset = (((predSamples->originY + originY) >> chromaRatio) * predSamples->strideCr) + ((predSamples->originX + originX) >> chromaRatio);
+		//**********************************
+		// Cr
+		//********************************** 
+        predChromaOffset = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCr) + ((predSamples->originX + originX) >> subWidthCMinus1);
+		scratchChromaOffset = (((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32 + ((originX & (63)) >> subWidthCMinus1);
+		reconChromaOffset   = (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCr) + ((predSamples->originX + originX) >> subWidthCMinus1);
 
-        if (tuPtr->crCbf == EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
+		if (crCbf == EB_TRUE && cuPtr->skipFlag == EB_FALSE) {
+			EncodeInvTransform(
+				(tuSize==MIN_PU_SIZE)?EB_FALSE:(tuPtr->transCoeffShapeChroma == ONLY_DC_SHAPE || (secondChroma?tuPtr->isOnlyDc2[1]:tuPtr->isOnlyDc[2])),
+				((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
+				32,
+				((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
+				32,
+				tuSize>>shift_bit,
+				transformScratchBuffer,
+				BIT_INCREMENT_10BIT,
+				EB_FALSE);
 
-            EncodeInvTransform(
-				tuPtr->transCoeffShapeChroma == ONLY_DC_SHAPE || tuPtr->isOnlyDc[2],
-                ((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
-                64 >> chromaRatio,
-                ((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
-                64 >> chromaRatio,
-                tuSize >> chromaRatio,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                EB_FALSE);
-            
             AdditionKernel_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
                 (EB_U16*)predSamples->bufferCr + predChromaOffset,
-                predSamples->strideCr,
-                ((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
-                64 >> chromaRatio,
+				predSamples->strideCr,
+				((EB_S16*)residual16bit->bufferCr) + scratchChromaOffset,
+				32,
                 (EB_U16*)predSamples->bufferCr + reconChromaOffset,
                 predSamples->strideCr,
-                tuSize >> chromaRatio,
-                tuSize >> chromaRatio);
-        }
-    }
+				tuSize>>shift_bit,
+				tuSize>>shift_bit);
+		}
+	}
 
-    return;
+	return;
 }
 
 static EB_ENCODE_LOOP_FUNC_PTR   EncodeLoopFunctionTable[2] =
@@ -2281,9 +2397,6 @@ EB_ERRORTYPE QpmDeriveBeaAndSkipQpmFlagLcu(
     contextPtr->grassEnhancementFlag = ((pictureControlSetPtr->sceneCaracteristicId == EB_FRAME_CARAC_1) && (lcuStatPtr->cuStatArray[0].grassArea)
         && (lcuPtr->pictureControlSetPtr->ParentPcsPtr->edgeResultsPtr[lcuIndex].edgeBlockNum > 0))
         ? EB_TRUE : EB_FALSE;
-
-    contextPtr->backgorundEnhancement = EB_FALSE;
-
 
 	contextPtr->backgorundEnhancement = EB_FALSE;
 
@@ -2916,71 +3029,70 @@ EB_EXTERN void EncodePass(
     mdcontextPtr = contextPtr->mdContext;
     inputPicture = contextPtr->inputSamples = (EbPictureBufferDesc_t*)pictureControlSetPtr->ParentPcsPtr->enhancedPicturePtr;
 
-    LcuStat_t               *lcuStatPtr = &(pictureControlSetPtr->ParentPcsPtr->lcuStatArray[tbAddr]);
+    LcuStat_t *lcuStatPtr = &(pictureControlSetPtr->ParentPcsPtr->lcuStatArray[tbAddr]);
 
 
     // TMVP
-    TmvpUnit_t             *tmvpMapWritePtr;
-    EB_U32                  tmvpMapHorizontalStartIndex;
-    EB_U32                  tmvpMapVerticalStartIndex;
-    EB_U32                  tmvpMapHorizontalEndIndex;
-    EB_U32                  tmvpMapVerticalEndIndex;
-    EB_U32                  tmvpMapIndex;
-    EB_U32                  mvCompressionUnitSizeMinus1 = (1 << LOG_MV_COMPRESS_UNIT_SIZE) - 1;
+    TmvpUnit_t *tmvpMapWritePtr;
+    EB_U32 tmvpMapHorizontalStartIndex;
+    EB_U32 tmvpMapVerticalStartIndex;
+    EB_U32 tmvpMapHorizontalEndIndex;
+    EB_U32 tmvpMapVerticalEndIndex;
+    EB_U32 tmvpMapIndex;
+    EB_U32 mvCompressionUnitSizeMinus1 = (1 << LOG_MV_COMPRESS_UNIT_SIZE) - 1;
 
     // DLF
-    EB_U32                  startIndex;
-    EB_U8                   blk4x4IndexX;
-
-    EB_U8                   blk4x4IndexY;
-    EB_BOOL                 availableCoeff;
+    EB_U32 startIndex;
+    EB_U8 blk4x4IndexX;
+    EB_U8 blk4x4IndexY;
+    EB_BOOL availableCoeff;
 
     // QP Neighbor Arrays
-    EB_BOOL                 isDeltaQpNotCoded = EB_TRUE;
+    EB_BOOL isDeltaQpNotCoded = EB_TRUE;
 
     // LCU Stats
-    EB_U32                  lcuWidth = MIN(sequenceControlSetPtr->lcuSize, sequenceControlSetPtr->lumaWidth - lcuOriginX);
-    EB_U32                  lcuHeight = MIN(sequenceControlSetPtr->lcuSize, sequenceControlSetPtr->lumaHeight - lcuOriginY);
+    EB_U32 lcuWidth = MIN(sequenceControlSetPtr->lcuSize, sequenceControlSetPtr->lumaWidth - lcuOriginX);
+    EB_U32 lcuHeight = MIN(sequenceControlSetPtr->lcuSize, sequenceControlSetPtr->lumaHeight - lcuOriginY);
 
     // SAO
-    EB_S64                  saoLumaBestCost;
-    EB_S64                  saoChromaBestCost;
+    EB_S64 saoLumaBestCost;
+    EB_S64 saoChromaBestCost;
 
     // MV merge mode
-    EB_U32                  yCbf=0;
-    EB_U32                  cbCbf=0;
-    EB_U32                  crCbf=0;
-    EB_U32                  cbCbf2=0;
-    EB_U32                  crCbf2=0;
-    EB_U64                  yCoeffBits;
-    EB_U64                  cbCoeffBits;
-    EB_U64                  crCoeffBits;
-    EB_U64                  yFullDistortion[DIST_CALC_TOTAL];
-    EB_U64                  yTuFullDistortion[DIST_CALC_TOTAL];
-    EB_U32                  countNonZeroCoeffs[3];
-    EB_U64                  yTuCoeffBits;
-    EB_U64                  cbTuCoeffBits;
-    EB_U64                  crTuCoeffBits;
-    EB_U32                  lumaShift;
-    EB_U32                  scratchLumaOffset;
-    EncodeContext_t        *encodeContextPtr;
-    EB_U32                  lcuRowIndex = lcuOriginY / MAX_LCU_SIZE;
+    EB_U32 yCbf=0;
+    EB_U32 cbCbf=0;
+    EB_U32 crCbf=0;
+    EB_U32 cbCbf2=0;
+    EB_U32 crCbf2=0;
+    EB_U64 yCoeffBits;
+    EB_U64 cbCoeffBits;
+    EB_U64 crCoeffBits;
+    EB_U64 yFullDistortion[DIST_CALC_TOTAL];
+    EB_U64 yTuFullDistortion[DIST_CALC_TOTAL];
+    EB_U32 countNonZeroCoeffs[3];
+    EB_U64 yTuCoeffBits;
+    EB_U64 cbTuCoeffBits;
+    EB_U64 crTuCoeffBits;
+    EB_U32 lumaShift;
+    EB_U32 scratchLumaOffset;
+    EB_U32 lcuRowIndex = lcuOriginY / MAX_LCU_SIZE;
+    EncodeContext_t *encodeContextPtr = NULL;
 
     // Dereferencing early
-    NeighborArrayUnit_t    *epModeTypeNeighborArray = pictureControlSetPtr->epModeTypeNeighborArray;
-    NeighborArrayUnit_t    *epIntraLumaModeNeighborArray = pictureControlSetPtr->epIntraLumaModeNeighborArray;
-    NeighborArrayUnit_t    *epMvNeighborArray = pictureControlSetPtr->epMvNeighborArray;
-    NeighborArrayUnit_t    *epLumaReconNeighborArray = is16bit ? pictureControlSetPtr->epLumaReconNeighborArray16bit : pictureControlSetPtr->epLumaReconNeighborArray;
-    NeighborArrayUnit_t    *epCbReconNeighborArray = is16bit ? pictureControlSetPtr->epCbReconNeighborArray16bit : pictureControlSetPtr->epCbReconNeighborArray;
-    NeighborArrayUnit_t    *epCrReconNeighborArray = is16bit ? pictureControlSetPtr->epCrReconNeighborArray16bit : pictureControlSetPtr->epCrReconNeighborArray;
-    NeighborArrayUnit_t    *epSkipFlagNeighborArray = pictureControlSetPtr->epSkipFlagNeighborArray;
-    NeighborArrayUnit_t    *epLeafDepthNeighborArray = pictureControlSetPtr->epLeafDepthNeighborArray;
+    NeighborArrayUnit_t *epModeTypeNeighborArray = pictureControlSetPtr->epModeTypeNeighborArray;
+    NeighborArrayUnit_t *epIntraLumaModeNeighborArray = pictureControlSetPtr->epIntraLumaModeNeighborArray;
+    NeighborArrayUnit_t *epMvNeighborArray = pictureControlSetPtr->epMvNeighborArray;
+    NeighborArrayUnit_t *epLumaReconNeighborArray = is16bit ? pictureControlSetPtr->epLumaReconNeighborArray16bit : pictureControlSetPtr->epLumaReconNeighborArray;
+    NeighborArrayUnit_t *epCbReconNeighborArray = is16bit ? pictureControlSetPtr->epCbReconNeighborArray16bit : pictureControlSetPtr->epCbReconNeighborArray;
+    NeighborArrayUnit_t *epCrReconNeighborArray = is16bit ? pictureControlSetPtr->epCrReconNeighborArray16bit : pictureControlSetPtr->epCrReconNeighborArray;
+    NeighborArrayUnit_t *epSkipFlagNeighborArray = pictureControlSetPtr->epSkipFlagNeighborArray;
+    NeighborArrayUnit_t *epLeafDepthNeighborArray = pictureControlSetPtr->epLeafDepthNeighborArray;
 
-    EB_BOOL                 constrainedIntraFlag = pictureControlSetPtr->constrainedIntraFlag;
-    EB_BOOL                 enableStrongIntraSmoothing = sequenceControlSetPtr->enableStrongIntraSmoothing;
-    CodingUnit_t          **codedLeafArrayPtr = lcuPtr->codedLeafArrayPtr;
+    EB_BOOL constrainedIntraFlag = pictureControlSetPtr->constrainedIntraFlag;
+    EB_BOOL enableStrongIntraSmoothing = sequenceControlSetPtr->enableStrongIntraSmoothing;
+    CodingUnit_t **codedLeafArrayPtr = lcuPtr->codedLeafArrayPtr;
 
-    // This falg needs to be set true when SAO is enabled for Non reference pictures so that SAO uses filtered samples
+    // This flag needs to be set true when SAO is enabled for Non reference pictures so that SAO uses filtered samples
     EB_BOOL dlfEnableFlag = (EB_BOOL)(!sequenceControlSetPtr->staticConfig.disableDlfFlag && 
         (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag)) ||
         sequenceControlSetPtr->staticConfig.reconEnabled;
@@ -2994,10 +3106,10 @@ EB_EXTERN void EncodePass(
         sequenceControlSetPtr->staticConfig.reconEnabled;
 
     assert(sequenceControlSetPtr->staticConfig.reconEnabled == 0);
-    CabacCost_t     *cabacCost = pictureControlSetPtr->cabacCost;
-    EntropyCoder_t  *coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
-    EB_U8            cuItr;
-    EB_U32           dZoffset = 0;
+    CabacCost_t *cabacCost = pictureControlSetPtr->cabacCost;
+    EntropyCoder_t *coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
+    EB_U8 cuItr;
+    EB_U32 dZoffset = 0;
 
     if (!lcuStatPtr->stationaryEdgeOverTimeFlag && sequenceControlSetPtr->staticConfig.improveSharpness && pictureControlSetPtr->ParentPcsPtr->picNoiseClass < PIC_NOISE_CLASS_3_1) {
         EB_S16 cuDeltaQp = (EB_S16)(lcuPtr->qp - pictureControlSetPtr->ParentPcsPtr->averageQp);
@@ -3048,7 +3160,6 @@ EB_EXTERN void EncodePass(
     encodeContextPtr = ((SequenceControlSet_t*)(pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr))->encodeContextPtr;
 
     if (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag == EB_TRUE) {
-
         // TMVP init
         tmvpMapWritePtr = &(contextPtr->referenceObjectWritePtr->tmvpMap[tbAddr]);
         tmvpMapIndex = 0;
@@ -3057,9 +3168,7 @@ EB_EXTERN void EncodePass(
         if (is16bit) {
 
             reconBuffer = ((EbReferenceObject_t*)pictureControlSetPtr->ParentPcsPtr->referencePictureWrapperPtr->objectPtr)->referencePicture16bit;
-        }
-
-        else {
+        } else {
             reconBuffer = ((EbReferenceObject_t*)pictureControlSetPtr->ParentPcsPtr->referencePictureWrapperPtr->objectPtr)->referencePicture;
         }
     }
@@ -3090,7 +3199,7 @@ EB_EXTERN void EncodePass(
     // CU Loop 
     cuItr = 0;
 #ifdef DEBUG_TMP1
-    printf("Enter EncodePass, POC: %d, lcu addr (%d,%d)\n", pictureControlSetPtr->pictureNumber, lcuOriginX, lcuOriginY); 
+    printf("Enter EncodePass, POC: %d, lcu addr (%d,%d)\n", pictureControlSetPtr->pictureNumber, lcuOriginX, lcuOriginY);
 #endif
     while (cuItr < CU_MAX_COUNT) {
 
@@ -3102,7 +3211,7 @@ EB_EXTERN void EncodePass(
             EbPictureBufferDesc_t   *transformBuffer        = contextPtr->transformBuffer;
             EB_S16                  *transformInnerArrayPtr = contextPtr->transformInnerArrayPtr;
             const CodedUnitStats_t  *cuStats                = contextPtr->cuStats   = GetCodedUnitStats(cuItr);
-            CodingUnit_t            *cuPtr                  = contextPtr->cuPtr     = lcuPtr->codedLeafArrayPtr[cuItr]; 
+            CodingUnit_t            *cuPtr                  = contextPtr->cuPtr     = lcuPtr->codedLeafArrayPtr[cuItr];
 
             _mm_prefetch((const char *)cuStats, _MM_HINT_T0);
 
@@ -3139,14 +3248,14 @@ EB_EXTERN void EncodePass(
                     contextPtr);
             }
 
-            EB_U8    fastEl = (contextPtr->fastEl && contextPtr->cuStats->size > 8);
-            EB_U64   yCoeffBitsTemp = contextPtr->mdContext->mdEpPipeLcu[cuPtr->leafIndex].yCoeffBits;
-            EB_S16   yDc = 0; 
-            EB_U16   yCountNonZeroCoeffs = 0;
-			EB_U32   yBitsThsld = (contextPtr->cuStats->size > 32) ? contextPtr->yBitsThsld : (contextPtr->cuStats->size > 16) ? (contextPtr->yBitsThsld >> 1) : (contextPtr->yBitsThsld >> 2);
+            EB_U8  fastEl = (contextPtr->fastEl && contextPtr->cuStats->size > 8);
+            EB_U64 yCoeffBitsTemp = contextPtr->mdContext->mdEpPipeLcu[cuPtr->leafIndex].yCoeffBits;
+            EB_S16 yDc = 0;
+            EB_U16 yCountNonZeroCoeffs = 0;
+			EB_U32 yBitsThsld = (contextPtr->cuStats->size > 32) ? contextPtr->yBitsThsld : (contextPtr->cuStats->size > 16) ? (contextPtr->yBitsThsld >> 1) : (contextPtr->yBitsThsld >> 2);
 
-            EB_U8	 qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
-            EB_U8	 cbQp = 0;
+            EB_U8 qpScaled = CLIP3((EB_S8)MIN_QP_VALUE, (EB_S8)MAX_CHROMA_MAP_QP_VALUE, (EB_S8)(cuPtr->qp + pictureControlSetPtr->cbQpOffset + pictureControlSetPtr->sliceCbQpOffset));
+            EB_U8 cbQp = 0;
 
             if (colorFormat == EB_YUV420) {
                 cbQp = MapChromaQp(qpScaled);
@@ -3154,9 +3263,10 @@ EB_EXTERN void EncodePass(
                 cbQp = MIN(qpScaled, 51);
             }
 
-            if (cuPtr->predictionModeFlag == INTRA_MODE && cuPtr->predictionUnitArray->intraLumaMode != EB_INTRA_MODE_4x4){
+            if (cuPtr->predictionModeFlag == INTRA_MODE &&
+                    cuPtr->predictionUnitArray->intraLumaMode != EB_INTRA_MODE_4x4) {
                 contextPtr->totIntraCodedArea += cuStats->size*cuStats->size;
-                if (pictureControlSetPtr->sliceType != EB_I_SLICE){
+                if (pictureControlSetPtr->sliceType != EB_I_SLICE) {
                     contextPtr->intraCodedAreaLCU[tbAddr] += cuStats->size*cuStats->size;
                 }
 
@@ -3177,7 +3287,6 @@ EB_EXTERN void EncodePass(
 
                     // Transform Loop (not supported)
                     {
-
                         // Generate Intra Reference Samples  
                         if (colorFormat == EB_YUV420) {
                             GenerateIntraReferenceSamplesFuncTable[is16bit](
@@ -3233,7 +3342,6 @@ EB_EXTERN void EncodePass(
                                     (contextPtr->cuOriginX == 0),
                                     (contextPtr->cuOriginY == 0),
                                     (contextPtr->cuOriginX + cuStats->size) == sequenceControlSetPtr->lumaWidth ? EB_TRUE : EB_FALSE);
-
                         } else {
                             // 444
                             assert(0);
@@ -3256,7 +3364,6 @@ EB_EXTERN void EncodePass(
 
                         // Encode Transform Unit -INTRA-
                         {
-
                             contextPtr->forceCbfFlag = (contextPtr->skipQpmFlag) ?
                                 EB_FALSE :
                                 lcuPtr->pictureLeftEdgeFlag && ((contextPtr->cuOriginX & (63)) == 0) && (contextPtr->cuOriginY == lcuOriginY);
@@ -3272,7 +3379,7 @@ EB_EXTERN void EncodePass(
     
                             // Set Fast El coef shaping method 
                             contextPtr->transCoeffShapeLuma   = DEFAULT_SHAPE;
-                            contextPtr->transCoeffShapeChroma = DEFAULT_SHAPE;         
+                            contextPtr->transCoeffShapeChroma = DEFAULT_SHAPE;
 							if (fastEl && contextPtr->pmpMaskingLevelEncDec > MASK_THSHLD_1) {
                                 yDc = contextPtr->mdContext->mdEpPipeLcu[cuPtr->leafIndex].yDc[0];
                                 yCountNonZeroCoeffs = contextPtr->mdContext->mdEpPipeLcu[cuPtr->leafIndex].yCountNonZeroCoeffs[0];
@@ -3328,7 +3435,6 @@ EB_EXTERN void EncodePass(
                                 reconBuffer,
                                 residualBuffer,
                                 transformInnerArrayPtr);
-
                         }
 
                         // Update the Intra-specific Neighbor Arrays
@@ -3352,7 +3458,6 @@ EB_EXTERN void EncodePass(
                             PICTURE_BUFFER_DESC_FULL_MASK,
                             colorFormat,
                             is16bit);
-
                     } // Transform Loop
 
 					if (colorFormat == EB_YUV422) {
@@ -3464,11 +3569,8 @@ EB_EXTERN void EncodePass(
                             pictureControlSetPtr->verticalEdgeBSArray[tbAddr]);
 
                     }
-
                 } // Partition Loop
-
-            }
-            else if (cuPtr->predictionModeFlag == INTRA_MODE) { //cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4
+            } else if (cuPtr->predictionModeFlag == INTRA_MODE) { //cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4
                 //*************************
                 //       INTRA  4x4
                 //*************************
@@ -3530,7 +3632,7 @@ EB_EXTERN void EncodePass(
 						pictureTopBoundary,
 						pictureRightBoundary);
 
-                    componentMask = PICTURE_BUFFER_DESC_LUMA_MASK; 
+                    componentMask = PICTURE_BUFFER_DESC_LUMA_MASK;
                     if (partitionIndex == 0 || (colorFormat == EB_YUV422 && partitionIndex == 2)) {
                         // For the Intra4x4 case, the Chroma for the CU is coded as a single 4x4 block.
                         //   This changes how the right picture boundary is interpreted for the Luma and Chroma blocks
@@ -3729,9 +3831,7 @@ EB_EXTERN void EncodePass(
                     }
 
                 } // Partition Loop
-            }
-            // Inter
-            else if (cuPtr->predictionModeFlag == INTER_MODE) {
+            } else if (cuPtr->predictionModeFlag == INTER_MODE) {
                 EB_U16  tuOriginX;
                 EB_U16  tuOriginY;
                 EB_U8   tuSize = 0;
