@@ -3,7 +3,6 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1249,12 +1248,12 @@ void EncodeQuantizedCoefficients_generic(
 
 	 EB_U32      numNonZeroCoeffs = tuPtr->nzCoefCount[ (componentType == COMPONENT_LUMA)      ? 0 : 
                                                         (componentType == COMPONENT_CHROMA_CB) ? 1 : 2
-                                                      ]; 
+                                                      ];
                  numNonZeroCoeffs = (componentType == COMPONENT_CHROMA_CB2) ? tuPtr->nzCoefCount2[0] :
                                     (componentType == COMPONENT_CHROMA_CR2) ? tuPtr->nzCoefCount2[1] : numNonZeroCoeffs;
 
     // zerout the buffer to support N2_SHAPE & N4_SHAPE
-    EB_U32  transCoeffShape = (componentType == COMPONENT_LUMA) ? tuPtr->transCoeffShapeLuma : tuPtr->transCoeffShapeChroma ;      
+    EB_U32  transCoeffShape = (componentType == COMPONENT_LUMA) ? tuPtr->transCoeffShapeLuma : tuPtr->transCoeffShapeChroma ;
 
     if (transCoeffShape && tuPtr->isOnlyDc[(componentType == COMPONENT_LUMA) ? 0 : (componentType == COMPONENT_CHROMA_CB) ? 1 : 2] == EB_FALSE) {
         PicZeroOutCoef_funcPtrArray[(EB_ASM_NON_AVX2 & PREAVX2_MASK) && 1][(size >> 1) >> 3](
@@ -1734,9 +1733,10 @@ void EncodeQuantizedCoefficients_SSE2(
 	EB_U32 contextOffset2;
 	EB_U32 scanIndex;
 
-    EB_U32      numNonZeroCoeffs = tuPtr->nzCoefCount[ (componentType == COMPONENT_LUMA)      ? 0 : 
-                                                       (componentType == COMPONENT_CHROMA_CB) ? 1 : 2
-                                                     ]; 
+    EB_U32 numNonZeroCoeffs = tuPtr->nzCoefCount[(componentType == COMPONENT_LUMA) ?
+        0 : (componentType == COMPONENT_CHROMA_CB) ? 1 : 2];
+    numNonZeroCoeffs = (componentType == COMPONENT_CHROMA_CB2) ? tuPtr->nzCoefCount2[0] :
+        (componentType == COMPONENT_CHROMA_CR2) ? tuPtr->nzCoefCount2[1] : numNonZeroCoeffs;
 
 	__m128i linearCoeff[MAX_TU_SIZE * MAX_TU_SIZE / (sizeof(__m128i) / sizeof(EB_S16))];
 	EB_S16 *linearCoeffBufferPtr;
@@ -1848,6 +1848,10 @@ void EncodeQuantizedCoefficients_SSE2(
 			{
 				EB_U32 tempIntraChromaMode = chromaMappingTable[intraChromaMode];
 				EB_S32 intraMode = (!isChroma || tempIntraChromaMode == EB_INTRA_CHROMA_DM) ? intraLumaMode : tempIntraChromaMode;
+
+                if (cabacEncodeCtxPtr->colorFormat == EB_YUV422 && isChroma && tempIntraChromaMode == EB_INTRA_CHROMA_DM) {
+                   intraMode = intra422PredModeMap[intraLumaMode];
+                }
 
 				if (ABS(8 - ((intraMode - 2) & 15)) <= 4)
 				{
@@ -2352,14 +2356,14 @@ EB_ERRORTYPE RemainingCoeffExponentialGolombCodeTemp(
 	else
 	{
 		numberOfBins = (*golombParamPtr);
-		//codeWord  = codeWord - ( 8 << ((*golombParamPtr)));    
+		//codeWord  = codeWord - ( 8 << ((*golombParamPtr)));
 		codeWord = codeWord - (COEF_REMAIN_BIN_REDUCTION << ((*golombParamPtr)));
 		while (codeWord >= (1 << numberOfBins))
 		{
 			codeWord -= (1 << (numberOfBins++));
 		}
 
-		//*coeffBits += 32768*(8+numberOfBins+1-*golombParamPtr);       
+		//*coeffBits += 32768*(8+numberOfBins+1-*golombParamPtr);
 		*coeffBits += 32768 * (COEF_REMAIN_BIN_REDUCTION + numberOfBins + 1 - *golombParamPtr);
 
 		*coeffBits += 32768 * numberOfBins;
@@ -4179,10 +4183,9 @@ static EB_ERRORTYPE EncodeCoeff(
 
 		}
         if (cabacEncodeCtxPtr->colorFormat == EB_YUV422 && tuPtr->crCbf2) {
-            //printf("In EncodeCoeff, encoding cr2...\n"); 
+            //printf("In EncodeCoeff, encoding cr2 ...\n");
             coeffLocation = (tuOriginX>>1) + ((tuOriginY+tuChromaSize) * coeffPtr->strideCr);
 	        coeffBuffer = (EB_S16*)&coeffPtr->bufferCr[coeffLocation * sizeof(EB_S16)];
-           // assert(0);
 			EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 				cabacEncodeCtxPtr,
 				tuChromaSize,
@@ -4254,7 +4257,6 @@ static EB_ERRORTYPE EncodeTuCoeff(
 
 	if (tuPtr->splitFlag) {
         // Jing: only comes here for inter 64x64
-        assert(cuStatsPtr->size == 64);
 
 		// Cb CBF  
 		EncodeOneBin(
@@ -4287,7 +4289,7 @@ static EB_ERRORTYPE EncodeTuCoeff(
 			}
 
 			if (tuPtr->splitFlag) {
-                assert(0);
+                // Jing: seems never comes here for now
 				cbfContext = tuPtr->chromaCbfContext;
 
 				if (cuPtr->transformUnitArray[0].cbCbf | cuPtr->transformUnitArray[0].cbCbf2) {
