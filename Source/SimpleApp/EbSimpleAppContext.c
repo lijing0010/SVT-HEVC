@@ -174,12 +174,14 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.codeVpsSpsPps     = 0;
     callbackData->ebEncParameters.reconEnabled      = config->reconFile ? 1 : 0;
 
-    callbackData->ebEncParameters.disableDlfFlag = 1;
+    //callbackData->ebEncParameters.asmType= 0;
+    callbackData->ebEncParameters.disableDlfFlag = 0;
     callbackData->ebEncParameters.enableSaoFlag = 0;
-    callbackData->ebEncParameters.qp=18;
+    callbackData->ebEncParameters.qp=30;
     callbackData->ebEncParameters.rateControlMode=0;
-    callbackData->ebEncParameters.encMode = 9;
+    callbackData->ebEncParameters.encMode = 1;
     callbackData->ebEncParameters.hierarchicalLevels = 2;
+//printf("kelvin ---> main input disableDlfFlag=%d, enableSaoFlag=%d, qp=%d, encMode=%d\n", config->disableDlfFlag, config->enableSaoFlag, callbackData->ebEncParameters.qp, callbackData->ebEncParameters.encMode);
 
     
     return return_error;

@@ -24,7 +24,7 @@
 #include "emmintrin.h"
 
 //#define DEBUG_REF_INFO
-//#define DUMP_RECON
+#define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
 {
@@ -3078,6 +3078,7 @@ EB_EXTERN void EncodePass(
 
     // This flag needs to be set true when SAO is enabled for Non reference pictures so that SAO uses filtered samples
     EB_BOOL dlfEnableFlag = (EB_BOOL)(!sequenceControlSetPtr->staticConfig.disableDlfFlag && 
+        ///*(pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag) kelvin*/1) ||
         (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag)) ||
         sequenceControlSetPtr->staticConfig.reconEnabled;
 
@@ -3546,8 +3547,7 @@ EB_EXTERN void EncodePass(
 					}
 
                     // set up the bS based on PU boundary for DLF
-                    if (dlfEnableFlag) {
-                        assert(0);
+                    if (dlfEnableFlag){
                         // Update the cbf map for DLF
                         startIndex = (contextPtr->cuOriginY >> 2) * (sequenceControlSetPtr->lumaWidth >> 2) + (contextPtr->cuOriginX >> 2);
                         for (blk4x4IndexY = 0; blk4x4IndexY < (cuStats->size >> 2); ++blk4x4IndexY){
@@ -3796,7 +3796,6 @@ EB_EXTERN void EncodePass(
 
                     // set up the bS based on PU boundary for DLF
                     if (dlfEnableFlag){
-                        assert(0);
                         // Update the cbf map for DLF
                         startIndex = (partitionOriginY >> 2) * (sequenceControlSetPtr->lumaWidth >> 2) + (partitionOriginX >> 2);
                         for (blk4x4IndexY = 0; blk4x4IndexY < (MIN_PU_SIZE >> 2); ++blk4x4IndexY){
@@ -4341,7 +4340,6 @@ EB_EXTERN void EncodePass(
                     crCbf2 |= cuPtr->transformUnitArray[contextPtr->tuItr].crCbf2;
 
                     if (dlfEnableFlag) {
-                        assert(0);
 
                         EB_U32 lumaStride = (sequenceControlSetPtr->lumaWidth >> 2);
                         TransformUnit_t *tuPtr = &cuPtr->transformUnitArray[contextPtr->tuItr];
@@ -4390,7 +4388,6 @@ EB_EXTERN void EncodePass(
                     contextPtr->mvUnit.mv[REF_LIST_1].mvUnion = puPtr->mv[REF_LIST_1].mvUnion;
                     // set up the bS based on PU boundary for DLF
                     if (dlfEnableFlag /*&& cuStats->size < MAX_LCU_SIZE*/  ) {
-                        assert(0);
                         SetBSArrayBasedOnPUBoundary(
                                 epModeTypeNeighborArray,
                                 epMvNeighborArray,
@@ -4459,7 +4456,6 @@ EB_EXTERN void EncodePass(
 
 
             if (dlfEnableFlag) {
-                assert(0);
                 // Assign the LCU-level QP  
                 if (cuPtr->predictionModeFlag == INTRA_MODE && puPtr->intraLumaMode == EB_INTRA_MODE_4x4) {
 					availableCoeff = (
@@ -4617,7 +4613,6 @@ EB_EXTERN void EncodePass(
 
     // First Pass Deblocking
     if (dlfEnableFlag){
-        assert(0);
 
         EB_U32 pictureWidthInLcu = (sequenceControlSetPtr->lumaWidth + 63) >> LOG2F_MAX_LCU_SIZE;
 
@@ -4654,6 +4649,14 @@ EB_EXTERN void EncodePass(
 
     }
 
+#ifdef DUMP_RECON
+    if (lcuPtr->index == pictureControlSetPtr->lcuTotalCount - 1) {
+        printf("-----Dump recon frame POC %u----\n", pictureControlSetPtr->pictureNumber);
+        char filename[256];
+        sprintf(filename, "recon_poc_%d.yuv", pictureControlSetPtr->pictureNumber);
+        dump_buf_desc_to_file(reconBuffer, "final_recon.yuv", pictureControlSetPtr->pictureNumber);
+    }
+#endif
 
     // SAO Parameter Generation 
     if (enableSaoFlag) {
