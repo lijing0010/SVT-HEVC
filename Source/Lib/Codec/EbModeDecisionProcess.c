@@ -126,7 +126,7 @@ EB_ERRORTYPE ModeDecisionContextCtor(
     }
 
     // Intra Reference Samples
-    return_error = IntraReferenceSamplesCtor(&contextPtr->intraRefPtr);
+    return_error = IntraReferenceSamplesCtor(&contextPtr->intraRefPtr, EB_YUV420);
     if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
     }

@@ -112,7 +112,7 @@ EB_ERRORTYPE EncDecContextCtor(
         initData.maxWidth = MAX_LCU_SIZE;
         initData.maxHeight = MAX_LCU_SIZE;
         initData.bitDepth = EB_16BIT;
-        initData.colorFormat = colorFormat; //store 422
+        initData.colorFormat = colorFormat;
         initData.leftPadding = 0;
         initData.rightPadding = 0;
         initData.topPadding = 0;
@@ -136,13 +136,13 @@ EB_ERRORTYPE EncDecContextCtor(
     }
 
     // Intra Reference Samples
-    return_error = IntraReferenceSamplesCtor(&contextPtr->intraRefPtr);
+    return_error = IntraReferenceSamplesCtor(&contextPtr->intraRefPtr, colorFormat);
     if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
     }
     contextPtr->intraRefPtr16 = (IntraReference16bitSamples_t *)EB_NULL;
     if (is16bit) {
-        return_error = IntraReference16bitSamplesCtor(&contextPtr->intraRefPtr16);
+        return_error = IntraReference16bitSamplesCtor(&contextPtr->intraRefPtr16, colorFormat);
         if (return_error == EB_ErrorInsufficientResources){
             return EB_ErrorInsufficientResources;
         }

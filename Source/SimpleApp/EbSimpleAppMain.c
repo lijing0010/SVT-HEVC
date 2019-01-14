@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
             config->encoderBitDepth = bdepth;
 
             unsigned int chromaIdx = strtoul(argv[6], NULL, 0);
-            if (chromaIdx < EB_YUV420 || chromaIdx >= EB_YUV444) {printf("Invalid chromaIdx value %d. 1: 420, 2:422, 3:444(not supported)\n", chromaIdx); return_error = EB_ErrorBadParameter;}
+            if (chromaIdx < EB_YUV420 || chromaIdx > EB_YUV444) {printf("Invalid chromaIdx value %d. 1: 420, 2:422, 3:444(not supported)\n", chromaIdx); return_error = EB_ErrorBadParameter;}
             config->colorFormat = chromaIdx;
 
 

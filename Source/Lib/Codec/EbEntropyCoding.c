@@ -1358,16 +1358,15 @@ void EncodeQuantizedCoefficients_generic(
 			//intraLumaMode   = candidatePtr->intraLumaMode[0];
 			//intraChromaMode = candidatePtr->intraChromaMode[0];
 
-			if (((EB_S32)logBlockSize) <= 3 - isChroma)
-			{
+			if ((((EB_S32)logBlockSize) <= 3 - isChroma) ||
+                    (((EB_S32)logBlockSize) == 3 && cabacEncodeCtxPtr->colorFormat == EB_YUV444)) {
 				EB_U32 tempIntraChromaMode = chromaMappingTable[intraChromaMode];
 				EB_S32 intraMode = (!isChroma || tempIntraChromaMode == EB_INTRA_CHROMA_DM) ? intraLumaMode : tempIntraChromaMode;
                 if (cabacEncodeCtxPtr->colorFormat == EB_YUV422 && isChroma && tempIntraChromaMode == EB_INTRA_CHROMA_DM) {
                    intraMode = intra422PredModeMap[intraLumaMode];
                 }
 
-				if (ABS(8 - ((intraMode - 2) & 15)) <= 4)
-				{
+				if (ABS(8 - ((intraMode - 2) & 15)) <= 4) {
 					scanIndex = (intraMode & 16) ? SCAN_HOR2 : SCAN_VER2;
 				}
 			}
@@ -1571,6 +1570,7 @@ void EncodeQuantizedCoefficients_generic(
 				sigMap <<= 16;
 			}
 
+            // Jing: change here for 444
 			if (logBlockSize == 2)
 			{
 				tempOffset = 0;
@@ -1578,10 +1578,11 @@ void EncodeQuantizedCoefficients_generic(
 			}
 			else
 			{
-				tempOffset = (logBlockSize == 3) ? (scanIndex == SCAN_DIAG2 ? 9 : 15) : (!isChroma ? 21 : 12);
+				tempOffset = (logBlockSize == 3) ? ((scanIndex == SCAN_DIAG2 || isChroma) ? 9 : 15) : (!isChroma ? 21 : 12);
 				tempOffset += (!isChroma && subSetIndex != 0) ? 3 : 0;
 				contextIndexMapPtr = contextIndexMap8[scanIndex != SCAN_DIAG2][significantFlagContextPattern] - subPosition;
 			}
+            /////////////
 
 			// Loop over coefficients
 			do
@@ -4081,12 +4082,13 @@ static EB_ERRORTYPE EncodeCoeff(
 
 	EB_S16 *coeffBuffer;
 	EB_U32  coeffLocation;
-	EB_U32 tuChromaSize = tuSize == 4 ? 4 : (tuSize >> 1);
+    const EB_U16 subWidthCMinus1 = (cabacEncodeCtxPtr->colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (cabacEncodeCtxPtr->colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+	EB_U32 tuChromaSize = (tuSize == 4) ? 4 : (tuSize >> subWidthCMinus1);
 	coeffLocation = tuOriginX + (tuOriginY * coeffPtr->strideY);
 	coeffBuffer = (EB_S16*)&coeffPtr->bufferY[coeffLocation * sizeof(EB_S16)];
 
 	if (tuPtr->lumaCbf) {
-
 		EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 			cabacEncodeCtxPtr,
 			tuSize,
@@ -4104,16 +4106,11 @@ static EB_ERRORTYPE EncodeCoeff(
 	//tuOriginY = (cuPtr->size == MIN_CU_SIZE ) || ( (cuPtr->size == 16 ) && ((Log2f(cuPtr->size) - tuSizeLog2) == 2))? tuPtr->tuNode->originY: tuOriginY;
 
 	// cb
-    if (cabacEncodeCtxPtr->colorFormat == EB_YUV422) {
-	    coeffLocation = (tuOriginX>>1) + (tuOriginY * coeffPtr->strideCb);
-    } else {
-	    coeffLocation = ((tuOriginX + (tuOriginY * coeffPtr->strideCb)) >> 1);
-    }
+	coeffLocation = (tuOriginX >> subWidthCMinus1) + ((tuOriginY * coeffPtr->strideCb) >> subHeightCMinus1);
 	coeffBuffer = (EB_S16*)&coeffPtr->bufferCb[coeffLocation * sizeof(EB_S16)];
 
 	if (tuSize > 4){
 		if (tuPtr->cbCbf) {
-
 			EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 				cabacEncodeCtxPtr,
 				tuChromaSize,
@@ -4127,8 +4124,7 @@ static EB_ERRORTYPE EncodeCoeff(
 		}
 
         if (cabacEncodeCtxPtr->colorFormat == EB_YUV422 && tuPtr->cbCbf2) {
-            //printf("In EncodeCoeff, encoding cb2...\n");
-            coeffLocation = (tuOriginX>>1) + ((tuOriginY+tuChromaSize) * coeffPtr->strideCb);
+            coeffLocation = (tuOriginX >> 1) + ((tuOriginY+tuChromaSize) * coeffPtr->strideCb);
 	        coeffBuffer = (EB_S16*)&coeffPtr->bufferCb[coeffLocation * sizeof(EB_S16)];
 			EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 				cabacEncodeCtxPtr,
@@ -4141,11 +4137,9 @@ static EB_ERRORTYPE EncodeCoeff(
 				COMPONENT_CHROMA_CB2,
                 tuPtr);//tuPtr->nzCoefCount[1]);
         }
-	}
-	else if (tuPtr->tuIndex - ((tuPtr->tuIndex >> 2) << 2) == 0) {
-
+	} else if (tuPtr->tuIndex - ((tuPtr->tuIndex >> 2) << 2) == 0) {
+        // Never be here
 		if (tuPtr->cbCbf) {
-
 			EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 				cabacEncodeCtxPtr,
 				tuChromaSize,
@@ -4161,11 +4155,7 @@ static EB_ERRORTYPE EncodeCoeff(
 	}
 
 	// cr
-    if (cabacEncodeCtxPtr->colorFormat == EB_YUV422) {
-	    coeffLocation = (tuOriginX>>1) + (tuOriginY * coeffPtr->strideCr);
-    } else {
-	    coeffLocation = ((tuOriginX + (tuOriginY * coeffPtr->strideCr)) >> 1);
-    }
+	coeffLocation = (tuOriginX >> subWidthCMinus1) + ((tuOriginY * coeffPtr->strideCr) >> subHeightCMinus1);
 	coeffBuffer = (EB_S16*)&coeffPtr->bufferCr[coeffLocation * sizeof(EB_S16)];
 
 	if (tuSize > 4){
@@ -4179,12 +4169,11 @@ static EB_ERRORTYPE EncodeCoeff(
 				coeffBuffer,
 				coeffPtr->strideCr,
 				COMPONENT_CHROMA_CR,
-                 tuPtr);//tuPtr->nzCoefCount[2]);
+                tuPtr);//tuPtr->nzCoefCount[2]);
 
 		}
         if (cabacEncodeCtxPtr->colorFormat == EB_YUV422 && tuPtr->crCbf2) {
-            //printf("In EncodeCoeff, encoding cr2 ...\n");
-            coeffLocation = (tuOriginX>>1) + ((tuOriginY+tuChromaSize) * coeffPtr->strideCr);
+            coeffLocation = (tuOriginX >> 1) + ((tuOriginY+tuChromaSize) * coeffPtr->strideCr);
 	        coeffBuffer = (EB_S16*)&coeffPtr->bufferCr[coeffLocation * sizeof(EB_S16)];
 			EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
 				cabacEncodeCtxPtr,
@@ -4195,7 +4184,7 @@ static EB_ERRORTYPE EncodeCoeff(
 				coeffBuffer,
 				coeffPtr->strideCr,
 				COMPONENT_CHROMA_CR2,
-                 tuPtr);//tuPtr->nzCoefCount[2]);
+                tuPtr);//tuPtr->nzCoefCount[2]);
         }
 	}
 	else if (tuPtr->tuIndex - ((tuPtr->tuIndex >> 2) << 2) == 0) {
@@ -4521,16 +4510,16 @@ static EB_ERRORTYPE EncodeTuCoeff(
 
 				// Cb CBF  
                 if (cuPtr->transformUnitArray[0].cbCbf | cuPtr->transformUnitArray[0].cbCbf2) {
-					EncodeOneBin(
-						&(cabacEncodeCtxPtr->bacEncContext),
-						tuPtr->cbCbf,
-						&(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
+                    EncodeOneBin(
+                            &(cabacEncodeCtxPtr->bacEncContext),
+                            tuPtr->cbCbf,
+                            &(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
                     if (cabacEncodeCtxPtr->colorFormat == EB_YUV422) {
                         EncodeOneBin(
-                            &(cabacEncodeCtxPtr->bacEncContext),
-                            tuPtr->cbCbf2,
-                            &(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
-				}
+                                &(cabacEncodeCtxPtr->bacEncContext),
+                                tuPtr->cbCbf2,
+                                &(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
+                    }
                 }
 
 				// Cr CBF  
@@ -4579,8 +4568,6 @@ static EB_ERRORTYPE EncodeTuCoeff(
 
 	}
 	else {
-
-
 		tuOriginX = TU_ORIGIN_ADJUST(cuStatsPtr->originX, cuStatsPtr->size, tuStatsPtr->offsetX);
 		tuOriginY = TU_ORIGIN_ADJUST(cuStatsPtr->originY, cuStatsPtr->size, tuStatsPtr->offsetY);
 
@@ -4681,15 +4668,16 @@ static EB_ERRORTYPE EncodeTuSplitCoeff(
 		(cabacEncodeCtxPtr->bacEncContext.tempBufferedBytesNum << 3);
 	// Root CBF
 	rootCbf = cuPtr->rootCbf;
-	if (cuPtr->predictionModeFlag != INTRA_MODE && !((&cuPtr->predictionUnitArray[0])->mergeFlag)) {
+	if (cuPtr->predictionModeFlag != INTRA_MODE &&
+            !((&cuPtr->predictionUnitArray[0])->mergeFlag)) {
 		EncodeOneBin(
 			&(cabacEncodeCtxPtr->bacEncContext),
 			rootCbf,
 			&(cabacEncodeCtxPtr->contextModelEncContext.rootCbfContextModel[0]));
 	}
 
-	if ((cuPtr->predictionModeFlag == INTRA_MODE) || ((cuPtr->predictionModeFlag == INTER_MODE) && (rootCbf > 0))) {
-
+	if ((cuPtr->predictionModeFlag == INTRA_MODE) ||
+            ((cuPtr->predictionModeFlag == INTER_MODE) && (rootCbf > 0))) {
 		EncodeTuCoeff(
 			cabacEncodeCtxPtr,
 			cuPtr,
@@ -4698,6 +4686,7 @@ static EB_ERRORTYPE EncodeTuSplitCoeff(
 			isDeltaQpEnable,
 			isdeltaQpNotCoded);
 	}
+
 	//store the number of written bits after coding quantized coeffs (flush is not called yet): 
 	// The total number of bits is 
 	// number of written bits
@@ -5893,6 +5882,10 @@ static void CodeSPS(
 		bitstreamPtr,
 		scsPtr->chromaFormatIdc);
 
+    if (scsPtr->chromaFormatIdc == EB_YUV444) {
+        WriteFlagCavlc(bitstreamPtr, 0); //separate_colour_plane_flag=0
+    }
+
 	// "pic_width_in_luma_samples"
 	WriteUvlc(
 		bitstreamPtr,
@@ -6860,6 +6853,7 @@ static EB_ERRORTYPE Intra4x4EncodeChromaCoeff(
 	CodingUnit_t            *cuPtr,
 	EB_U32                   tuOriginX,
 	EB_U32                   tuOriginY,
+    EB_U32                   tuIndex, //For 444 case, 422/420 can ignore this flag
 	EbPictureBufferDesc_t   *coeffPtr)
 {
 	EB_ERRORTYPE return_error = EB_ErrorNone;
@@ -6868,66 +6862,64 @@ static EB_ERRORTYPE Intra4x4EncodeChromaCoeff(
 	EB_S16  *coeffBuffer;
 	EB_U32   coeffLocation;
 	EB_U32   countNonZeroCoeffs = 0;
-    const EB_U16 subWidthCMinus1 = (cabacEncodeCtxPtr->colorFormat==EB_YUV444?1:2)-1;
-    const EB_U16 subHeightCMinus1 = (cabacEncodeCtxPtr->colorFormat>=EB_YUV422?1:2)-1;
+    const EB_U16 subWidthCMinus1 = (cabacEncodeCtxPtr->colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (cabacEncodeCtxPtr->colorFormat >= EB_YUV422 ? 1 : 2) - 1;
 
 	// cb
-    for (int tIdx=0; tIdx<(cabacEncodeCtxPtr->colorFormat==EB_YUV422?2:1); tIdx++) {
-        tuPtr=&cuPtr->transformUnitArray[1+2*tIdx]; //1,3 for chroma
-        //coeffLocation = ((tuOriginX + ((tuOriginY+MIN_PU_SIZE*tIdx) * coeffPtr->strideCb)) >> 1);
-        coeffLocation = (tuOriginX>>subWidthCMinus1) + (((tuOriginY+MIN_PU_SIZE*tIdx) * coeffPtr->strideCb)>>subHeightCMinus1);
-	coeffBuffer = (EB_S16*)&coeffPtr->bufferCb[coeffLocation * sizeof(EB_S16)];
+    for (int tIdx = 0; tIdx < (cabacEncodeCtxPtr->colorFormat == EB_YUV422 ? 2 : 1); tIdx++) {
+        // Get the correct TU block for 444, not always the 1st one
+        tuPtr=&cuPtr->transformUnitArray[tuIndex + 1 + 2 * tIdx]; //1,3 for 422 chroma
+        coeffLocation = (tuOriginX >> subWidthCMinus1) +
+            (((tuOriginY + MIN_PU_SIZE * tIdx) * coeffPtr->strideCb) >> subHeightCMinus1);
+        coeffBuffer = (EB_S16*)&coeffPtr->bufferCb[coeffLocation * sizeof(EB_S16)];
 
-	if (tuPtr->cbCbf){
+        if (tuPtr->cbCbf){
+            ComputeNumofSigCoefficients(
+                    coeffBuffer,
+                    coeffPtr->strideCb,
+                    MIN_PU_SIZE,
+                    &countNonZeroCoeffs);
 
-		ComputeNumofSigCoefficients(
-			coeffBuffer,
-			coeffPtr->strideCb,
-			MIN_PU_SIZE,
-			&countNonZeroCoeffs);
-
-		EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
-			cabacEncodeCtxPtr,
-			MIN_PU_SIZE,
-			(EB_MODETYPE)cuPtr->predictionModeFlag,
-			intraLumaMode,
-            EB_INTRA_CHROMA_DM,
-			coeffBuffer,
-			coeffPtr->strideCb,
-			COMPONENT_CHROMA_CB,
-			tuPtr);
-
-	}
+            EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
+                    cabacEncodeCtxPtr,
+                    MIN_PU_SIZE,
+                    (EB_MODETYPE)cuPtr->predictionModeFlag,
+                    intraLumaMode,
+                    EB_INTRA_CHROMA_DM,
+                    coeffBuffer,
+                    coeffPtr->strideCb,
+                    COMPONENT_CHROMA_CB,
+                    tuPtr);
+        }
     }
 
 	// cr
     for (int tIdx=0; tIdx<(cabacEncodeCtxPtr->colorFormat==EB_YUV422?2:1); tIdx++) {
-        tuPtr=&cuPtr->transformUnitArray[1+2*tIdx]; //1,3 for chroma
+        tuPtr=&cuPtr->transformUnitArray[tuIndex + 1 + 2 * tIdx]; //1,3 for 422 chroma
         //coeffLocation = ((tuOriginX + ((tuOriginY+MIN_PU_SIZE*tIdx) * coeffPtr->strideCb)) >> 1);
-        coeffLocation = (tuOriginX>>subWidthCMinus1) + (((tuOriginY+MIN_PU_SIZE*tIdx) * coeffPtr->strideCb)>>subHeightCMinus1);
-	coeffBuffer = (EB_S16*)&coeffPtr->bufferCr[coeffLocation * sizeof(EB_S16)];
+        coeffLocation = (tuOriginX >> subWidthCMinus1) +
+            (((tuOriginY + MIN_PU_SIZE * tIdx) * coeffPtr->strideCb) >> subHeightCMinus1);
+        coeffBuffer = (EB_S16*)&coeffPtr->bufferCr[coeffLocation * sizeof(EB_S16)];
 
-	if (tuPtr->crCbf){
+        if (tuPtr->crCbf){
+            ComputeNumofSigCoefficients(
+                    coeffBuffer,
+                    coeffPtr->strideCr,
+                    MIN_PU_SIZE,
+                    &countNonZeroCoeffs);
 
-		ComputeNumofSigCoefficients(
-			coeffBuffer,
-			coeffPtr->strideCr,
-			MIN_PU_SIZE,
-			&countNonZeroCoeffs);
-
-		EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
-			cabacEncodeCtxPtr,
-			MIN_PU_SIZE,
-			(EB_MODETYPE)cuPtr->predictionModeFlag,
-			intraLumaMode,
-            EB_INTRA_CHROMA_DM,
-			coeffBuffer,
-			coeffPtr->strideCr,
-			COMPONENT_CHROMA_CR,
-			tuPtr);
-
+            EncodeQuantizedCoefficientsFuncArray[(ASM_TYPES & PREAVX2_MASK) && 1](
+                    cabacEncodeCtxPtr,
+                    MIN_PU_SIZE,
+                    (EB_MODETYPE)cuPtr->predictionModeFlag,
+                    intraLumaMode,
+                    EB_INTRA_CHROMA_DM,
+                    coeffBuffer,
+                    coeffPtr->strideCr,
+                    COMPONENT_CHROMA_CR,
+                    tuPtr);
         }
-	}
+    }
 
 	return return_error;
 }
@@ -6956,6 +6948,8 @@ static EB_ERRORTYPE Intra4x4EncodeCoeff(
 	//rate Control
 	EB_U32  writtenBitsBeforeQuantizedCoeff;
 	EB_U32  writtenBitsAfterQuantizedCoeff;
+    EB_BOOL sum_cbCbf;
+    EB_BOOL sum_crCbf;
 
 	//store the number of written bits before coding quantized coeffs (flush is not called yet): 
 	// The total number of bits is 
@@ -6970,10 +6964,24 @@ static EB_ERRORTYPE Intra4x4EncodeCoeff(
 	// Get Chroma Cbf context
 	cbfContext = 0;
 
+    sum_cbCbf = (cabacEncodeCtxPtr->colorFormat != EB_YUV444) ?
+        (&cuPtr->transformUnitArray[1])->cbCbf :
+        ((&cuPtr->transformUnitArray[1])->cbCbf |
+         (&cuPtr->transformUnitArray[2])->cbCbf |
+         (&cuPtr->transformUnitArray[3])->cbCbf |
+         (&cuPtr->transformUnitArray[4])->cbCbf);
+
+    sum_crCbf = (cabacEncodeCtxPtr->colorFormat != EB_YUV444) ?
+        (&cuPtr->transformUnitArray[1])->crCbf :
+        ((&cuPtr->transformUnitArray[1])->crCbf |
+         (&cuPtr->transformUnitArray[2])->crCbf |
+         (&cuPtr->transformUnitArray[3])->crCbf |
+         (&cuPtr->transformUnitArray[4])->crCbf);
+
 	//  Cb CBF
 	EncodeOneBin(
 		&(cabacEncodeCtxPtr->bacEncContext),
-		(&cuPtr->transformUnitArray[1])->cbCbf,
+        sum_cbCbf,
 		&(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
 
     if (cabacEncodeCtxPtr->colorFormat == EB_YUV422) {
@@ -6985,7 +6993,7 @@ static EB_ERRORTYPE Intra4x4EncodeCoeff(
 	// Cr CBF  
 	EncodeOneBin(
 		&(cabacEncodeCtxPtr->bacEncContext),
-		(&cuPtr->transformUnitArray[1])->crCbf,
+        sum_crCbf,
 		&(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
     if (cabacEncodeCtxPtr->colorFormat == EB_YUV422) {
         EncodeOneBin(
@@ -6995,20 +7003,37 @@ static EB_ERRORTYPE Intra4x4EncodeCoeff(
     }
 
 	// Get Luma Cbf context
-	cbfContext = 0;
 
 	// Encode Intra 4x4 data
 	for (puIndex = 0; puIndex < 4; puIndex++) {
-
 		tuIndex = puIndex + 1;
 		tuPtr = &cuPtr->transformUnitArray[tuIndex];
 		tuStatsPtr = GetTransformUnitStats(tuIndex);
 		tuOriginX = TU_ORIGIN_ADJUST(cuStatsPtr->originX, cuStatsPtr->size, tuStatsPtr->offsetX);
 		tuOriginY = TU_ORIGIN_ADJUST(cuStatsPtr->originY, cuStatsPtr->size, tuStatsPtr->offsetY);
 
+        //Jing: TODO: double check cbfContextModel here
+        if (cabacEncodeCtxPtr->colorFormat == EB_YUV444) {
+            cbfContext = 1;
+            if (sum_cbCbf) {
+                EncodeOneBin(
+                        &(cabacEncodeCtxPtr->bacEncContext),
+                        tuPtr->cbCbf,
+                        &(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
+            }
+
+            if (sum_crCbf) {
+                EncodeOneBin(
+                        &(cabacEncodeCtxPtr->bacEncContext),
+                        tuPtr->crCbf,
+                        &(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext + NUMBER_OF_CBF_CONTEXT_MODELS]));
+            }
+        }
+
+	    cbfContext = 0;
 		EncodeOneBin(
 			&(cabacEncodeCtxPtr->bacEncContext),
-			(&cuPtr->transformUnitArray[tuIndex])->lumaCbf,
+			tuPtr->lumaCbf,
 			&(cabacEncodeCtxPtr->contextModelEncContext.cbfContextModel[cbfContext]));
 
 		//EncodeDeltaQp
@@ -7028,20 +7053,36 @@ static EB_ERRORTYPE Intra4x4EncodeCoeff(
 			tuOriginX,
 			tuOriginY,
 			coeffPtr);
+
+        if (cabacEncodeCtxPtr->colorFormat == EB_YUV444) {
+            // residual coding for Cb/Cr
+            Intra4x4EncodeChromaCoeff(
+                    tbPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuPtr->leafIndex] - 21) << 2) + puIndex],
+                    cabacEncodeCtxPtr,
+                    cuPtr,
+                    tuOriginX,
+                    tuOriginY,
+                    puIndex,
+                    coeffPtr);
+        }
 	}
 
-	// Encode Chroma coeff
-	tuStatsPtr = GetTransformUnitStats(1);
-	tuOriginX = TU_ORIGIN_ADJUST(cuStatsPtr->originX, cuStatsPtr->size, tuStatsPtr->offsetX);
-	tuOriginY = TU_ORIGIN_ADJUST(cuStatsPtr->originY, cuStatsPtr->size, tuStatsPtr->offsetY);
+    if (cabacEncodeCtxPtr->colorFormat != EB_YUV444) {
+        // Encode Chroma coeff for non-444 case, 
+        // Jing TODO: see if can move to above loop
+        tuStatsPtr = GetTransformUnitStats(1);
+        tuOriginX = TU_ORIGIN_ADJUST(cuStatsPtr->originX, cuStatsPtr->size, tuStatsPtr->offsetX);
+        tuOriginY = TU_ORIGIN_ADJUST(cuStatsPtr->originY, cuStatsPtr->size, tuStatsPtr->offsetY);
 
-	Intra4x4EncodeChromaCoeff(
-        tbPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuPtr->leafIndex] - 21) << 2)],
-		cabacEncodeCtxPtr,
-		cuPtr,
-		tuOriginX,
-		tuOriginY,
-		coeffPtr);
+        Intra4x4EncodeChromaCoeff(
+                tbPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuPtr->leafIndex] - 21) << 2)],
+                cabacEncodeCtxPtr,
+                cuPtr,
+                tuOriginX,
+                tuOriginY,
+                0,
+                coeffPtr);
+    }
 
 	//store the number of written bits after coding quantized coeffs (flush is not called yet): 
 	// The total number of bits is 
@@ -7142,8 +7183,8 @@ EB_ERRORTYPE EncodeLcu(
             }
 
             if (cuPtr->splitFlag == EB_FALSE){
-                if (cuPtr->predictionModeFlag == INTRA_MODE && cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4)
-
+                if (cuPtr->predictionModeFlag == INTRA_MODE &&
+                        cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4) {
                     availableCoeff = (
 					cuPtr->transformUnitArray[1].lumaCbf ||
 					cuPtr->transformUnitArray[2].lumaCbf ||
@@ -7153,14 +7194,14 @@ EB_ERRORTYPE EncodeLcu(
                         cuPtr->transformUnitArray[1].cbCbf ||
                         cuPtr->transformUnitArray[3].crCbf || // 422 case will use 3rd 4x4 for the 2nd chroma
                         cuPtr->transformUnitArray[3].cbCbf) ? EB_TRUE : EB_FALSE;
-
-                else
+                } else {
                     availableCoeff = (cuPtr->predictionModeFlag == INTER_MODE) ? (EB_BOOL)cuPtr->rootCbf :
                         (cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].lumaCbf ||
                         cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].crCbf ||
                         cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].crCbf2 ||
                         cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].cbCbf ||
                         cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].cbCbf2) ? EB_TRUE : EB_FALSE;
+                }
 
                 EntropyCodingUpdateQp(
                     cuPtr,
@@ -7189,8 +7230,8 @@ EB_ERRORTYPE EncodeLcu(
                     cuPtr->qp);
 
                 // Code the skip flag
-                if (pictureControlSetPtr->sliceType == EB_P_SLICE || pictureControlSetPtr->sliceType == EB_B_SLICE)
-                {
+                if (pictureControlSetPtr->sliceType == EB_P_SLICE ||
+                        pictureControlSetPtr->sliceType == EB_B_SLICE) {
                     EncodeSkipFlag(
                         cabacEncodeCtxPtr,
                         (EB_BOOL)cuPtr->skipFlag,
@@ -7211,17 +7252,17 @@ EB_ERRORTYPE EncodeLcu(
                 {
                     // Code CU pred mode (I, P, B, etc.)
                     // (not needed for Intra Slice)
-                    if (pictureControlSetPtr->sliceType == EB_P_SLICE || pictureControlSetPtr->sliceType == EB_B_SLICE)
-                    {
+                    if (pictureControlSetPtr->sliceType == EB_P_SLICE ||
+                            pictureControlSetPtr->sliceType == EB_B_SLICE) {
                         EncodePredictionMode(
                             cabacEncodeCtxPtr,
                             cuPtr);
                     }
+
                     switch (cuPtr->predictionModeFlag) {
-
                     case INTRA_MODE: 
-                        if (cuPtr->predictionModeFlag == INTRA_MODE && cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4) {
-
+                        if (cuPtr->predictionModeFlag == INTRA_MODE &&
+                                cuPtr->predictionUnitArray->intraLumaMode == EB_INTRA_MODE_4x4) {
                             // Code Partition Size
                             EncodeIntra4x4PartitionSize(
                                 cabacEncodeCtxPtr,
@@ -7231,7 +7272,6 @@ EB_ERRORTYPE EncodeLcu(
                             // Get the PU Ptr
                             puPtr = cuPtr->predictionUnitArray;
 
-              
                             EB_U8 partitionIndex;
 
                             EB_U8 intraLumaLeftModeArray[4];
@@ -7240,10 +7280,9 @@ EB_ERRORTYPE EncodeLcu(
                             EB_U8 intraLumaLeftMode;
                             EB_U8 intraLumaTopMode;
 
-                            // Partition Loop
+                            // Partition Loop for prev_intra_luma_pred_flag
                             for (partitionIndex = 0; partitionIndex < 4; partitionIndex++) {
-
-                                EB_U8 intraLumaMode      = tbPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuIndex] - 21) << 2) + partitionIndex];
+                                EB_U8 intraLumaMode = tbPtr->intra4x4Mode[((MD_SCAN_TO_RASTER_SCAN[cuIndex] - 21) << 2) + partitionIndex];
                                 EB_U8 predictionModeFlag = INTRA_MODE;
 
                                 EB_U32 partitionOriginX = cuOriginX + INTRA_4x4_OFFSET_X[partitionIndex];
@@ -7281,7 +7320,6 @@ EB_ERRORTYPE EncodeLcu(
                                     MIN_PU_SIZE,
                                     MIN_PU_SIZE,
                                     NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-
                             }
 
                             for (partitionIndex = 0; partitionIndex < 4; partitionIndex++) {
@@ -7296,8 +7334,11 @@ EB_ERRORTYPE EncodeLcu(
                             }
                             
                             // Code Chroma Mode for Intra
-                            EncodeIntraChromaMode(
-                                cabacEncodeCtxPtr);
+                            for (partitionIndex = 0;
+                                    partitionIndex < ((cabacEncodeCtxPtr->colorFormat == EB_YUV444) ? 4 : 1);
+                                    partitionIndex++) {
+                                EncodeIntraChromaMode(cabacEncodeCtxPtr);
+                            }
 
                             // Encode Transform Unit Split & CBFs
 							Intra4x4EncodeCoeff(
@@ -7311,15 +7352,12 @@ EB_ERRORTYPE EncodeLcu(
 								&deltaQpNotCoded);
 
                             tbPtr->quantizedCoeffsBits += cuQuantizedCoeffsBits;
-                           
-                        } else 
-
-                        {
+                        } else {
                             // Code Partition Size
                             EncodePartitionSize(
-                                cabacEncodeCtxPtr,
-                                cuPtr,
-                                pictureControlSetPtr->lcuMaxDepth);
+                                    cabacEncodeCtxPtr,
+                                    cuPtr,
+                                    pictureControlSetPtr->lcuMaxDepth);
 
                             EB_U8 intraLumaLeftMode;
                             EB_U8 intraLumaTopMode;
@@ -7329,64 +7367,63 @@ EB_ERRORTYPE EncodeLcu(
                             puPtr = cuPtr->predictionUnitArray;
                             // Code Luma Mode for Intra First Stage
                             EncodeIntraLumaModeFirstStage(
-                                cabacEncodeCtxPtr,
-                                cuOriginX,
-                                cuOriginY,
-                                lcuSize,
-                                &intraLumaLeftMode,
-                                &intraLumaTopMode,
-                                puPtr->intraLumaMode,
-                                modeTypeNeighborArray,
-                                intraLumaModeNeighborArray);
+                                    cabacEncodeCtxPtr,
+                                    cuOriginX,
+                                    cuOriginY,
+                                    lcuSize,
+                                    &intraLumaLeftMode,
+                                    &intraLumaTopMode,
+                                    puPtr->intraLumaMode,
+                                    modeTypeNeighborArray,
+                                    intraLumaModeNeighborArray);
 
                             intraLumaMode = (EB_U8)puPtr->intraLumaMode;
 
                             NeighborArrayUnitModeWrite(
-                                intraLumaModeNeighborArray,
-                                (EB_U8*)&intraLumaMode,
-                                cuOriginX,
-                                cuOriginY,
-                                cuSize,
-                                cuSize,
-                                NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-
-                            {
-                                EB_U8 predictionModeFlag = (EB_U8)cuPtr->predictionModeFlag;
-                                NeighborArrayUnitModeWrite(
-                                    modeTypeNeighborArray,
-                                    &predictionModeFlag,
+                                    intraLumaModeNeighborArray,
+                                    (EB_U8*)&intraLumaMode,
                                     cuOriginX,
                                     cuOriginY,
                                     cuSize,
                                     cuSize,
                                     NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+                            {
+                                EB_U8 predictionModeFlag = (EB_U8)cuPtr->predictionModeFlag;
+                                NeighborArrayUnitModeWrite(
+                                        modeTypeNeighborArray,
+                                        &predictionModeFlag,
+                                        cuOriginX,
+                                        cuOriginY,
+                                        cuSize,
+                                        cuSize,
+                                        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
                             }
 
-                        // Get PU Ptr
-                        puPtr = &cuPtr->predictionUnitArray[0];
+                            // Get PU Ptr
+                            puPtr = &cuPtr->predictionUnitArray[0];
 
-                        // Code Luma Mode for Intra Second Stage
-                        EncodeIntraLumaModeSecondStage(
-                            cabacEncodeCtxPtr,
-                            intraLumaLeftMode,
-                            intraLumaTopMode,
-                            puPtr->intraLumaMode);
+                            // Code Luma Mode for Intra Second Stage
+                            EncodeIntraLumaModeSecondStage(
+                                    cabacEncodeCtxPtr,
+                                    intraLumaLeftMode,
+                                    intraLumaTopMode,
+                                    puPtr->intraLumaMode);
 
-                        // Code Chroma Mode for Intra
-                        EncodeIntraChromaMode(
-                            cabacEncodeCtxPtr);
-                        EncodeTuSplitCoeff(
-                            cabacEncodeCtxPtr,
-                            cuPtr,
-                            cuStatsPtr,
-                            coeffPtr,
-                            &cuQuantizedCoeffsBits,
-                            (EB_BOOL)pictureControlSetPtr->useDeltaQp,
-                            &deltaQpNotCoded);
+                            // Code Chroma Mode for Intra
+                            EncodeIntraChromaMode(
+                                    cabacEncodeCtxPtr);
+                            EncodeTuSplitCoeff(
+                                    cabacEncodeCtxPtr,
+                                    cuPtr,
+                                    cuStatsPtr,
+                                    coeffPtr,
+                                    &cuQuantizedCoeffsBits,
+                                    (EB_BOOL)pictureControlSetPtr->useDeltaQp,
+                                    &deltaQpNotCoded);
 
-                        tbPtr->quantizedCoeffsBits += cuQuantizedCoeffsBits;
-
-                    }
+                            tbPtr->quantizedCoeffsBits += cuQuantizedCoeffsBits;
+                        }
                         break;
 
                     case INTER_MODE:

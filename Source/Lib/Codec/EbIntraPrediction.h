@@ -35,11 +35,15 @@ typedef struct IntraReferenceSamples_s {
     EB_U8                  *cbIntraReferenceArray;
     EB_U8                  *crIntraReferenceArray;
     EB_U8                  *yIntraFilteredReferenceArray;
+    EB_U8                  *cbIntraFilteredReferenceArray;
+    EB_U8                  *crIntraFilteredReferenceArray;
 
     EB_U8                  *yIntraReferenceArrayReverse;        
     EB_U8                  *yIntraFilteredReferenceArrayReverse;
     EB_U8                  *cbIntraReferenceArrayReverse;
+    EB_U8                  *cbIntraFilteredReferenceArrayReverse;
     EB_U8                  *crIntraReferenceArrayReverse;
+    EB_U8                  *crIntraFilteredReferenceArrayReverse;
 
     // Scratch buffers used in the interpolaiton process
     EB_U8                   ReferenceAboveLineY[(MAX_PU_SIZE<<2)+1];
@@ -65,11 +69,15 @@ typedef struct IntraReference16bitSamples_s {
     EB_U16                  *cbIntraReferenceArray;
     EB_U16                  *crIntraReferenceArray;
     EB_U16                  *yIntraFilteredReferenceArray;
+    EB_U16                  *cbIntraFilteredReferenceArray;
+    EB_U16                  *crIntraFilteredReferenceArray;
 
     EB_U16                  *yIntraReferenceArrayReverse;        
     EB_U16                  *yIntraFilteredReferenceArrayReverse;
     EB_U16                  *cbIntraReferenceArrayReverse;
+    EB_U16                  *cbIntraFilteredReferenceArrayReverse;
     EB_U16                  *crIntraReferenceArrayReverse;
+    EB_U16                  *crIntraFilteredReferenceArrayReverse;
 
     // Scratch buffers used in the interpolaiton process
     EB_U16                   ReferenceAboveLineY[(MAX_PU_SIZE<<2)+1];
@@ -90,12 +98,14 @@ typedef struct IntraReference16bitSamples_s {
 } IntraReference16bitSamples_t;
 
 extern EB_ERRORTYPE IntraReferenceSamplesCtor(
-    IntraReferenceSamples_t **contextDblPtr);
+        IntraReferenceSamples_t **contextDblPtr,
+        EB_COLOR_FORMAT colorFormat);
 
 
 
 extern EB_ERRORTYPE IntraReference16bitSamplesCtor(
-    IntraReference16bitSamples_t **contextDblPtr);
+    IntraReference16bitSamples_t **contextDblPtr,
+    EB_COLOR_FORMAT colorFormat);
 
 
 
