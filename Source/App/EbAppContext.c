@@ -18,7 +18,6 @@
 #define INPUT_SIZE_1080p_TH				0x1AB3F0	// 1.75 Million
 #define INPUT_SIZE_4K_TH				0x29F630	// 2.75 Million   
 
-#define SIZE_OF_ONE_FRAME_IN_BYTES(width, height,is16bit) ( ( ((width)*(height)*3)>>1 )<<is16bit)
 #define IS_16_BIT(bit_depth) (bit_depth==10?1:0)
 #define EB_OUTPUTSTREAMBUFFERSIZE_MACRO(ResolutionSize)                ((ResolutionSize) < (INPUT_SIZE_1080i_TH) ? 0x1E8480 : (ResolutionSize) < (INPUT_SIZE_1080p_TH) ? 0x2DC6C0 : (ResolutionSize) < (INPUT_SIZE_4K_TH) ? 0x2DC6C0 : 0x2DC6C0  )   
 
@@ -215,6 +214,7 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.recoveryPointSeiFlag = config->recoveryPointSeiFlag;
     callbackData->ebEncParameters.enableTemporalId = config->enableTemporalId;
     callbackData->ebEncParameters.encoderBitDepth = config->encoderBitDepth;
+    callbackData->ebEncParameters.colorFormat = config->encoderColorFormat;
     callbackData->ebEncParameters.compressedTenBitFormat = config->compressedTenBitFormat;
     callbackData->ebEncParameters.profile = config->profile;
     callbackData->ebEncParameters.tier = config->tier;
@@ -249,24 +249,24 @@ EB_ERRORTYPE AllocateFrameBuffer(
     EB_ERRORTYPE   return_error = EB_ErrorNone;
 
     const int tenBitPackedMode = (config->encoderBitDepth > 8) && (config->compressedTenBitFormat == 0) ? 1 : 0;
+    const EB_COLOR_FORMAT colorFormat = config->encoderColorFormat;    // Chroma subsampling 
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
 
     // Determine size of each plane
     const size_t luma8bitSize =
-
         config->inputPaddedWidth    *
         config->inputPaddedHeight   *
-
         (1 << tenBitPackedMode);
 
-    const size_t chroma8bitSize = luma8bitSize >> 2;
+    const size_t chroma8bitSize = luma8bitSize >> (3 - colorFormat);
     const size_t luma10bitSize = (config->encoderBitDepth > 8 && tenBitPackedMode == 0) ? luma8bitSize : 0;
     const size_t chroma10bitSize = (config->encoderBitDepth > 8 && tenBitPackedMode == 0) ? chroma8bitSize : 0;
 
     // Determine  
     EB_H265_ENC_INPUT* inputPtr = (EB_H265_ENC_INPUT*)pBuffer;
     inputPtr->yStride = config->inputPaddedWidth;
-    inputPtr->crStride = config->inputPaddedWidth >> 1;
-    inputPtr->cbStride = config->inputPaddedWidth >> 1;
+    inputPtr->crStride = config->inputPaddedWidth >> subWidthCMinus1;
+    inputPtr->cbStride = config->inputPaddedWidth >> subWidthCMinus1;
     if (luma8bitSize) {
         EB_APP_MALLOC(unsigned char*, inputPtr->luma, luma8bitSize, EB_N_PTR, EB_ErrorInsufficientResources);
     }
@@ -345,15 +345,12 @@ EB_ERRORTYPE AllocateOutputReconBuffers(
     EbConfig_t				*config,
     EbAppContext_t			*callbackData)
 {
-
     EB_ERRORTYPE   return_error = EB_ErrorNone;
-    const size_t lumaSize =
-        config->inputPaddedWidth    *
-        config->inputPaddedHeight;
+    const size_t lumaSize = config->inputPaddedWidth * config->inputPaddedHeight;
     // both u and v
-    const size_t chromaSize = lumaSize >> 1;
+    const size_t chromaSize = lumaSize >> (3 - config->encoderColorFormat);
     const size_t tenBit = (config->encoderBitDepth > 8);
-    const size_t frameSize = (lumaSize + chromaSize) << tenBit;
+    const size_t frameSize = (lumaSize + 2 * chromaSize) << tenBit;
 
 // ... Recon Port
     EB_APP_MALLOC(EB_BUFFERHEADERTYPE*, callbackData->reconBuffer, sizeof(EB_BUFFERHEADERTYPE), EB_N_PTR, EB_ErrorInsufficientResources);
@@ -390,10 +387,12 @@ EB_ERRORTYPE AllocateOutputBuffers(
     return return_error;
 }
 
-EB_ERRORTYPE PreloadFramesIntoRam(
+static EB_ERRORTYPE PreloadFramesIntoRam(
     EbConfig_t				*config)
 {
     EB_ERRORTYPE    return_error = EB_ErrorNone;
+    const EB_COLOR_FORMAT colorFormat = config->encoderColorFormat;    // Chroma subsampling 
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
     int             processedFrameCount;
     int             filledLen;
     int             inputPaddedWidth = config->inputPaddedWidth;
@@ -405,15 +404,15 @@ EB_ERRORTYPE PreloadFramesIntoRam(
 
     if (config->encoderBitDepth == 10 && config->compressedTenBitFormat == 1)
     {
-
+        //TODO here
         readSize = (inputPaddedWidth*inputPaddedHeight * 3) / 2 + (inputPaddedWidth / 4 * inputPaddedHeight * 3) / 2;
 
     }
     else
     {
-
-        readSize = inputPaddedWidth * inputPaddedHeight * 3 * (config->encoderBitDepth > 8 ? 2 : 1) / 2;
-
+        readSize = inputPaddedWidth * inputPaddedHeight; //Luma
+        readSize += 2 * (readSize >> (3 - config->encoderColorFormat)); // Add Chroma
+        readSize *= (config->encoderBitDepth > 8 ? 2 : 1); //10 bit
     }
     EB_APP_MALLOC(unsigned char **, config->sequenceBuffer, sizeof(unsigned char*) * config->bufferedInput, EB_N_PTR, EB_ErrorInsufficientResources);
 
@@ -422,6 +421,7 @@ EB_ERRORTYPE PreloadFramesIntoRam(
         EB_APP_MALLOC(unsigned char*, config->sequenceBuffer[processedFrameCount], readSize, EB_N_PTR, EB_ErrorInsufficientResources);
         // Interlaced Video
         if (config->separateFields) {
+            // TODO: Jing for interlace input for 422/444
             EB_BOOL is16bit = config->encoderBitDepth > 8;
             if (is16bit == 0 || (is16bit == 1 && config->compressedTenBitFormat == 0)) {
 

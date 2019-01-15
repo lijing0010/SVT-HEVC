@@ -40,6 +40,7 @@
 #define FRAME_RATE_NUMERATOR_TOKEN      "-fps-num"
 #define FRAME_RATE_DENOMINATOR_TOKEN    "-fps-denom"
 #define ENCODER_BIT_DEPTH               "-bit-depth"
+#define ENCODER_COLOR_FORMAT            "-color-format"
 #define INPUT_COMPRESSED_TEN_BIT_FORMAT "-compressed-ten-bit-format"
 #define ENCMODE_TOKEN                   "-encMode"
 #define HIERARCHICAL_LEVELS_TOKEN       "-hierarchical-levels" // no Eval
@@ -163,6 +164,7 @@ static void SetFrameRate                        (const char *value, EbConfig_t *
 static void SetFrameRateNumerator               (const char *value, EbConfig_t *cfg) { cfg->frameRateNumerator = strtoul(value, NULL, 0);};
 static void SetFrameRateDenominator             (const char *value, EbConfig_t *cfg) { cfg->frameRateDenominator = strtoul(value, NULL, 0);};
 static void SetEncoderBitDepth                  (const char *value, EbConfig_t *cfg) {cfg->encoderBitDepth = strtoul(value, NULL, 0);}
+static void SetEncoderColorFormat               (const char *value, EbConfig_t *cfg) {cfg->encoderColorFormat = strtoul(value, NULL, 0);}
 static void SetcompressedTenBitFormat			(const char *value, EbConfig_t *cfg) {cfg->compressedTenBitFormat = strtoul(value, NULL, 0);}
 static void SetBaseLayerSwitchMode              (const char *value, EbConfig_t *cfg) {cfg->baseLayerSwitchMode = (EB_BOOL) strtoul(value, NULL, 0);};
 static void SetencMode                          (const char *value, EbConfig_t *cfg) {cfg->encMode = (EB_U8)strtoul(value, NULL, 0);};
@@ -280,6 +282,7 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, FRAME_RATE_NUMERATOR_TOKEN, "FrameRateNumerator", SetFrameRateNumerator },
     { SINGLE_INPUT, FRAME_RATE_DENOMINATOR_TOKEN, "FrameRateDenominator", SetFrameRateDenominator },
     { SINGLE_INPUT, ENCODER_BIT_DEPTH, "EncoderBitDepth", SetEncoderBitDepth },
+    { SINGLE_INPUT, ENCODER_COLOR_FORMAT, "420:1, 422:2, 444:3", SetEncoderColorFormat},
 	{ SINGLE_INPUT, INPUT_COMPRESSED_TEN_BIT_FORMAT, "CompressedTenBitFormat", SetcompressedTenBitFormat },
 	{ SINGLE_INPUT, HIERARCHICAL_LEVELS_TOKEN, "HierarchicalLevels", SetHierarchicalLevels },
 
@@ -387,6 +390,7 @@ void EbConfigCtor(EbConfig_t *configPtr)
     configPtr->frameRateNumerator                   = 0;
     configPtr->frameRateDenominator                 = 0;
     configPtr->encoderBitDepth                      = 8;    
+    configPtr->encoderColorFormat                   = EB_YUV420;
 	configPtr->compressedTenBitFormat			    = 0;
     configPtr->sourceWidth                          = 0;
     configPtr->sourceHeight                         = 0;
@@ -791,6 +795,12 @@ static EB_ERRORTYPE VerifySettings(EbConfig_t *config, unsigned int channelNumbe
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->encoderColorFormat == EB_YUV400 || config->encoderColorFormat > EB_YUV444)
+    {
+        fprintf(config->errorLogFile, "Error instance %u: only support 420/422/444 \n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
+
     if (config->injector > 1 ){
         fprintf(config->errorLogFile, "Error Instance %u: Invalid injector [0 - 1]\n",channelNumber+1);
         return_error = EB_ErrorBadParameter;
@@ -939,7 +949,8 @@ EB_BOOL is_negative_number(const char* string) {
     return EB_TRUE;
 }
 
-#define SIZE_OF_ONE_FRAME_IN_BYTES(width, height,is16bit) ( ( ((width)*(height)*3)>>1 )<<is16bit)
+#define SIZE_OF_ONE_FRAME_IN_BYTES(width, height, csp, is16bit) \
+    ( (((width)*(height)) + 2*(((width)*(height))>>(3-csp)) )<<is16bit)
 // Computes the number of frames in the input file
 EB_S32 ComputeFramesToBeEncoded(
     EbConfig_t   *config)
@@ -952,7 +963,7 @@ EB_S32 ComputeFramesToBeEncoded(
         fileSize = ftello64(config->inputFile);
     }
     
-    frameSize = SIZE_OF_ONE_FRAME_IN_BYTES(config->inputPaddedWidth, config->inputPaddedHeight, (EB_U8)((config->encoderBitDepth == 10) ? 1 : 0));
+    frameSize = SIZE_OF_ONE_FRAME_IN_BYTES(config->inputPaddedWidth, config->inputPaddedHeight, config->encoderColorFormat, (EB_U8)((config->encoderBitDepth == 10) ? 1 : 0));
 
     if (frameSize == 0)
         return -1;

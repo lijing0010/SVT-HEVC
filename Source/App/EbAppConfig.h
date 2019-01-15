@@ -274,8 +274,9 @@ typedef struct EbConfig_s
     EB_S32                 frameRateDenominator;
     EB_S32                 injectorFrameRate;
     EB_U32                 injector;
-    EB_U32                  speedControlFlag;
+    EB_U32                 speedControlFlag;
     EB_U32                 encoderBitDepth;
+    EB_U32                 encoderColorFormat;
 	EB_U32                 compressedTenBitFormat;
     EB_U32                 sourceWidth;
     EB_U32                 sourceHeight;
