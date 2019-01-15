@@ -105,6 +105,8 @@ void IntraModeVerticalChroma_SSE2_INTRIN(
     EB_U32 pStride = predictionBufferStride;
     EB_U32 topOffset = (size << 1) + 1;
 
+    // Jing: 
+    // TODO: add size == 32 for 444
     if (!skip) {
 
         if (size == 16) {
@@ -492,6 +494,8 @@ void IntraModeHorizontalChroma_SSE2_INTRIN(
 {
     EB_U32 pStride = predictionBufferStride;
     EB_U32 leftOffset = 0;
+    //Jing:
+    //TODO: add size == 32 for 444
     
     if (!skip) {
 
@@ -634,6 +638,8 @@ void IntraModeDCChroma_SSE2_INTRIN(
     EB_U32 topOffset = (size << 1) + 1;
     EB_U32 leftOffset = 0;
     
+    //Jing:
+    //TODO: add size == 32 for 444
     if (!skip) {
 
         if (size == 16) {

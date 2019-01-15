@@ -3243,14 +3243,14 @@ EB_EXTERN void EncodePass(
                 cbQp = MIN(qpScaled, 51);
             }
 
-            //-------------------------------
+#if 0
             //TODO:debug here if needed
-            //cuPtr->predictionUnitArray->intraLumaMode = 10; //6~14 horizontal, 22~30 vertical
+            cuPtr->predictionUnitArray->intraLumaMode = 10; //6~14 horizontal, 22~30 vertical
             if (MD_SCAN_TO_RASTER_SCAN[cuItr] >= 21) {
                 // Split all 8x8 to 4x4 mode
-                cuPtr->predictionUnitArray->intraLumaMode = EB_INTRA_MODE_4x4;
+                //cuPtr->predictionUnitArray->intraLumaMode = EB_INTRA_MODE_4x4;
             }
-            //---------------------------------
+#endif
             
             if (cuPtr->predictionModeFlag == INTRA_MODE &&
                     cuPtr->predictionUnitArray->intraLumaMode != EB_INTRA_MODE_4x4) {
