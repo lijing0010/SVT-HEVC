@@ -489,7 +489,7 @@ static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraVerticalChroma_funcPtrArray[EB_ASM_TY
     // C_DEFAULT
     IntraModeVerticalChroma,
     // AVX2
-    IntraModeVerticalChroma_SSE2_INTRIN,
+    IntraModeVerticalChroma_AVX2_INTRIN,
 };
 
 static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraVerticalChroma_16bit_funcPtrArray[EB_ASM_TYPE_TOTAL] = {
@@ -554,7 +554,7 @@ static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraDCChroma_funcPtrArray[EB_ASM_TYPE_TOT
     // C_DEFAULT
     IntraModeDCChroma,
     // AVX2
-    IntraModeDCChroma_SSE2_INTRIN,
+    IntraModeDCChroma_AVX2_INTRIN,
 };
 
 static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraDCChroma_16bit_funcPtrArray[EB_ASM_TYPE_TOTAL] = {
