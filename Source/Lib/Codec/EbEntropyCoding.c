@@ -1845,8 +1845,8 @@ void EncodeQuantizedCoefficients_SSE2(
 			//intraLumaMode   = candidatePtr->intraLumaMode[0];
 			//intraChromaMode = candidatePtr->intraChromaMode[0];
 
-			if ((EB_S32)logBlockSize <= 3 - isChroma)
-			{
+            if ((((EB_S32)logBlockSize) <= 3 - isChroma) ||
+                    (((EB_S32)logBlockSize) == 3 && cabacEncodeCtxPtr->colorFormat == EB_YUV444)) {
 				EB_U32 tempIntraChromaMode = chromaMappingTable[intraChromaMode];
 				EB_S32 intraMode = (!isChroma || tempIntraChromaMode == EB_INTRA_CHROMA_DM) ? intraLumaMode : tempIntraChromaMode;
 
@@ -1854,8 +1854,7 @@ void EncodeQuantizedCoefficients_SSE2(
                    intraMode = intra422PredModeMap[intraLumaMode];
                 }
 
-				if (ABS(8 - ((intraMode - 2) & 15)) <= 4)
-				{
+				if (ABS(8 - ((intraMode - 2) & 15)) <= 4) {
 					scanIndex = (intraMode & 16) ? SCAN_HOR2 : SCAN_VER2;
 				}
 			}
@@ -2119,7 +2118,7 @@ void EncodeQuantizedCoefficients_SSE2(
 			}
 			else
 			{
-				tempOffset = (logBlockSize == 3) ? (scanIndex == SCAN_DIAG2 ? 9 : 15) : (!isChroma ? 21 : 12);
+				tempOffset = (logBlockSize == 3) ? ((scanIndex == SCAN_DIAG2 || isChroma) ? 9 : 15) : (!isChroma ? 21 : 12);
 				tempOffset += (!isChroma && subSetIndex != 0) ? 3 : 0;
 				contextIndexMapPtr = contextIndexMap8[scanIndex != SCAN_DIAG2][significantFlagContextPattern] - subPosition;
 			}
