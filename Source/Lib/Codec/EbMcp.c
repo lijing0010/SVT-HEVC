@@ -278,7 +278,6 @@ void UniPredInterpolation16bit(
     fracPosx = posX & 0x03;
     fracPosy = posY & 0x03;
 
-//EB_U32  lumaOffSet = ((refList0PosX >> 2) - 4) * 2 + ((refList0PosY >> 2) - 4) * 2 * refPicList0->strideY;
 	uniPredLuma16bitIFFunctionPtrArray[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 2)](
 		(EB_U16 *)fullPelBlock->bufferY + 4 + 4 * fullPelBlock->strideY,
 		fullPelBlock->strideY,
@@ -292,8 +291,8 @@ void UniPredInterpolation16bit(
     //compute the chroma fractional position
     //integPosx = (posX >> 3);
     //integPosy = (posY >> 3);
-    fracPosx  = (posX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
-    fracPosy  = (posY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
+    fracPosx  = (posX & (0x07 >> (1 - subWidthCMinus1))) << (1 - subWidthCMinus1);
+    fracPosy  = (posY & (0x07 >> (1 - subHeightCMinus1))) << (1 - subHeightCMinus1);
 
 	uniPredChromaIFFunctionPtrArrayNew16bit[(ASM_TYPES & AVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
 		(EB_U16 *)fullPelBlock->bufferCb + 2 + 2 * fullPelBlock->strideCb,
@@ -581,9 +580,9 @@ void EncodeBiPredInterpolation(
     EB_U8    fracPosx;
     EB_U8    fracPosy;
 
-    EB_COLOR_FORMAT colorFormat=biDst->colorFormat;
-    EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
-    EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+    const EB_COLOR_FORMAT colorFormat = biDst->colorFormat;
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
 
     EB_U32   chromaPuWidth      = puWidth >> subWidthCMinus1;
     EB_U32   chromaPuHeight     = puHeight >> subHeightCMinus1;
@@ -822,8 +821,11 @@ void BiPredInterpolation16bit(
 	//EB_U32   integPosy;
 	EB_U8    fracPosx;
 	EB_U8    fracPosy;
-	EB_U32   chromaPuWidth = puWidth >> 1;
-	EB_U32   chromaPuHeight = puHeight >> 1;
+    const EB_COLOR_FORMAT colorFormat = biDst->colorFormat;
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+	EB_U32   chromaPuWidth = puWidth >> subWidthCMinus1;
+	EB_U32   chromaPuHeight = puHeight >> subHeightCMinus1;
 	EB_U32   lumaTempBufSize = puWidth * puHeight;
 	EB_U32   chromaTempBufSize = chromaPuWidth * chromaPuHeight;
 
@@ -894,11 +896,11 @@ void BiPredInterpolation16bit(
 			biDst->strideY);
 	}
 
-	fracPosL0x = refList0PosX & 0x07;
-	fracPosL0y = refList0PosY & 0x07;
+	fracPosL0x = (refList0PosX & (0x07 >> (1 - subWidthCMinus1))) << (1 - subWidthCMinus1);
+	fracPosL0y = (refList0PosY & (0x07 >> (1 - subHeightCMinus1))) << (1 - subHeightCMinus1);
 
-	fracPosL1x = refList1PosX & 0x07;
-	fracPosL1y = refList1PosY & 0x07;
+	fracPosL1x = (refList1PosX & (0x07 >> (1 - subWidthCMinus1))) << (1 - subWidthCMinus1);
+	fracPosL1y = (refList1PosY & (0x07 >> (1 - subHeightCMinus1))) << (1 - subHeightCMinus1);
 
 	if (((fracPosL0x + (fracPosL0y << 2)) == 0) && ((fracPosL1x + (fracPosL1y << 2)) == 0))
 	{
@@ -931,8 +933,8 @@ void BiPredInterpolation16bit(
 		//List0 chroma
 		//integPosx = (refList0PosX >> 3);
 		//integPosy = (refList0PosY >> 3);
-		fracPosx = refList0PosX & 0x07;
-		fracPosy = refList0PosY & 0x07;
+		fracPosx = (refList0PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+		fracPosy = (refList0PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 		biPredChromaIFFunctionPtrArrayNew16bit[(ASM_TYPES & AVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
 			(EB_U16 *)fullPelBlockL0->bufferCb + 2 + 2 * fullPelBlockL0->strideCb,
@@ -962,8 +964,8 @@ void BiPredInterpolation16bit(
 		//List1 chroma
 		//integPosx = (refList1PosX >> 3);
 		//integPosy = (refList1PosY >> 3);
-		fracPosx = refList1PosX & 0x07;
-		fracPosy = refList1PosY & 0x07;
+		fracPosx = (refList1PosX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+		fracPosy = (refList1PosY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 		biPredChromaIFFunctionPtrArrayNew16bit[(ASM_TYPES & AVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
 			(EB_U16 *)fullPelBlockL1->bufferCb + 2 + 2 * fullPelBlockL1->strideCb,
