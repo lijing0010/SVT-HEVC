@@ -258,12 +258,15 @@ void UniPredInterpolation16bit(
     EB_U32                 dstChromaIndex,          //input parameter, please refer to the detailed explanation above.
     EB_S16                *tempBuf0)                //input parameter, please refer to the detailed explanation above.
 {
+    const EB_COLOR_FORMAT colorFormat=dst->colorFormat;
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
     //EB_U32   integPosx;
     //EB_U32   integPosy;
-    EB_U8    fracPosx;
-    EB_U8    fracPosy;
-    EB_U32   chromaPuWidth      = puWidth >> 1;
-    EB_U32   chromaPuHeight     = puHeight >> 1;
+    EB_U8 fracPosx;
+    EB_U8 fracPosy;
+    EB_U32 chromaPuWidth = puWidth >> subWidthCMinus1;
+    EB_U32 chromaPuHeight = puHeight >> subHeightCMinus1;
 
     //EB_U32   position;
     (void)refPic;
@@ -272,11 +275,12 @@ void UniPredInterpolation16bit(
     //compute the luma fractional position
     // integPosx = (posX >> 2);
     // integPosy = (posY >> 2);
-    fracPosx  = posX & 0x03;
-    fracPosy  = posY & 0x03;
+    fracPosx = posX & 0x03;
+    fracPosy = posY & 0x03;
 
+//EB_U32  lumaOffSet = ((refList0PosX >> 2) - 4) * 2 + ((refList0PosY >> 2) - 4) * 2 * refPicList0->strideY;
 	uniPredLuma16bitIFFunctionPtrArray[(ASM_TYPES & PREAVX2_MASK) && 1][fracPosx + (fracPosy << 2)](
-		(EB_U16 *)fullPelBlock->bufferY + 4 + 4 * fullPelBlock->strideY, //Jing, why 4 here?
+		(EB_U16 *)fullPelBlock->bufferY + 4 + 4 * fullPelBlock->strideY,
 		fullPelBlock->strideY,
 		(EB_U16*)(dst->bufferY) + dstLumaIndex,
 		dst->strideY,
@@ -288,8 +292,8 @@ void UniPredInterpolation16bit(
     //compute the chroma fractional position
     //integPosx = (posX >> 3);
     //integPosy = (posY >> 3);
-    fracPosx  = posX & 0x07;
-    fracPosy  = posY & 0x07;
+    fracPosx  = (posX & (0x07 >> (1-subWidthCMinus1))) << (1-subWidthCMinus1);
+    fracPosy  = (posY & (0x07 >> (1-subHeightCMinus1))) << (1-subHeightCMinus1);
 
 	uniPredChromaIFFunctionPtrArrayNew16bit[(ASM_TYPES & AVX2_MASK) && 1][fracPosx + (fracPosy << 3)](
 		(EB_U16 *)fullPelBlock->bufferCb + 2 + 2 * fullPelBlock->strideCb,
