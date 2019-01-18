@@ -54,7 +54,6 @@ static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char
         }
         free(tmpBuf);
     }
-    //printf("---Seek to offset %d(POC pos) for writting\n", offset/descSize);
     fseek(fp, offset, SEEK_SET);
     assert(ftell(fp) == offset);
 
@@ -1357,14 +1356,17 @@ static void EncodeLoop16bit(
     const EB_U32 scratchLumaOffset  = ((originY & 63) * 64) + (originX & 63);
 
 	const EB_U32 inputCbOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * inputSamples16bit->strideCb) + ((originX & 63) >> subWidthCMinus1);
+	const EB_U32 inputCrOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * inputSamples16bit->strideCr) + ((originX & 63) >> subWidthCMinus1);
+
 	const EB_U32 predCbOffset = ((predSamples->originX + originX) >> subWidthCMinus1) +
         (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCb);
-	const EB_U32 scratchCbOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32) + ((originX & 63) >> subWidthCMinus1);
-
-	const EB_U32 inputCrOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * inputSamples16bit->strideCr) + ((originX & 63) >> subWidthCMinus1);
 	const EB_U32 predCrOffset = ((predSamples->originX + originX) >> subWidthCMinus1) +
         (((predSamples->originY + originY + tuChromaOffset) >> subHeightCMinus1) * predSamples->strideCr);
-	const EB_U32 scratchCrOffset = ((((originY + tuChromaOffset) & 63) >> subHeightCMinus1) * 32) + ((originX & 63) >> subWidthCMinus1);
+
+	const EB_U32 scratchCbOffset = ((originX & (64 - 1)) >> subWidthCMinus1) + 
+        ((((originY + tuChromaOffset) & (64 - 1)) >> subHeightCMinus1) * (64 >> subWidthCMinus1));
+	const EB_U32 scratchCrOffset = ((originX & (64 - 1)) >> subWidthCMinus1) +
+        ((((originY + tuChromaOffset) & (64 - 1)) >> subHeightCMinus1) * (64 >> subWidthCMinus1));
 
     EB_U8 enableContouringQCUpdateFlag;
 
@@ -3188,11 +3190,6 @@ EB_EXTERN void EncodePass(
         pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag ||
         sequenceControlSetPtr->staticConfig.reconEnabled;
 
-    //TODO:
-    //Jing:debug here
-    doRecon = EB_TRUE;
-    ////////
-
     CabacCost_t *cabacCost = pictureControlSetPtr->cabacCost;
     EntropyCoder_t *coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
     EB_U8 cuItr;
@@ -4106,6 +4103,26 @@ EB_EXTERN void EncodePass(
                         }
                     }
                 }
+#ifdef DEBUG_REF_INFO
+                        {
+                            int originX = contextPtr->cuOriginX;
+                            int originY = contextPtr->cuOriginY;
+                            int tuSize = cuStats->size;
+                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+                            printf("\n----- Dump prediction for inter block (%d, %d), cu size %d, mv is (%d, %d)-----\n",
+                                    originX, originY, tuSize,
+                                    contextPtr->mvUnit.mv[REF_LIST_0].x,
+                                    contextPtr->mvUnit.mv[REF_LIST_0].y);
+
+                            printf("----dump Cb prediction block----\n");
+                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                            if (colorFormat == EB_YUV422) {
+                                printf("----dump 2nd Cb prediction block----\n");
+                                dump_block_from_desc(chroma_size, reconBuffer, originX, originY+chroma_size, 1);
+                            }
+                            //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                        }
+#endif
 
                 contextPtr->tuItr = (cuStats->size < MAX_LCU_SIZE) ? 0 : 1;
 
