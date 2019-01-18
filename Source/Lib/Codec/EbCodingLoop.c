@@ -3348,7 +3348,7 @@ EB_EXTERN void EncodePass(
 
 #if 0
             //TODO:debug here if needed
-            //cuPtr->predictionUnitArray->intraLumaMode = 10; //6~14 horizontal, 22~30 vertical
+            cuPtr->predictionUnitArray->intraLumaMode = 26; //6~14 horizontal, 22~30 vertical
             if (MD_SCAN_TO_RASTER_SCAN[cuItr] >= 21) {
                 // Split all 8x8 to 4x4 mode
                 cuPtr->predictionUnitArray->intraLumaMode = EB_INTRA_MODE_4x4;
@@ -3470,7 +3470,7 @@ EB_EXTERN void EncodePass(
                             int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
 
                             dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
-                            //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
                         }
 #endif
                         // Encode Transform Unit -INTRA-
@@ -3798,6 +3798,11 @@ EB_EXTERN void EncodePass(
                             dump_left_array(epCbReconNeighborArray, partitionOriginY, MIN_PU_SIZE*2);
                             dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
                                     MIN_PU_SIZE * 4 + 1, 1, is16bit);
+                            printf("\n----Dump Cr intra reference info at (%d, %d) for 1st Chroma block-----\n",
+                                    partitionOriginX, partitionOriginY);
+                            dump_left_array(epCrReconNeighborArray, partitionOriginY, MIN_PU_SIZE*2);
+                            dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
+                                    MIN_PU_SIZE * 4 + 1, 1, is16bit);
                             printf("---------------------------------------------\n");
 #endif
                     }
@@ -3844,6 +3849,7 @@ EB_EXTERN void EncodePass(
 
                         dump_block_from_desc(debug_tuSize, reconBuffer, debug_originX, debug_originY, 0);
                         dump_block_from_desc(debug_chroma_size, reconBuffer, debug_originX, debug_originY, 1);
+                        dump_block_from_desc(debug_chroma_size, reconBuffer, debug_originX, debug_originY, 2);
                         //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
 #endif
                     
@@ -3896,8 +3902,8 @@ EB_EXTERN void EncodePass(
 						reconBuffer,
 						residualBuffer,
 						transformInnerArrayPtr);
-#ifdef DEBUG_TMP1
-                    //printf("---- Dump 4x4 Recon at cu position (%d, %d) ----\n", partitionOriginX, partitionOriginY);
+#ifdef DEBUG_REF_INFO
+                    printf("---- Dump 4x4 Recon at cu position (%d, %d) ----\n", partitionOriginX, partitionOriginY);
                     dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 0);
                     if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
                         dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 1);
