@@ -7191,8 +7191,12 @@ EB_ERRORTYPE EncodeLcu(
 					cuPtr->transformUnitArray[4].lumaCbf ||
                         cuPtr->transformUnitArray[1].crCbf ||
                         cuPtr->transformUnitArray[1].cbCbf ||
-                        cuPtr->transformUnitArray[3].crCbf || // 422 case will use 3rd 4x4 for the 2nd chroma
-                        cuPtr->transformUnitArray[3].cbCbf) ? EB_TRUE : EB_FALSE;
+                        cuPtr->transformUnitArray[2].crCbf ||
+                        cuPtr->transformUnitArray[2].cbCbf ||
+                        cuPtr->transformUnitArray[3].crCbf ||
+                        cuPtr->transformUnitArray[3].cbCbf ||
+                        cuPtr->transformUnitArray[4].crCbf || // 422 case will use 3rd 4x4 for the 2nd chroma
+                        cuPtr->transformUnitArray[4].cbCbf) ? EB_TRUE : EB_FALSE;
                 } else {
                     availableCoeff = (cuPtr->predictionModeFlag == INTER_MODE) ? (EB_BOOL)cuPtr->rootCbf :
                         (cuPtr->transformUnitArray[cuSize == sequenceControlSetPtr->lcuSize ? 1 : 0].lumaCbf ||

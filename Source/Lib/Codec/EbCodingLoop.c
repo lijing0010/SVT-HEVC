@@ -4626,16 +4626,23 @@ EB_EXTERN void EncodePass(
 
 
             if (dlfEnableFlag) {
+                // TODO: Jing:
+                // Double check 422/444 for availableCoeff here
                 // Assign the LCU-level QP  
                 if (cuPtr->predictionModeFlag == INTRA_MODE && puPtr->intraLumaMode == EB_INTRA_MODE_4x4) {
-					availableCoeff = (
-						contextPtr->cuPtr->transformUnitArray[1].lumaCbf ||
-						contextPtr->cuPtr->transformUnitArray[2].lumaCbf ||
-						contextPtr->cuPtr->transformUnitArray[3].lumaCbf ||
-						contextPtr->cuPtr->transformUnitArray[4].lumaCbf ||
+                    availableCoeff = (
+                        contextPtr->cuPtr->transformUnitArray[1].lumaCbf ||
+                        contextPtr->cuPtr->transformUnitArray[2].lumaCbf ||
+                        contextPtr->cuPtr->transformUnitArray[3].lumaCbf ||
+                        contextPtr->cuPtr->transformUnitArray[4].lumaCbf ||
                         contextPtr->cuPtr->transformUnitArray[1].crCbf ||
-                        contextPtr->cuPtr->transformUnitArray[1].cbCbf) ? EB_TRUE : EB_FALSE;
-
+                        contextPtr->cuPtr->transformUnitArray[1].cbCbf ||
+                        contextPtr->cuPtr->transformUnitArray[2].crCbf ||
+                        contextPtr->cuPtr->transformUnitArray[2].cbCbf ||
+                        contextPtr->cuPtr->transformUnitArray[3].crCbf ||
+                        contextPtr->cuPtr->transformUnitArray[3].cbCbf ||
+                        contextPtr->cuPtr->transformUnitArray[4].crCbf || // 422 case will use 3rd 4x4 for the 2nd chroma
+                        contextPtr->cuPtr->transformUnitArray[4].cbCbf) ? EB_TRUE : EB_FALSE;
                 } else {
                     availableCoeff = (cuPtr->predictionModeFlag == INTER_MODE) ? (EB_BOOL)cuPtr->rootCbf :
                         (cuPtr->transformUnitArray[cuStats->size == MAX_LCU_SIZE ? 1 : 0].lumaCbf ||
