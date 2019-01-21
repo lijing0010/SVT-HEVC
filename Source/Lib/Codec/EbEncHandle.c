@@ -3607,13 +3607,14 @@ EB_ERRORTYPE EbOutputReconBufferHeaderCtor(
 {
     EB_BUFFERHEADERTYPE         *reconBuffer;
     SequenceControlSet_t        *sequenceControlSetPtr = (SequenceControlSet_t*)objectInitDataPtr;
-    const EB_U32 lumaSize =
-        sequenceControlSetPtr->lumaWidth    *
-        sequenceControlSetPtr->lumaHeight;
+    const EB_COLOR_FORMAT colorFormat = (EB_COLOR_FORMAT)sequenceControlSetPtr->chromaFormatIdc;
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+    const EB_U32 lumaSize = sequenceControlSetPtr->lumaWidth * sequenceControlSetPtr->lumaHeight;
     // both u and v
-    const EB_U32 chromaSize = lumaSize >> 1;
+    const EB_U32 chromaSize = lumaSize >> (3 - colorFormat);
     const EB_U32 tenBit = (sequenceControlSetPtr->staticConfig.encoderBitDepth > 8);
-    const EB_U32 frameSize = (lumaSize + chromaSize) << tenBit;
+    const EB_U32 frameSize = (lumaSize + 2 * chromaSize) << tenBit;
 
     EB_MALLOC(EB_BUFFERHEADERTYPE*, reconBuffer, sizeof(EB_BUFFERHEADERTYPE), EB_N_PTR);
     *objectDblPtr = (EB_PTR)reconBuffer;

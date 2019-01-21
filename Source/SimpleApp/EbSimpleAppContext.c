@@ -111,13 +111,11 @@ EB_ERRORTYPE EbAppContextCtor(EbAppContext_t *contextPtr, EbConfig_t *config)
     if (config->reconFile) {
         contextPtr->reconBuffer = (EB_BUFFERHEADERTYPE*)malloc(sizeof(EB_BUFFERHEADERTYPE));
         if (!contextPtr->reconBuffer) return return_error;
-        const size_t lumaSize =
-            config->inputPaddedWidth    *
-            config->inputPaddedHeight;
+        const size_t lumaSize = config->inputPaddedWidth * config->inputPaddedHeight;
         // both u and v
-        const size_t chromaSize = lumaSize >> 1;
+        const size_t chromaSize = lumaSize >> (3 - config->colorFormat);
         const size_t tenBit = (config->encoderBitDepth > 8);
-        const size_t frameSize = (lumaSize + chromaSize) << tenBit;
+        const size_t frameSize = (lumaSize + 2 * chromaSize) << tenBit;
 
         // Initialize Header
         contextPtr->reconBuffer->nSize = sizeof(EB_BUFFERHEADERTYPE);
@@ -174,10 +172,10 @@ EB_ERRORTYPE CopyConfigurationParameters(
     callbackData->ebEncParameters.codeVpsSpsPps     = 0;
     callbackData->ebEncParameters.reconEnabled      = config->reconFile ? 1 : 0;
 
-//    callbackData->ebEncParameters.asmType= 0;
+    //callbackData->ebEncParameters.asmType= 0;
     callbackData->ebEncParameters.disableDlfFlag = 1;
     callbackData->ebEncParameters.enableSaoFlag = 0;
-    callbackData->ebEncParameters.qp=30;
+    callbackData->ebEncParameters.qp=20;
     callbackData->ebEncParameters.rateControlMode=0;
     callbackData->ebEncParameters.encMode = 1;
     callbackData->ebEncParameters.hierarchicalLevels = 2;

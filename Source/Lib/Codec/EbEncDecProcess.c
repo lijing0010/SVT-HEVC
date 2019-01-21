@@ -1621,6 +1621,11 @@ static void ReconOutput(
     EB_BUFFERHEADERTYPE           *outputReconPtr;
     EncodeContext_t               *encodeContextPtr = sequenceControlSetPtr->encodeContextPtr;
     EB_BOOL is16bit = (sequenceControlSetPtr->staticConfig.encoderBitDepth > EB_8BIT);
+
+    const EB_COLOR_FORMAT colorFormat = (EB_COLOR_FORMAT)sequenceControlSetPtr->chromaFormatIdc;
+    const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    const EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+
     // The totalNumberOfReconFrames counter has to be write/read protected as
     //   it is used to determine the end of the stream.  If it is not protected
     //   the encoder might not properly terminate.
@@ -1687,8 +1692,9 @@ static void ReconOutput(
         outputReconPtr->nFilledLen += sampleTotalCount;
 
         // U Recon Samples
-        sampleTotalCount = ((reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) * (reconPtr->maxHeight - sequenceControlSetPtr->maxInputPadBottom) >> 2) << is16bit;
-        reconReadPtr = reconPtr->bufferCb + ((reconPtr->originY << is16bit) >> 1) * reconPtr->strideCb + ((reconPtr->originX << is16bit) >> 1);
+        sampleTotalCount = ((reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) * (reconPtr->maxHeight - sequenceControlSetPtr->maxInputPadBottom) >> (3 - colorFormat)) << is16bit;
+        reconReadPtr = reconPtr->bufferCb + ((reconPtr->originX << is16bit) >> subWidthCMinus1) +
+            ((reconPtr->originY << is16bit) >> subHeightCMinus1) * reconPtr->strideCb;
         reconWritePtr = &(outputReconPtr->pBuffer[outputReconPtr->nFilledLen]);
 
         CHECK_REPORT_ERROR(
@@ -1701,15 +1707,16 @@ static void ReconOutput(
             reconReadPtr,
             reconPtr->strideCb,
             reconWritePtr,
-            (reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) >> 1,
-            (reconPtr->width - sequenceControlSetPtr->padRight) >> 1,
-            (reconPtr->height - sequenceControlSetPtr->padBottom) >> 1,
+            (reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) >> subWidthCMinus1,
+            (reconPtr->width - sequenceControlSetPtr->padRight) >> subWidthCMinus1,
+            (reconPtr->height - sequenceControlSetPtr->padBottom) >> subHeightCMinus1,
             1 << is16bit);
         outputReconPtr->nFilledLen += sampleTotalCount;
 
         // V Recon Samples
-        sampleTotalCount = ((reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) * (reconPtr->maxHeight - sequenceControlSetPtr->maxInputPadBottom) >> 2) << is16bit;
-        reconReadPtr = reconPtr->bufferCr + ((reconPtr->originY << is16bit) >> 1) * reconPtr->strideCr + ((reconPtr->originX << is16bit) >> 1);
+        sampleTotalCount = ((reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) * (reconPtr->maxHeight - sequenceControlSetPtr->maxInputPadBottom) >> (3 - colorFormat)) << is16bit;
+        reconReadPtr = reconPtr->bufferCr + ((reconPtr->originX << is16bit) >> subWidthCMinus1) +
+            ((reconPtr->originY << is16bit) >> subHeightCMinus1) * reconPtr->strideCr;
         reconWritePtr = &(outputReconPtr->pBuffer[outputReconPtr->nFilledLen]);
 
         CHECK_REPORT_ERROR(
@@ -1723,9 +1730,9 @@ static void ReconOutput(
             reconReadPtr,
             reconPtr->strideCr,
             reconWritePtr,
-            (reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) >> 1,
-            (reconPtr->width - sequenceControlSetPtr->padRight) >> 1,
-            (reconPtr->height - sequenceControlSetPtr->padBottom) >> 1,
+            (reconPtr->maxWidth - sequenceControlSetPtr->maxInputPadRight) >> subWidthCMinus1,
+            (reconPtr->width - sequenceControlSetPtr->padRight) >> subWidthCMinus1,
+            (reconPtr->height - sequenceControlSetPtr->padBottom) >> subHeightCMinus1,
             1 << is16bit);
         outputReconPtr->nFilledLen += sampleTotalCount;
         outputReconPtr->pts = pictureControlSetPtr->pictureNumber;
