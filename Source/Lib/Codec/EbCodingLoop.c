@@ -23,7 +23,7 @@
 #include "EbModeDecisionConfiguration.h"
 #include "emmintrin.h"
 
-#define DEBUG_REF_INFO
+//#define DEBUG_REF_INFO
 #define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
@@ -3268,9 +3268,6 @@ EB_EXTERN void EncodePass(
     EB_BOOL useDeltaQpSegments = singleSegment ? 0 : (EB_BOOL)(sequenceControlSetPtr->staticConfig.improveSharpness || sequenceControlSetPtr->staticConfig.bitRateReduction);
 
     if (is16bit) {
-        //TODO:
-        //Jing: avx for 10bit 422/444 may need to be changed in Pack2D_SRC
-        //Jing: avx should be fine
         EncodePassPackLcu(
             sequenceControlSetPtr,
             inputPicture,
@@ -3544,6 +3541,20 @@ EB_EXTERN void EncodePass(
                                 reconBuffer,
                                 residualBuffer,
                                 transformInnerArrayPtr);
+#ifdef DEBUG_REF_INFO
+                        {
+                            int originX = contextPtr->cuOriginX;
+                            int originY = contextPtr->cuOriginY;
+                            int tuSize = cuStats->size; 
+                            printf("\n----- Dump recon for 1st loop at (%d, %d)-----\n", originX, originY);
+
+                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+
+                            dump_block_from_desc(tuSize, reconBuffer, originX, originY, 0);
+                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
+                        }
+#endif
                         }
 
                         // Update the Intra-specific Neighbor Arrays

@@ -1786,28 +1786,28 @@ void PadRefAndSetFlags(
         // Y samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferY,
-            refPic16BitPtr->strideY << subWidthCMinus1,
-            refPic16BitPtr->width << subWidthCMinus1,
+            refPic16BitPtr->strideY << 1,
+            refPic16BitPtr->width << 1,
             refPic16BitPtr->height,
-            refPic16BitPtr->originX << subWidthCMinus1,
+            refPic16BitPtr->originX << 1,
             refPic16BitPtr->originY);
 
         // Cb samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferCb,
-            refPic16BitPtr->strideCb << subWidthCMinus1,
-            refPic16BitPtr->width,
+            refPic16BitPtr->strideCb << 1,
+            refPic16BitPtr->width << (1 - subWidthCMinus1),
             refPic16BitPtr->height >> subHeightCMinus1,
-            refPic16BitPtr->originX,
+            refPic16BitPtr->originX << (1 - subWidthCMinus1),
             refPic16BitPtr->originY >> subHeightCMinus1);
 
         // Cr samples
         GeneratePadding16Bit(
             refPic16BitPtr->bufferCr,
-            refPic16BitPtr->strideCr << subWidthCMinus1,
-            refPic16BitPtr->width,
+            refPic16BitPtr->strideCr << 1,
+            refPic16BitPtr->width << (1 - subWidthCMinus1),
             refPic16BitPtr->height >> subHeightCMinus1,
-            refPic16BitPtr->originX,
+            refPic16BitPtr->originX << (1 - subWidthCMinus1),
             refPic16BitPtr->originY >> subHeightCMinus1);   
     }
 
