@@ -3176,11 +3176,9 @@ EB_EXTERN void EncodePass(
     EB_BOOL enableStrongIntraSmoothing = sequenceControlSetPtr->enableStrongIntraSmoothing;
     CodingUnit_t **codedLeafArrayPtr = lcuPtr->codedLeafArrayPtr;
 
-    // This flag needs to be set true when SAO is enabled for Non reference pictures so that SAO uses filtered samples
-    EB_BOOL dlfEnableFlag = (EB_BOOL)(!sequenceControlSetPtr->staticConfig.disableDlfFlag && 
-        ///*(pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag) kelvin*/1) ||
-        (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag)) ||
-        sequenceControlSetPtr->staticConfig.reconEnabled;
+    EB_BOOL dlfEnableFlag = (EB_BOOL)(!sequenceControlSetPtr->staticConfig.disableDlfFlag) &&
+        (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag ||
+        sequenceControlSetPtr->staticConfig.reconEnabled);
 
     dlfEnableFlag = contextPtr->allowEncDecMismatch ? EB_FALSE : dlfEnableFlag;
 
