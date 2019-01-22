@@ -24,7 +24,7 @@
 #include "emmintrin.h"
 
 //#define DEBUG_REF_INFO
-#define DUMP_RECON
+//#define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
 {
@@ -3180,7 +3180,6 @@ EB_EXTERN void EncodePass(
         (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag));
 
     dlfEnableFlag = contextPtr->allowEncDecMismatch ? EB_FALSE : dlfEnableFlag;
-    pictureControlSetPtr->sliceDlfDisableFlag = !dlfEnableFlag;
 
     const EB_BOOL isIntraLCU = contextPtr->mdContext->limitIntra ? isIntraPresent(lcuPtr) : EB_TRUE;
 
