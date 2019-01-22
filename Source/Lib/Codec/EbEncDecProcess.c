@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 
+
 #include "EbTransforms.h"
 #include "EbEncDecTasks.h"
 #include "EbEncDecResults.h"
@@ -1289,8 +1290,8 @@ static void ResetEncDec(
     contextPtr->is16bit = (EB_BOOL)(sequenceControlSetPtr->staticConfig.encoderBitDepth > EB_8BIT);
 
     // SAO
-    //pictureControlSetPtr->saoFlag[0] = EB_TRUE;
-    //pictureControlSetPtr->saoFlag[1] = EB_TRUE;
+    pictureControlSetPtr->saoFlag[0] = EB_TRUE;
+    pictureControlSetPtr->saoFlag[1] = EB_TRUE;
 
     // QP
     contextPtr->qp = pictureControlSetPtr->pictureQp;
@@ -3538,7 +3539,6 @@ void* EncDecKernel(void *inputPtr)
     EB_U32                  segmentBandSize;
     EncDecSegments_t       *segmentsPtr;
 
-    EB_BOOL applySAOAtEncoderFlag;
 
     for (;;) {
 
@@ -3595,15 +3595,6 @@ void* EncDecKernel(void *inputPtr)
             EB_TRUE :
             EB_FALSE;
 
-        // Jing: Set SAO related flag per picture level
-        applySAOAtEncoderFlag = (sequenceControlSetPtr->staticConfig.enableSaoFlag &&
-                (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag )) ? EB_TRUE : EB_FALSE;
-
-        applySAOAtEncoderFlag = contextPtr->allowEncDecMismatch ? EB_FALSE : applySAOAtEncoderFlag;
-
-        // Make sure pack the correct info in slice header
-        pictureControlSetPtr->saoFlag[0] = applySAOAtEncoderFlag;
-        pictureControlSetPtr->saoFlag[1] = applySAOAtEncoderFlag;
 
         // Segment-loop
         while (AssignEncDecSegments(segmentsPtr, &segmentIndex, encDecTasksPtr, contextPtr->encDecFeedbackFifoPtr) == EB_TRUE)
@@ -3819,6 +3810,11 @@ void* EncDecKernel(void *inputPtr)
                     sequenceControlSetPtr);
             }
             
+            EB_BOOL applySAOAtEncoderFlag = (sequenceControlSetPtr->staticConfig.enableSaoFlag &&
+                (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag )) ? EB_TRUE : EB_FALSE;
+
+            applySAOAtEncoderFlag = contextPtr->allowEncDecMismatch ? EB_FALSE : applySAOAtEncoderFlag;
+
             if (applySAOAtEncoderFlag)
             {
 

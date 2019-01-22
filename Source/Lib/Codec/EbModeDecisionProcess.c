@@ -322,8 +322,8 @@ void ProductResetModeDecision(
 	MdRateEstimationContext_t   *mdRateEstimationArray;
 	
 	// SAO
-	// pictureControlSetPtr->saoFlag[0] = EB_TRUE;
-	// pictureControlSetPtr->saoFlag[1] = EB_TRUE;
+	pictureControlSetPtr->saoFlag[0] = EB_TRUE;
+	pictureControlSetPtr->saoFlag[1] = EB_TRUE;
 
 	// QP
 	contextPtr->qp = pictureControlSetPtr->pictureQp;
