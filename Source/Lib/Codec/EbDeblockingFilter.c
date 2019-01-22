@@ -2259,8 +2259,8 @@ EB_ERRORTYPE LCUInternalAreaDLFCore(
     EB_U32  chromaLcuPos_y                 = lcuPos_y >> (colorFormat==EB_YUV420?1:0);
     EB_U32  numVerticalChromaSampleEdges   = (lcuWidth  >> (colorFormat==EB_YUV444?3:4)) - (colorFormat==EB_YUV444?1:((lcuWidth  & 15) == 0));
     EB_U32  numHorizontalChromaSampleEdges = (lcuHeight >> (colorFormat==EB_YUV420?4:3)) - (colorFormat==EB_YUV420?((lcuHeight & 15) == 0):1);
-    EB_U32  num2SampleEdgesPerVerticalChromaSampleEdge   = (lcuHeight >> (colorFormat==EB_YUV420?2:1)) - 2 - (((lcuHeight & 15) == 0) << 1);
-	EB_U32  num2SampleEdgesPerHorizontalChromaSampleEdge = (lcuWidth  >> (colorFormat==EB_YUV444?1:2)) - 2 - (colorFormat==EB_YUV444?0:(((lcuWidth & 15) == 0) << 1));
+    EB_U32  num2SampleEdgesPerVerticalChromaSampleEdge   = (lcuHeight >> (colorFormat==EB_YUV420?2:1)) - 2 - (((lcuHeight & (colorFormat==EB_YUV420?15:7)) == 0) << 1);
+	EB_U32  num2SampleEdgesPerHorizontalChromaSampleEdge = (lcuWidth  >> (colorFormat==EB_YUV444?1:2)) - 2 - (((lcuWidth & (colorFormat==EB_YUV444?7:15)) == 0) << 1);
 	EB_U8  curCuQp;
 	EB_BYTE edgeStartFilteredSamplePtr;
 	EB_BYTE edgeStartSampleCb;
@@ -3066,7 +3066,7 @@ void LCUBoundaryDLFCore(
 
 		edgeCLowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 			horizontalIdx << (3 - subWidthShfitMinus1),
-			2,
+			2 >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeDRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
@@ -3128,7 +3128,7 @@ void LCUBoundaryDLFCore(
 			logMaxLcuSizeIn4x4blk);
 
 		edgeDRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			2,
+			2 >> subWidthShfitMinus1,
 			verticalIdx << (3 - subHeightShfitMinus1),
 			logMaxLcuSizeIn4x4blk);
 
@@ -3621,7 +3621,6 @@ void LCUPictureEdgeDLFCore(
 		if ((sequenceControlSet->chromaWidth & 7) == 0) {
 			//num4SampleHorizontalEdges     = (sequenceControlSet->chromaHeight >> 3) + ((sequenceControlSet->chromaHeight & 7) != 0) - 1;
 			num4SampleHorizontalEdges = (lcuHeight >> (colorFormat==EB_YUV420?4:3)) + (((lcuHeight >> (colorFormat==EB_YUV420?1:0)) & (colorFormat==EB_YUV420?7:15)) != 0);
-            //printf("kelvin ---> loopfilter sequenceControlSet->lumaWidth=%d, sequenceControlSet->chromaWidth=%d, sequenceControlSet->lumaHeight=%d, sequenceControlSet->chromaHeight=%d\n", sequenceControlSet->lumaWidth, sequenceControlSet->chromaWidth, sequenceControlSet->lumaHeight, sequenceControlSet->chromaHeight);
 			fourSampleEdgeStartSamplePos_x = sequenceControlSet->chromaWidth - 4;       // Picture wise location
 			//for(verticalIdx = 1; verticalIdx <= num4SampleHorizontalEdges; ++verticalIdx) {
 			for (verticalIdx = (lcuPos_y == 0); verticalIdx < num4SampleHorizontalEdges; ++verticalIdx) {
