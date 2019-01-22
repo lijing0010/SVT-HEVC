@@ -63,8 +63,8 @@ static void ResetEntropyCodingPicture(
 	contextPtr->is16bit = (EB_BOOL)(sequenceControlSetPtr->staticConfig.encoderBitDepth > EB_8BIT);
 
 	// SAO
-	pictureControlSetPtr->saoFlag[0] = EB_TRUE;
-	pictureControlSetPtr->saoFlag[1] = EB_TRUE;
+	//pictureControlSetPtr->saoFlag[0] = EB_TRUE;
+	//pictureControlSetPtr->saoFlag[1] = EB_TRUE;
 
 	// QP
 	contextPtr->qp = pictureControlSetPtr->pictureQp;
