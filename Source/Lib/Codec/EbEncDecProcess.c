@@ -3811,7 +3811,8 @@ void* EncDecKernel(void *inputPtr)
             }
             
             EB_BOOL applySAOAtEncoderFlag = (sequenceControlSetPtr->staticConfig.enableSaoFlag &&
-                (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag )) ? EB_TRUE : EB_FALSE;
+                (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag )) ||
+                sequenceControlSetPtr->staticConfig.reconEnabled ? EB_TRUE : EB_FALSE;
 
             applySAOAtEncoderFlag = contextPtr->allowEncDecMismatch ? EB_FALSE : applySAOAtEncoderFlag;
 
