@@ -1821,6 +1821,8 @@ static void chroma8x8blkDLFCore16bit(
     EB_COLOR_FORMAT colorFormat = reconPic->colorFormat;
     const EB_S32 subWidthC      = colorFormat==EB_YUV444?1:2;
     const EB_S32 subHeightC     = colorFormat==EB_YUV420?2:1;
+    const EB_S32 subWidthCMinus1  = colorFormat==EB_YUV444?0:1;
+    const EB_S32 subHeightCMinus1 = colorFormat==EB_YUV420?1:0;
 
 	//vertical edge A filtering
 	if (bSEdgeAArray[0] > 1) {
@@ -1858,8 +1860,8 @@ static void chroma8x8blkDLFCore16bit(
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
 
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + (centerSamplePos_y - 4) * reconChromaPicStride + centerSamplePos_x;
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + (centerSamplePos_y - 4) * reconChromaPicStride + centerSamplePos_x;
+        edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + (centerSamplePos_y - 4) * reconChromaPicStride + centerSamplePos_x;
+        edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + (centerSamplePos_y - 4) * reconChromaPicStride + centerSamplePos_x;
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 			edgeStartSampleCb,
@@ -1905,8 +1907,8 @@ static void chroma8x8blkDLFCore16bit(
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
 
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + (centerSamplePos_y - 2) * reconChromaPicStride + centerSamplePos_x;
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + (centerSamplePos_y - 2) * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + (centerSamplePos_y - 2) * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + (centerSamplePos_y - 2) * reconChromaPicStride + centerSamplePos_x;
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 			edgeStartSampleCb,
@@ -1955,8 +1957,8 @@ static void chroma8x8blkDLFCore16bit(
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
 
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 			edgeStartSampleCb,
@@ -2001,8 +2003,8 @@ static void chroma8x8blkDLFCore16bit(
 		//CHKN
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + (centerSamplePos_y + 2) * reconChromaPicStride + centerSamplePos_x;
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + (centerSamplePos_y + 2) * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + (centerSamplePos_y + 2) * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + (centerSamplePos_y + 2) * reconChromaPicStride + centerSamplePos_x;
 
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
@@ -2051,9 +2053,8 @@ static void chroma8x8blkDLFCore16bit(
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
 
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 4);
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 4);
-
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 4);
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 4);
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 			edgeStartSampleCb,
@@ -2099,8 +2100,8 @@ static void chroma8x8blkDLFCore16bit(
 		//CHKN
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 2);
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 2);
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 2);
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x - 2);
 
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
@@ -2148,8 +2149,8 @@ static void chroma8x8blkDLFCore16bit(
 		//CHKN
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + centerSamplePos_x;
 
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
@@ -2196,8 +2197,8 @@ static void chroma8x8blkDLFCore16bit(
 		//CHKN
 		cbTc = cbTc << 2;
 		crTc = crTc << 2;
-		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x + 2);
-		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x + 2);
+		edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x + 2);
+		edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + centerSamplePos_y * reconChromaPicStride + (centerSamplePos_x + 2);
 
 		chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 			edgeStartSampleCb,
@@ -2518,9 +2519,7 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 	PictureControlSet_t   *reconPictureControlSet)      //input parameter, picture control set.
 {
 	EB_ERRORTYPE      return_error = EB_ErrorNone;
-    EB_COLOR_FORMAT colorFormat    = reconpicture->colorFormat;
-    const EB_S32 subWidthC         = colorFormat==EB_YUV444?1:2;
-    const EB_S32 subHeightC        = colorFormat==EB_YUV420?2:1;
+
 	const EB_U32 MaxLcuSizeIn4x4blk = MAX_LCU_SIZE >> 2;
 	const EB_U32 logMaxLcuSizeIn4x4blk = Log2f(MaxLcuSizeIn4x4blk);
 
@@ -2542,12 +2541,24 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 	EB_U32  blk2x2Addr;
 	EB_U32  twoSampleEdgeStartSamplePos_x;
 	EB_U32  twoSampleEdgeStartSamplePos_y;
-    EB_U32  chromaLcuPos_x = lcuPos_x >> 1;
-	EB_U32  chromaLcuPos_y = lcuPos_y >> 1;
-	EB_U32  numVerticalChromaSampleEdges = (lcuWidth >> 4) - ((lcuWidth & 15) == 0);
-	EB_U32  numHorizontalChromaSampleEdges = (lcuHeight >> 4) - ((lcuHeight & 15) == 0);
-	EB_U32  num2SampleEdgesPerVerticalChromaSampleEdge = (lcuHeight >> 2) - 2 - (((lcuHeight & 15) == 0) << 1);
-	EB_U32  num2SampleEdgesPerHorizontalChromaSampleEdge = (lcuWidth >> 2) - 2 - (((lcuWidth & 15) == 0) << 1);
+    EB_COLOR_FORMAT colorFormat = reconpicture->colorFormat;
+    const EB_S32 subWidthC = (colorFormat == EB_YUV444) ? 1 : 2;
+    const EB_S32 subHeightC = (colorFormat == EB_YUV420) ? 2 : 1;
+    const EB_U32 subWidthShfitMinus1 = (colorFormat == EB_YUV444) ? 1 : 0;
+    const EB_U32 subHeightShfitMinus1 = (colorFormat == EB_YUV420) ? 0 : 1;
+    const EB_S32 subWidthCMinus1 = (colorFormat == EB_YUV444) ? 0 : 1;
+    const EB_S32 subHeightCMinus1 = (colorFormat == EB_YUV420) ? 1 : 0;
+
+    EB_U32  chromaLcuPos_x = lcuPos_x >> subWidthCMinus1;
+	EB_U32  chromaLcuPos_y = lcuPos_y >> subHeightCMinus1;
+
+    EB_U32  numVerticalChromaSampleEdges   = (lcuWidth >> (3 + subWidthCMinus1)) - (colorFormat==EB_YUV444?1:((lcuWidth & 15) == 0));
+    EB_U32  numHorizontalChromaSampleEdges = (lcuHeight >> (3 + subHeightCMinus1)) - (colorFormat==EB_YUV420?((lcuHeight & 15) == 0):1);
+    EB_U32  num2SampleEdgesPerVerticalChromaSampleEdge   = (lcuHeight >> (colorFormat==EB_YUV420?2:1)) - 2 - (((lcuHeight & (colorFormat==EB_YUV420?15:7)) == 0) << 1);
+    EB_U32  num2SampleEdgesPerHorizontalChromaSampleEdge = (lcuWidth >> (colorFormat==EB_YUV444?1:2)) - 2 - (((lcuWidth & (colorFormat==EB_YUV444?7:15)) == 0) << 1);
+
+
+
 	EB_U8  curCuQp;
 	EB_U16 *edgeStartFilteredSamplePtr;
 	EB_U16 *edgeStartSampleCb;
@@ -2691,8 +2702,8 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 			twoSampleEdgeStartSamplePos_x = horizontalIdx << 3;          // LCU-wise position
 			twoSampleEdgeStartSamplePos_y = (verticalIdx << 1) + 2;      // LCU-wise position
 			blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-				twoSampleEdgeStartSamplePos_x,
-				twoSampleEdgeStartSamplePos_y,
+				twoSampleEdgeStartSamplePos_x >> subWidthShfitMinus1,
+				twoSampleEdgeStartSamplePos_y >> subHeightShfitMinus1,
 				logMaxLcuSizeIn4x4blk);
 			bS = verticalEdgeBSArray[BLK4X4_ADDR_TO_VERTICAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -2729,8 +2740,8 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 				//CHKN
 				cbTc = cbTc << 2;
 				crTc = crTc << 2;
-				edgeStartSampleCb = (EB_U16*)reconpicture->bufferCb + (reconpicture->originX >> 1) + (reconpicture->originY >> 1) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
-				edgeStartSampleCr = (EB_U16*)reconpicture->bufferCr + (reconpicture->originX >> 1) + (reconpicture->originY >> 1) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
+				edgeStartSampleCb = (EB_U16*)reconpicture->bufferCb + (reconpicture->originX >> subWidthCMinus1) + (reconpicture->originY >> subHeightCMinus1) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
+				edgeStartSampleCr = (EB_U16*)reconpicture->bufferCr + (reconpicture->originX >> subWidthCMinus1) + (reconpicture->originY >> subHeightCMinus1) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
 
 
 				chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
@@ -2751,8 +2762,8 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 			twoSampleEdgeStartSamplePos_x = (horizontalIdx << 1) + 2;    // LCU-wise position
 			twoSampleEdgeStartSamplePos_y = verticalIdx << 3;            // LCU-wise position
 			blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-				twoSampleEdgeStartSamplePos_x,
-				twoSampleEdgeStartSamplePos_y,
+				twoSampleEdgeStartSamplePos_x >> subWidthShfitMinus1,
+				twoSampleEdgeStartSamplePos_y >> subHeightShfitMinus1,
 				logMaxLcuSizeIn4x4blk);
 			bS = horizontalEdgeBSArray[BLK4X4_ADDR_TO_HORIZONTAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -2789,8 +2800,8 @@ EB_ERRORTYPE LCUInternalAreaDLFCore16bit(
 				//CHKN
 				cbTc = cbTc << 2;
 				crTc = crTc << 2;
-				edgeStartSampleCb = (EB_U16*)reconpicture->bufferCb + (reconpicture->originX >> 1) + (reconpicture->originY >> 1) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
-				edgeStartSampleCr = (EB_U16*)reconpicture->bufferCr + (reconpicture->originX >> 1) + (reconpicture->originY >> 1) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
+				edgeStartSampleCb = (EB_U16*)reconpicture->bufferCb + (reconpicture->originX >> subWidthCMinus1) + (reconpicture->originY >> subHeightCMinus1) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCb + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
+				edgeStartSampleCr = (EB_U16*)reconpicture->bufferCr + (reconpicture->originX >> subWidthCMinus1) + (reconpicture->originY >> subHeightCMinus1) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_y + chromaLcuPos_y) * reconpicture->strideCr + (twoSampleEdgeStartSamplePos_x + chromaLcuPos_x);
 
 				chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 					edgeStartSampleCb,
@@ -3194,18 +3205,23 @@ void LCUBoundaryDLFCore16bit(
 	EB_U8   bSChromaEdgeB[2];
 	EB_U8   bSChromaEdgeC[2];
 	EB_U8   bSChromaEdgeD[2];
-	EB_U32  num8x8ChromaBlkInTop8x8ChromablkRowMinus1 = (lcuWidth >> 4) - ((lcuWidth & 15) == 0);
-	EB_U32  num8x8ChromaBlkInLeft8x8ChromablkColumnMinus1 = (lcuHeight >> 4) - ((lcuHeight & 15) == 0);
-	EB_U32  chromaLcuPos_x = (lcuPos_x >> 1);
-	EB_U32  chromaLcuPos_y = (lcuPos_y >> 1);
+
+    EB_COLOR_FORMAT colorFormat = reconpicture->colorFormat;    
+    EB_U32  chromaLcuPos_x      = lcuPos_x >> (colorFormat==EB_YUV444?0:1);
+    EB_U32  chromaLcuPos_y      = lcuPos_y >> (colorFormat==EB_YUV420?1:0);
+	EB_U32  num8x8ChromaBlkInTop8x8ChromablkRowMinus1     = (lcuWidth  >> (colorFormat==EB_YUV444?3:4)) - (colorFormat==EB_YUV444?1:((lcuWidth  & 15) == 0));
+	EB_U32  num8x8ChromaBlkInLeft8x8ChromablkColumnMinus1 = (lcuHeight >> (colorFormat==EB_YUV420?4:3)) - (colorFormat==EB_YUV420?((lcuHeight & 15) == 0):1);
 
 	EB_U32  horizontalIdx;
 	EB_U32  verticalIdx;
 	const EB_U32 logMaxLcuSizeIn4x4blk = Log2f(MAX_LCU_SIZE >> 2);
 
 	SequenceControlSet_t *sequenceControlSetPtr = (SequenceControlSet_t*)pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr;
-	EB_U32                lcuSize = sequenceControlSetPtr->lcuSize;
-	EB_U32                chromaLcuSize = lcuSize >> 1;
+	EB_U32 lcuSize = sequenceControlSetPtr->lcuSize;
+    EB_U32 chromaLcuSizeX = lcuSize >> (colorFormat==EB_YUV444?0:1);
+    EB_U32 chromaLcuSizeY = lcuSize >> (colorFormat==EB_YUV420?1:0);
+    const EB_U32 subWidthShfitMinus1 = colorFormat==EB_YUV444?1:0;
+    const EB_U32 subHeightShfitMinus1 = colorFormat==EB_YUV420?0:1;
 
 	/***** luma component filtering *****/
 	// filter the top-left corner 8x8 luma block
@@ -3319,19 +3335,19 @@ void LCUBoundaryDLFCore16bit(
 	// filter the top-left corner 8x8 chroma block
 	edgeAUpperBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 		0,
-		chromaLcuSize - 4,
+        (chromaLcuSizeY - 4) >> subHeightShfitMinus1,
 		logMaxLcuSizeIn4x4blk);
 	edgeALowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 		0,
-		chromaLcuSize - 2,
+        (chromaLcuSizeY - 2) >> subHeightShfitMinus1,
 		logMaxLcuSizeIn4x4blk);
 
 	edgeBLeftBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-		chromaLcuSize - 4,
+        (chromaLcuSizeX - 4) >> subWidthShfitMinus1,
 		0,
 		logMaxLcuSizeIn4x4blk);
 	edgeBRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-		chromaLcuSize - 2,
+        (chromaLcuSizeX - 2) >> subWidthShfitMinus1,
 		0,
 		logMaxLcuSizeIn4x4blk);
 
@@ -3342,11 +3358,11 @@ void LCUBoundaryDLFCore16bit(
 
 	edgeCLowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 		0,
-		2,
+        2 >> subHeightShfitMinus1,
 		logMaxLcuSizeIn4x4blk);
 
 	edgeDRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-		2,
+        2 >> subWidthShfitMinus1,
 		0,
 		logMaxLcuSizeIn4x4blk);
 
@@ -3377,35 +3393,35 @@ void LCUBoundaryDLFCore16bit(
 	// filter the top 8x8 chroma block row
 	for (horizontalIdx = 1; horizontalIdx <= num8x8ChromaBlkInTop8x8ChromablkRowMinus1; ++horizontalIdx) {
 		edgeAUpperBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			horizontalIdx << 3,
-			chromaLcuSize - 4,
+            horizontalIdx << (3 - subWidthShfitMinus1),
+            (chromaLcuSizeY - 4) >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 		edgeALowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			horizontalIdx << 3,
-			chromaLcuSize - 2,
+            horizontalIdx << (3 - subWidthShfitMinus1),
+            (chromaLcuSizeY - 2) >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeBLeftBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			(horizontalIdx << 3) - 4,
+            ((horizontalIdx << 3) - 4) >> subWidthShfitMinus1,
 			0,
 			logMaxLcuSizeIn4x4blk);
 		edgeBRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			(horizontalIdx << 3) - 2,
+            ((horizontalIdx << 3) - 2) >> subWidthShfitMinus1,
 			0,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeCUpperBlk2x2Addr = edgeDLeftBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			horizontalIdx << 3,
+            horizontalIdx << (3 - subWidthShfitMinus1),
 			0,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeCLowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			horizontalIdx << 3,
-			2,
+            horizontalIdx << (3 - subWidthShfitMinus1),
+            2 >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeDRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			(horizontalIdx << 3) + 2,
+            ((horizontalIdx << 3) + 2) >> subWidthShfitMinus1,
 			0,
 			logMaxLcuSizeIn4x4blk);
 
@@ -3436,35 +3452,35 @@ void LCUBoundaryDLFCore16bit(
 	for (verticalIdx = 1; verticalIdx <= num8x8ChromaBlkInLeft8x8ChromablkColumnMinus1; ++verticalIdx) {
 		edgeAUpperBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 			0,
-			(verticalIdx << 3) - 4,
+            ((verticalIdx << 3) - 4) >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 		edgeALowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 			0,
-			(verticalIdx << 3) - 2,
+            ((verticalIdx << 3) - 2) >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeBLeftBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			chromaLcuSize - 4,
-			verticalIdx << 3,
+            (chromaLcuSizeX - 4) >> subWidthShfitMinus1,
+            verticalIdx << (3 - subHeightShfitMinus1),
 			logMaxLcuSizeIn4x4blk);
 		edgeBRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			chromaLcuSize - 2,
-			verticalIdx << 3,
+            (chromaLcuSizeX - 2) >> subWidthShfitMinus1,
+            verticalIdx << (3 - subHeightShfitMinus1),
 			logMaxLcuSizeIn4x4blk);
 
 		edgeCUpperBlk2x2Addr = edgeDLeftBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 			0,
-			verticalIdx << 3,
+            verticalIdx << (3 - subHeightShfitMinus1),
 			logMaxLcuSizeIn4x4blk);
 
 		edgeCLowerBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
 			0,
-			(verticalIdx << 3) + 2,
+            ((verticalIdx << 3) + 2) >> subHeightShfitMinus1,
 			logMaxLcuSizeIn4x4blk);
 
 		edgeDRightBlk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-			2,
-			verticalIdx << 3,
+            2 >> subWidthShfitMinus1,
+            verticalIdx << (3 - subHeightShfitMinus1),
 			logMaxLcuSizeIn4x4blk);
 
 		bSChromaEdgeA[0] = lcuVerticalEdgeBSArray[BLK4X4_ADDR_TO_VERTICAL_EDGE_BS_ARRAY_IDX(edgeAUpperBlk2x2Addr)];
@@ -3930,7 +3946,8 @@ void LCUPictureEdgeDLFCore16bit(
 	EB_U32  fourSampleEdgeStartSamplePos_y;
 	EB_U8   bS;
 	EB_U32  lcuSize;
-	EB_U32  chromaLcuSize;
+    EB_U32  chromaLcuSizeX;
+    EB_U32  chromaLcuSizeY;
 	EB_U8  curCuQp;
 	EB_U16 *edgeStartFilteredSamplePtr;
 	EB_U16 *edgeStartSampleCb;
@@ -3949,15 +3966,20 @@ void LCUPictureEdgeDLFCore16bit(
     EB_COLOR_FORMAT colorFormat = reconPic->colorFormat;
     const EB_S32 subWidthC      = colorFormat==EB_YUV444?1:2;
     const EB_S32 subHeightC     = colorFormat==EB_YUV420?2:1;
+    const EB_S32 subWidthCMinus1  = colorFormat==EB_YUV444?0:1;
+    const EB_S32 subHeightCMinus1 = colorFormat==EB_YUV420?1:0;
 
 	SequenceControlSet_t  *sequenceControlSet = (SequenceControlSet_t*)pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr;
 	LargestCodingUnit_t   *lcuPtr = pictureControlSetPtr->lcuPtrArray[lcuIdx];
 
 	pictureWidthInLcu = (sequenceControlSet->lumaWidth + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
 	pictureHeightInLcu = (sequenceControlSet->lumaHeight + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
-	lcuSize = sequenceControlSet->lcuSize;
-	chromaLcuSize = lcuSize >> 1;
-   
+    lcuSize = sequenceControlSet->lcuSize;
+    chromaLcuSizeX = lcuSize >> (colorFormat==EB_YUV444?0:1);
+    chromaLcuSizeY = lcuSize >> (colorFormat==EB_YUV420?1:0);
+    const EB_U32 subWidthShfitMinus1  = colorFormat==EB_YUV444?1:0;
+    const EB_U32 subHeightShfitMinus1 = colorFormat==EB_YUV420?0:1;
+
 	if (lcuPos_x >> lcuPtr->sizeLog2 == pictureWidthInLcu - 1) {
 		/***** picture right-most 4 sample horizontal edges filtering *****/
 		// luma component filtering
@@ -4023,19 +4045,19 @@ void LCUPictureEdgeDLFCore16bit(
 		// chroma component filtering
 		if ((sequenceControlSet->chromaWidth & 7) == 0) {
 			//num4SampleHorizontalEdges     = (sequenceControlSet->chromaHeight >> 3) + ((sequenceControlSet->chromaHeight & 7) != 0) - 1;
-			num4SampleHorizontalEdges = (lcuHeight >> 4) + (((lcuHeight >> 1) & 7) != 0);
+            num4SampleHorizontalEdges = (lcuHeight >> (colorFormat==EB_YUV420?4:3)) + (((lcuHeight >> (colorFormat==EB_YUV420?1:0)) & (colorFormat==EB_YUV420?7:15)) != 0);
 			fourSampleEdgeStartSamplePos_x = sequenceControlSet->chromaWidth - 4;       // Picture wise location
 			//for(verticalIdx = 1; verticalIdx <= num4SampleHorizontalEdges; ++verticalIdx) {
 			for (verticalIdx = (lcuPos_y == 0); verticalIdx < num4SampleHorizontalEdges; ++verticalIdx) {
 				//fourSampleEdgeStartSamplePos_y = verticalIdx << 3;                      // Picture wise location
-				fourSampleEdgeStartSamplePos_y = (lcuPos_y >> 1) + (verticalIdx << 3);                      // Picture wise location
+                fourSampleEdgeStartSamplePos_y = (lcuPos_y >> (colorFormat==EB_YUV420?1:0)) + (verticalIdx << 3);                      // Picture wise location
 				//lcuIdx     = (fourSampleEdgeStartSamplePos_y >> (logMaxLcuSize-1)) * pictureWidthInLcu + (fourSampleEdgeStartSamplePos_x >> (logMaxLcuSize-1));
 				//lcuPtr     = pictureControlSetPtr->lcuPtrArray[lcuIdx];
 
 				// left 2 sample edge
 				blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-					fourSampleEdgeStartSamplePos_x & (chromaLcuSize - 1),
-					fourSampleEdgeStartSamplePos_y & (chromaLcuSize - 1),
+                    (fourSampleEdgeStartSamplePos_x & (chromaLcuSizeX - 1)) >> subWidthShfitMinus1,
+                    (fourSampleEdgeStartSamplePos_y & (chromaLcuSizeY - 1)) >> subHeightShfitMinus1,
 					logMaxLcuSizeIn4x4blk);
 				bS = pictureControlSetPtr->horizontalEdgeBSArray[lcuIdx][BLK4X4_ADDR_TO_HORIZONTAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -4071,8 +4093,8 @@ void LCUPictureEdgeDLFCore16bit(
 
 					cbTc = cbTc << 2;
 					crTc = crTc << 2;
-					edgeStartSampleCb = ((EB_U16*)reconPic->bufferCb) + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
-					edgeStartSampleCr = ((EB_U16*)reconPic->bufferCr) + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
+					edgeStartSampleCb = ((EB_U16*)reconPic->bufferCb) + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
+					edgeStartSampleCr = ((EB_U16*)reconPic->bufferCr) + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
 
 					chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 						edgeStartSampleCb,
@@ -4086,8 +4108,8 @@ void LCUPictureEdgeDLFCore16bit(
 
 				// right 2 sample edge
 				blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-					(fourSampleEdgeStartSamplePos_x & (chromaLcuSize - 1)) + 2,
-					fourSampleEdgeStartSamplePos_y & (chromaLcuSize - 1),
+                    ((fourSampleEdgeStartSamplePos_x & (chromaLcuSizeX - 1)) + 2) >> subWidthShfitMinus1,
+                    (fourSampleEdgeStartSamplePos_y & (chromaLcuSizeY - 1)) >> subHeightShfitMinus1,
 					logMaxLcuSizeIn4x4blk);
 				bS = pictureControlSetPtr->horizontalEdgeBSArray[lcuIdx][BLK4X4_ADDR_TO_HORIZONTAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -4124,8 +4146,8 @@ void LCUPictureEdgeDLFCore16bit(
 
 					cbTc = cbTc << 2;
 					crTc = crTc << 2;
-					edgeStartSampleCb = ((EB_U16*)reconPic->bufferCb) + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + (fourSampleEdgeStartSamplePos_x + 2);
-					edgeStartSampleCr = ((EB_U16*)reconPic->bufferCr) + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + (fourSampleEdgeStartSamplePos_x + 2);
+					edgeStartSampleCb = ((EB_U16*)reconPic->bufferCb) + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + (fourSampleEdgeStartSamplePos_x + 2);
+					edgeStartSampleCr = ((EB_U16*)reconPic->bufferCr) + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + (fourSampleEdgeStartSamplePos_x + 2);
 
 					chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 						edgeStartSampleCb,
@@ -4201,18 +4223,18 @@ void LCUPictureEdgeDLFCore16bit(
 		// chroma component filtering
 		if ((sequenceControlSet->chromaHeight & 7) == 0) {
 			//num4SampleVerticalEdges       = (sequenceControlSet->chromaWidth >> 3) + ((sequenceControlSet->chromaWidth & 7) != 0) - 1;
-			num4SampleVerticalEdges = (lcuWidth >> 4) + (((lcuWidth >> 1) & 7) != 0);
+            num4SampleVerticalEdges = (lcuWidth >> (3+(colorFormat==EB_YUV444?0:1))) + (((lcuWidth >> (colorFormat==EB_YUV444?0:1)) & (colorFormat==EB_YUV444?15:7)) != 0);
 			fourSampleEdgeStartSamplePos_y = sequenceControlSet->chromaHeight - 4;        // Picture wise location
 			//for(horizontalIdx = 1; horizontalIdx <= num4SampleVerticalEdges; ++horizontalIdx) {
 			for (horizontalIdx = (lcuPos_x == 0); horizontalIdx < num4SampleVerticalEdges; ++horizontalIdx) {
-				fourSampleEdgeStartSamplePos_x = (lcuPos_x >> 1) + (horizontalIdx << 3);                      // Picture wise location
-				lcuIdx = (fourSampleEdgeStartSamplePos_y >> (logMaxLcuSize - 1)) * pictureWidthInLcu + (fourSampleEdgeStartSamplePos_x >> (logMaxLcuSize - 1));
+                fourSampleEdgeStartSamplePos_x = (lcuPos_x >> (colorFormat==EB_YUV444?0:1)) + (horizontalIdx << 3);   // Picture wise location
+                lcuIdx = (fourSampleEdgeStartSamplePos_y >> (logMaxLcuSize - (colorFormat==EB_YUV420?1:0))) * pictureWidthInLcu + (fourSampleEdgeStartSamplePos_x >> (logMaxLcuSize - (colorFormat==EB_YUV444?0:1)));
 				lcuPtr = pictureControlSetPtr->lcuPtrArray[lcuIdx];
 
 				// Upper 2 sample edge
 				blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-					fourSampleEdgeStartSamplePos_x & (chromaLcuSize - 1),
-					fourSampleEdgeStartSamplePos_y & (chromaLcuSize - 1),
+                    (fourSampleEdgeStartSamplePos_x & (chromaLcuSizeX - 1)) >> subWidthShfitMinus1,
+                    (fourSampleEdgeStartSamplePos_y & (chromaLcuSizeY - 1)) >> subHeightShfitMinus1,
 					logMaxLcuSizeIn4x4blk);
 				bS = pictureControlSetPtr->verticalEdgeBSArray[lcuIdx][BLK4X4_ADDR_TO_VERTICAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -4248,8 +4270,8 @@ void LCUPictureEdgeDLFCore16bit(
 
 					cbTc = cbTc << 2;
 					crTc = crTc << 2;
-					edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
-					edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
+					edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + fourSampleEdgeStartSamplePos_y * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
+					edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + fourSampleEdgeStartSamplePos_y * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
 
 
 					chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
@@ -4262,9 +4284,9 @@ void LCUPictureEdgeDLFCore16bit(
 				}
 
 				// Lower 2 sample edge
-				blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
-					fourSampleEdgeStartSamplePos_x & (chromaLcuSize - 1),
-					(fourSampleEdgeStartSamplePos_y & (chromaLcuSize - 1)) + 2,
+                blk2x2Addr = GET_CHROMA_4X4BLK_ADDR(
+                    (fourSampleEdgeStartSamplePos_x & (chromaLcuSizeX - 1)) >> subWidthShfitMinus1,
+                    ((fourSampleEdgeStartSamplePos_y & (chromaLcuSizeY - 1)) + 2) >> subHeightShfitMinus1,
 					logMaxLcuSizeIn4x4blk);
 				bS = pictureControlSetPtr->verticalEdgeBSArray[lcuIdx][BLK4X4_ADDR_TO_VERTICAL_EDGE_BS_ARRAY_IDX(blk2x2Addr)];
 
@@ -4300,9 +4322,8 @@ void LCUPictureEdgeDLFCore16bit(
 
 					cbTc = cbTc << 2;
 					crTc = crTc << 2;
-					edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCb + (fourSampleEdgeStartSamplePos_y + 2) * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
-					edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> 1) + (reconPic->originY >> 1) * reconPic->strideCr + (fourSampleEdgeStartSamplePos_y + 2) * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
-
+					edgeStartSampleCb = (EB_U16*)reconPic->bufferCb + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCb + (fourSampleEdgeStartSamplePos_y + 2) * reconPic->strideCb + fourSampleEdgeStartSamplePos_x;
+					edgeStartSampleCr = (EB_U16*)reconPic->bufferCr + (reconPic->originX >> subWidthCMinus1) + (reconPic->originY >> subHeightCMinus1) * reconPic->strideCr + (fourSampleEdgeStartSamplePos_y + 2) * reconPic->strideCr + fourSampleEdgeStartSamplePos_x;
 
 					chromaDlf_funcPtrArray16bit[(ASM_TYPES & PREAVX2_MASK) && 1](
 						edgeStartSampleCb,

@@ -538,7 +538,7 @@ void Chroma2SampleEdgeDLFCore16bit(
     EB_S16   delta;
 
     // Cb
-    // fitler the first sample
+    // filter the first sample
     q0 = edgeStartSampleCb;
     q1 = edgeStartSampleCb + filterStride;
     p0 = edgeStartSampleCb - filterStride;
@@ -556,7 +556,7 @@ void Chroma2SampleEdgeDLFCore16bit(
     (*q0) = (EB_U16)CLIP3(0, MAX_CHROMA_SAMPLE_VALUE_10BIT, (*q0) - delta);
 
     // Cr
-    // fitler the first sample
+    // filter the first sample
     q0 = edgeStartSampleCr;
     q1 = edgeStartSampleCr + filterStride;
     p0 = edgeStartSampleCr - filterStride;
