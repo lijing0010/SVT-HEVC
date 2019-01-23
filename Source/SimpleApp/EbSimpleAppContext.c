@@ -174,7 +174,7 @@ EB_ERRORTYPE CopyConfigurationParameters(
 
     //callbackData->ebEncParameters.asmType= 0;
     callbackData->ebEncParameters.disableDlfFlag = 0;
-    callbackData->ebEncParameters.enableSaoFlag = 0;
+    callbackData->ebEncParameters.enableSaoFlag = 1;
     callbackData->ebEncParameters.qp=20;
     callbackData->ebEncParameters.rateControlMode=0;
     callbackData->ebEncParameters.encMode = 1;
