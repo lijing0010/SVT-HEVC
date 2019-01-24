@@ -1097,6 +1097,7 @@ static void EncodeLoop(
             }
             if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
                 dump_block_from_desc(chroma_size, coeffSamplesTB, originX&63, originY&63, 1);
+                dump_block_from_desc(chroma_size, coeffSamplesTB, originX&63, originY&63, 2);
             }
 
             printf("\n----- Dump residual for 1st loop at (%d, %d)-----\n", originX, originY);
@@ -1501,7 +1502,7 @@ static void EncodeLoop16bit(
 				residual16bit->strideCb,
 				((EB_S16*)transform16bit->bufferCb) + scratchCbOffset,
 				transform16bit->strideCb,
-				tuSize > MIN_PU_SIZE? (tuSize >> 1): tuSize,
+				tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize,
 				transformScratchBuffer,
 				BIT_INCREMENT_10BIT,
 				EB_FALSE,
@@ -1729,6 +1730,7 @@ static void EncodeLoop16bit(
             }
             if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
                 dump_block_from_desc(chroma_size, coeffSamplesTB, originX&63, originY&63, 1);
+                dump_block_from_desc(chroma_size, coeffSamplesTB, originX&63, originY&63, 2);
             }
 
             //printf("\n----- Dump residual for 1st loop at (%d, %d)-----\n", originX, originY);
