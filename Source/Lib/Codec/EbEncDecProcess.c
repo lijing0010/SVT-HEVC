@@ -1956,11 +1956,11 @@ EB_ERRORTYPE QpmDeriveWeightsMinAndMax(
 Input   : encoder mode and tune
 Output  : EncDec Kernel signal(s)
 ******************************************************/
-EB_ERRORTYPE SignalDerivationEncDecKernelSq(
+static EB_ERRORTYPE SignalDerivationEncDecKernelSq(
     SequenceControlSet_t *sequenceControlSetPtr,
     PictureControlSet_t  *pictureControlSetPtr,
-    EncDecContext_t      *contextPtr) {
-
+    EncDecContext_t      *contextPtr)
+{
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
     // Set MD Open Loop Flag
@@ -2641,11 +2641,11 @@ EB_ERRORTYPE SignalDerivationEncDecKernelSq(
 Input   : encoder mode and tune
 Output  : EncDec Kernel signal(s)
 ******************************************************/
-EB_ERRORTYPE SignalDerivationEncDecKernelOq(
+static EB_ERRORTYPE SignalDerivationEncDecKernelOq(
     SequenceControlSet_t *sequenceControlSetPtr,
     PictureControlSet_t  *pictureControlSetPtr,
-    EncDecContext_t      *contextPtr) {
-
+    EncDecContext_t      *contextPtr)
+{
     EB_ERRORTYPE return_error = EB_ErrorNone;
     
     // Set MD Open Loop Flag

@@ -24,6 +24,7 @@
 #include "emmintrin.h"
 
 //#define DEBUG_REF_INFO
+#define REF_POC 1
 //#define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
@@ -1058,7 +1059,7 @@ static void EncodeLoop(
         }
 	}
 #ifdef DEBUG_REF_INFO
-    if (lcuPtr->pictureControlSetPtr->pictureNumber == 0) {
+    if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
         if (secondChroma) {
             //printf("-----2nd loop, dump coeff for Chroma (%d, %d) @POC %d----\n", originX, originY, lcuPtr->pictureControlSetPtr->pictureNumber);
             //dump_block_from_desc(tuSize,    coeffSamplesTB, originX&63, originY&63, 0);
@@ -1248,15 +1249,16 @@ static void EncodeGenerateRecon(
                 tuSize >> shift_bit,
                 tuSize >> shift_bit);
 		}
-#ifdef DEBUG_REF_INFO
-        printf("\n----- Dump reverse transform result 1st loop at (%d, %d)-----\n",
-                originX, originY);
-        int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
-        dump_block_from_desc(chroma_size, residual16bit, originX&63, originY&63, 1);
 
-        printf("\n----- Dump Recon for 1st loop at (%d, %d)-----\n",
-                originX, originY);
-        dump_block_from_desc(chroma_size, reconSamples, originX, originY, 1);
+#ifdef DEBUG_REF_INFO
+        //printf("\n----- Dump reverse transform result 1st loop at (%d, %d)-----\n",
+        //        originX, originY);
+        //int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+        //dump_block_from_desc(chroma_size, residual16bit, originX&63, originY&63, 1);
+
+        //printf("\n----- Dump Recon for 1st loop at (%d, %d)-----\n",
+        //        originX, originY);
+        //dump_block_from_desc(chroma_size, reconSamples, originX, originY, 1);
 #endif
 
 		//**********************************
@@ -3433,13 +3435,15 @@ EB_EXTERN void EncodePass(
                                     (contextPtr->cuOriginX + cuStats->size) == sequenceControlSetPtr->lumaWidth ? EB_TRUE : EB_FALSE);
 #ifdef DEBUG_REF_INFO
                             {
-                                printf("\n----Dump Cb intra reference info at (%d, %d) for 1st Chroma block-----\n",
-                                        contextPtr->cuOriginX, contextPtr->cuOriginY);
-                                dump_left_array(epCbReconNeighborArray, contextPtr->cuOriginY,
-                                        (cuStats->size>>subWidthCMinus1) * 2 + 1);
-                                dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
-                                        (cuStats->size >> subWidthCMinus1) * 4 + 2, 1, is16bit);
-                                printf("---------------------------------------------\n");
+                                if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                                    printf("\n----Dump Cb intra reference info at (%d, %d) for 1st Chroma block-----\n",
+                                            contextPtr->cuOriginX, contextPtr->cuOriginY);
+                                    dump_left_array(epCbReconNeighborArray, contextPtr->cuOriginY,
+                                            (cuStats->size>>subWidthCMinus1) * 2 + 1);
+                                    dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
+                                            (cuStats->size >> subWidthCMinus1) * 4 + 2, 1, is16bit);
+                                    printf("---------------------------------------------\n");
+                                }
                             }
 #endif
                         }
@@ -3459,15 +3463,17 @@ EB_EXTERN void EncodePass(
                             PICTURE_BUFFER_DESC_FULL_MASK );
 #ifdef DEBUG_REF_INFO
                         {
-                            int originX = contextPtr->cuOriginX;
-                            int originY = contextPtr->cuOriginY;
-                            int tuSize = cuStats->size; 
-                            printf("\n----- Dump prediction for 1st loop at (%d, %d)-----\n", originX, originY);
+                            if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                                int originX = contextPtr->cuOriginX;
+                                int originY = contextPtr->cuOriginY;
+                                int tuSize = cuStats->size; 
+                                printf("\n----- Dump prediction for 1st loop at (%d, %d)-----\n", originX, originY);
 
-                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+                                int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
 
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
+                                dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                                dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
+                            }
                         }
 #endif
                         // Encode Transform Unit -INTRA-
@@ -3542,29 +3548,22 @@ EB_EXTERN void EncodePass(
                                 residualBuffer,
                                 transformInnerArrayPtr);
 #ifdef DEBUG_REF_INFO
-                        {
-                            int originX = contextPtr->cuOriginX;
-                            int originY = contextPtr->cuOriginY;
-                            int tuSize = cuStats->size; 
-                            printf("\n----- Dump recon for 1st loop at (%d, %d)-----\n", originX, originY);
+                            {
+                                if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                                    int originX = contextPtr->cuOriginX;
+                                    int originY = contextPtr->cuOriginY;
+                                    int tuSize = cuStats->size; 
+                                    printf("\n----- Dump recon for 1st loop at (%d, %d)-----\n", originX, originY);
 
-                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+                                    int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
 
-                            dump_block_from_desc(tuSize, reconBuffer, originX, originY, 0);
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
-                        }
+                                    dump_block_from_desc(tuSize, reconBuffer, originX, originY, 0);
+                                    dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                                    dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 2);
+                                }
+                            }
 #endif
                         }
-
-                        // Update the Intra-specific Neighbor Arrays
-                        EncodePassUpdateIntraModeNeighborArrays(
-                            epModeTypeNeighborArray,
-                            epIntraLumaModeNeighborArray,
-                            (EB_U8)cuPtr->predictionUnitArray->intraLumaMode,
-                            contextPtr->cuOriginX,
-                            contextPtr->cuOriginY,
-                            cuStats->size);
 
                         // Update Recon Samples-INTRA-                 
                         EncodePassUpdateReconSampleNeighborArrays(
@@ -3601,13 +3600,15 @@ EB_EXTERN void EncodePass(
 								(contextPtr->cuOriginX + cuStats->size) == sequenceControlSetPtr->lumaWidth ? EB_TRUE : EB_FALSE);
 #ifdef DEBUG_REF_INFO
                             {
-                                printf("\n----Dump Cb intra reference info at CU(%d, %d) for 2nd Chroma block-----\n",
-                                        contextPtr->cuOriginX, contextPtr->cuOriginY);
-                                dump_left_array(epCbReconNeighborArray, contextPtr->cuOriginY + (cuStats->size>>subWidthCMinus1),
-                                        (cuStats->size>>subWidthCMinus1) * 2 + 1);
-                                dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
-                                        (cuStats->size >> subWidthCMinus1) * 4 + 2, 1, is16bit);
-                                printf("---------------------------------------------\n");
+                                if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                                    printf("\n----Dump Cb intra reference info at CU(%d, %d) for 2nd Chroma block-----\n",
+                                            contextPtr->cuOriginX, contextPtr->cuOriginY);
+                                    dump_left_array(epCbReconNeighborArray, contextPtr->cuOriginY + (cuStats->size>>subWidthCMinus1),
+                                            (cuStats->size>>subWidthCMinus1) * 2 + 1);
+                                    dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
+                                            (cuStats->size >> subWidthCMinus1) * 4 + 2, 1, is16bit);
+                                    printf("---------------------------------------------\n");
+                                }
                             }
 #endif
 
@@ -3626,15 +3627,17 @@ EB_EXTERN void EncodePass(
 								PICTURE_BUFFER_DESC_CHROMA_MASK);
 #ifdef DEBUG_REF_INFO
                         {
-                            int originX = contextPtr->cuOriginX;
-                            int originY = contextPtr->cuOriginY;
-                            int tuSize = cuStats->size; 
-                            printf("\n----- Dump prediction for 2nd loop at (%d, %d)-----\n", originX, originY);
+                            if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                                int originX = contextPtr->cuOriginX;
+                                int originY = contextPtr->cuOriginY;
+                                int tuSize = cuStats->size; 
+                                printf("\n----- Dump prediction for 2nd loop at (%d, %d)-----\n", originX, originY);
 
-                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+                                int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
 
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY+chroma_size, 1);
-                            //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                                dump_block_from_desc(chroma_size, reconBuffer, originX, originY+chroma_size, 1);
+                                //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                            }
                         }
 #endif
 
@@ -3688,6 +3691,15 @@ EB_EXTERN void EncodePass(
 									is16bit);
 						}
 					}
+
+                    // Update the Intra-specific Neighbor Arrays
+                    EncodePassUpdateIntraModeNeighborArrays(
+                        epModeTypeNeighborArray,
+                        epIntraLumaModeNeighborArray,
+                        (EB_U8)cuPtr->predictionUnitArray->intraLumaMode,
+                        contextPtr->cuOriginX,
+                        contextPtr->cuOriginY,
+                        cuStats->size);
 
                     // set up the bS based on PU boundary for DLF
                     if (dlfEnableFlag){
@@ -3804,6 +3816,7 @@ EB_EXTERN void EncodePass(
                                 pictureTopBoundary,
                                 pictureRightBoundary);
 #ifdef DEBUG_REF_INFO
+                        if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
                             printf("\n----Dump Cb intra reference info at (%d, %d) for 1st Chroma block-----\n",
                                     partitionOriginX, partitionOriginY);
                             dump_left_array(epCbReconNeighborArray, partitionOriginY, MIN_PU_SIZE*2);
@@ -3815,6 +3828,7 @@ EB_EXTERN void EncodePass(
                             dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
                                     MIN_PU_SIZE * 4 + 1, 1, is16bit);
                             printf("---------------------------------------------\n");
+                        }
 #endif
                     }
 
@@ -3851,6 +3865,7 @@ EB_EXTERN void EncodePass(
                                 PICTURE_BUFFER_DESC_CHROMA_MASK);
                     }
 #ifdef DEBUG_REF_INFO
+                    if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
                         int debug_originX = partitionOriginX;
                         int debug_originY = partitionOriginY;
                         int debug_tuSize = cuStats->size >> 1; 
@@ -3862,6 +3877,7 @@ EB_EXTERN void EncodePass(
                         dump_block_from_desc(debug_chroma_size, reconBuffer, debug_originX, debug_originY, 1);
                         dump_block_from_desc(debug_chroma_size, reconBuffer, debug_originX, debug_originY, 2);
                         //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                    }
 #endif
                     
                     // Encode Transform Unit -INTRA-
@@ -3914,11 +3930,13 @@ EB_EXTERN void EncodePass(
 						residualBuffer,
 						transformInnerArrayPtr);
 #ifdef DEBUG_REF_INFO
-                    printf("---- Dump 4x4 Recon at cu position (%d, %d) ----\n", partitionOriginX, partitionOriginY);
-                    dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 0);
-                    if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
-                        dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 1);
-                        dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 2);
+                    if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                        printf("---- Dump 4x4 Recon at cu position (%d, %d) ----\n", partitionOriginX, partitionOriginY);
+                        dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 0);
+                        if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+                            dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 1);
+                            dump_block_from_desc(4, reconBuffer, partitionOriginX, partitionOriginY, 2);
+                        }
                     }
 #endif
 
@@ -4121,24 +4139,26 @@ EB_EXTERN void EncodePass(
                     }
                 }
 #ifdef DEBUG_REF_INFO
-                        {
-                            int originX = contextPtr->cuOriginX;
-                            int originY = contextPtr->cuOriginY;
-                            int tuSize = cuStats->size;
-                            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
-                            printf("\n----- Dump prediction for inter block (%d, %d), cu size %d, mv is (%d, %d)-----\n",
-                                    originX, originY, tuSize,
-                                    contextPtr->mvUnit.mv[REF_LIST_0].x,
-                                    contextPtr->mvUnit.mv[REF_LIST_0].y);
+                {
+                    if (lcuPtr->pictureControlSetPtr->pictureNumber == REF_POC) {
+                        int originX = contextPtr->cuOriginX;
+                        int originY = contextPtr->cuOriginY;
+                        int tuSize = cuStats->size;
+                        int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+                        printf("\n----- Dump prediction for inter block (%d, %d), cu size %d, mv is (%d, %d)-----\n",
+                                originX, originY, tuSize,
+                                contextPtr->mvUnit.mv[REF_LIST_0].x,
+                                contextPtr->mvUnit.mv[REF_LIST_0].y);
 
-                            printf("----dump Cb prediction block----\n");
-                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
-                            if (colorFormat == EB_YUV422) {
-                                printf("----dump 2nd Cb prediction block----\n");
-                                dump_block_from_desc(chroma_size, reconBuffer, originX, originY+chroma_size, 1);
-                            }
-                            //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                        printf("----dump Cb prediction block----\n");
+                        dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                        if (colorFormat == EB_YUV422) {
+                            printf("----dump 2nd Cb prediction block----\n");
+                            dump_block_from_desc(chroma_size, reconBuffer, originX, originY+chroma_size, 1);
                         }
+                        //dump_block_from_desc(chroma_size, predSamples, originX, originY, 2);
+                    }
+                }
 #endif
 
                 contextPtr->tuItr = (cuStats->size < MAX_LCU_SIZE) ? 0 : 1;
