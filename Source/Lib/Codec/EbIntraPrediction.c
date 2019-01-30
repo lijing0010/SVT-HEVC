@@ -2851,25 +2851,16 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
 
     // Top Left Block
     while(blockIndex < topLeftBlockEnd && neighborAvailable == EB_FALSE) {
-
         modeArrayIndex = GetNeighborArrayUnitTopLeftIndex(
             modeTypeNeighborArray,
             cuOriginX,
-            cuOriginY);
+            cuOriginY + chromaOffset);
 
         neighborAvailable = 
             (topLeftModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
             (pictureLeftBoundary == EB_TRUE || pictureTopBoundary == EB_TRUE)         ? EB_FALSE :    // left picture boundary check
             (topLeftModeNeighborArray[modeArrayIndex] == INTER_MODE && 
              constrainedIntraFlag                     == EB_TRUE)               ? EB_FALSE : EB_TRUE;   // contrained intra check
-        if (colorFormat == EB_YUV422 && secondChroma) {
-            //For 2nd chroma, check the left CU for topleft
-            neighborAvailable = 
-                (leftModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
-                (pictureLeftBoundary == EB_TRUE || pictureTopBoundary == EB_TRUE)         ? EB_FALSE :    // left picture boundary check
-                (leftModeNeighborArray[modeArrayIndex] == INTER_MODE && 
-                 constrainedIntraFlag                     == EB_TRUE)               ? EB_FALSE : EB_TRUE;   // contrained intra check
-        }
 
         if(neighborAvailable == EB_TRUE) {
             // Set pad value (end of block)
@@ -2891,10 +2882,10 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
             (modeArrayIndex >= topModeNeighborArraySize)            ? EB_FALSE :            // array boundary check
             (topRightAvailabilityPreCalc == EB_FALSE &&
              blockIndex >= topRightBlockBegin)                      ? EB_FALSE :            // internal scan-order check
-            (topModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
+            (!secondChroma && topModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
             (pictureTopBoundary == EB_TRUE)                            ? EB_FALSE :            // top picture boundary check
             (pictureRightBoundary == EB_TRUE && blockIndex >= topRightBlockBegin) ? EB_FALSE :  // right picture boundary check
-            (topModeNeighborArray[modeArrayIndex] == INTER_MODE && 
+            (!secondChroma && topModeNeighborArray[modeArrayIndex] == INTER_MODE &&
              constrainedIntraFlag == EB_TRUE)                       ? EB_FALSE : EB_TRUE;   // contrained intra check
 
         if(neighborAvailable == EB_TRUE) {
@@ -2987,32 +2978,16 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
 
     // Top Left Block
     while(blockIndex < topLeftBlockEnd) {
-
         modeArrayIndex = GetNeighborArrayUnitTopLeftIndex(
             modeTypeNeighborArray,
             cuOriginX,
-            cuOriginY);
+            cuOriginY + chromaOffset);
 
         neighborAvailable = 
             (topLeftModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
             (pictureLeftBoundary == EB_TRUE || pictureTopBoundary == EB_TRUE)         ? EB_FALSE :    // left picture boundary check
             (topLeftModeNeighborArray[modeArrayIndex] == INTER_MODE && 
              constrainedIntraFlag                     == EB_TRUE)       ? EB_FALSE : EB_TRUE;   // contrained intra check
-
-        if (colorFormat == EB_YUV422 && secondChroma) {
-            reconArrayIndex = (cuOriginY >> subHeightCMinus1) + chromaOffset +
-                (2 * puChromaSize - MIN_PU_SIZE) - (blockIndex * MIN_PU_SIZE);
-            modeArrayIndex = GetNeighborArrayUnitLeftIndex(
-                    modeTypeNeighborArray,
-                    reconArrayIndex << subHeightCMinus1);
-
-            //For 2nd chroma, check the left CU for topleft
-            neighborAvailable = 
-                (leftModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
-                (pictureLeftBoundary == EB_TRUE || pictureTopBoundary == EB_TRUE)         ? EB_FALSE :    // left picture boundary check
-                (leftModeNeighborArray[modeArrayIndex] == INTER_MODE && 
-                 constrainedIntraFlag                     == EB_TRUE)               ? EB_FALSE : EB_TRUE;   // contrained intra check
-        }
 
         if(neighborAvailable == EB_TRUE) {
             
@@ -3049,10 +3024,10 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
             (modeArrayIndex >= topModeNeighborArraySize)            ? EB_FALSE :            // array boundary check
             (topRightAvailabilityPreCalc == EB_FALSE &&
              blockIndex >= topRightBlockBegin)                      ? EB_FALSE :            // internal scan-order check
-            (topModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
+            (!secondChroma && topModeNeighborArray[modeArrayIndex] == (EB_U8) INVALID_MODE)  ? EB_FALSE :    // slice boundary check
             (pictureTopBoundary == EB_TRUE)                            ? EB_FALSE :            // top picture boundary check
             (pictureRightBoundary == EB_TRUE && blockIndex >= topRightBlockBegin) ? EB_FALSE :  // right picture boundary check
-            (topModeNeighborArray[modeArrayIndex] == INTER_MODE && 
+            (!secondChroma && topModeNeighborArray[modeArrayIndex] == INTER_MODE &&
              constrainedIntraFlag == EB_TRUE)                       ? EB_FALSE : EB_TRUE;   // contrained intra check
 
         if(neighborAvailable == EB_TRUE) {
