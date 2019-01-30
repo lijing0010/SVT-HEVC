@@ -24,7 +24,7 @@
 #include "emmintrin.h"
 
 //#define DEBUG_REF_INFO
-#define REF_POC 1
+#define REF_POC 7
 //#define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
@@ -3795,7 +3795,11 @@ EB_EXTERN void EncodePass(
                         //   as there is not a one-to-one relationship between the luma/chroma blocks. This effects
                         //   only the right picture edge check and not the left or top boundary checks as the block size
                         //   has no influence on those checks.  
-                        pictureRightBoundary = (lcuPtr->pictureRightEdgeFlag == EB_TRUE && ((((partitionOriginX / 2) + MIN_PU_SIZE) & ((MAX_LCU_SIZE / 2) - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+                        if (colorFormat == EB_YUV444) {
+                            pictureRightBoundary = (lcuPtr->pictureRightEdgeFlag == EB_TRUE && (((partitionOriginX + MIN_PU_SIZE) & (MAX_LCU_SIZE - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+                        } else {
+                            pictureRightBoundary = (lcuPtr->pictureRightEdgeFlag == EB_TRUE && ((((partitionOriginX / 2) + MIN_PU_SIZE) & ((MAX_LCU_SIZE / 2) - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+                        }
                         componentMask = PICTURE_BUFFER_DESC_FULL_MASK;
 						GenerateChromaIntraReferenceSamplesFuncTable[is16bit](
                                 constrainedIntraFlag,
@@ -3826,7 +3830,7 @@ EB_EXTERN void EncodePass(
                                     partitionOriginX, partitionOriginY);
                             dump_left_array(epCrReconNeighborArray, partitionOriginY, MIN_PU_SIZE*2);
                             dump_intra_ref((is16bit ? (void*)contextPtr->intraRefPtr16 : (void*)contextPtr->intraRefPtr),
-                                    MIN_PU_SIZE * 4 + 1, 1, is16bit);
+                                    MIN_PU_SIZE * 4 + 1, 2, is16bit);
                             printf("---------------------------------------------\n");
                         }
 #endif
