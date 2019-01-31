@@ -1383,9 +1383,10 @@ EB_ERRORTYPE GenerateChromaIntraReferenceSamplesEncodePass(
              constrainedIntraFlag                     == EB_TRUE)               ? EB_FALSE : EB_TRUE;   // contrained intra check
 
         if(neighborAvailable == EB_TRUE) {
-            // Set pad value (end of block)
-            cbPadValue = topLeftCbReconNeighborArray[MAX_PICTURE_HEIGHT_SIZE + (cuOriginX >> subWidthCMinus1) - (cuOriginY + chromaOffset)];
-            crPadValue = topLeftCrReconNeighborArray[MAX_PICTURE_HEIGHT_SIZE + (cuOriginX >> subWidthCMinus1) - (cuOriginY + chromaOffset)];
+            int pos = ((MAX_PICTURE_HEIGHT_SIZE - (cuOriginY + chromaOffset)) >> subHeightCMinus1) + (cuOriginX >> subWidthCMinus1);
+            cbPadValue = topLeftCbReconNeighborArray[pos];
+            crPadValue = topLeftCrReconNeighborArray[pos];
+            //crPadValue = topLeftCrReconNeighborArray[MAX_PICTURE_HEIGHT_SIZE + (cuOriginX >> subWidthCMinus1) - (cuOriginY + chromaOffset)];
         }
         else {
             ++blockIndex;
@@ -1509,8 +1510,7 @@ EB_ERRORTYPE GenerateChromaIntraReferenceSamplesEncodePass(
 
         if(neighborAvailable == EB_TRUE) {
             // Copy sample
-            int pos = MAX_PICTURE_HEIGHT_SIZE + (cuOriginX >> subWidthCMinus1) -
-                ((cuOriginY >> subHeightCMinus1) + chromaOffset);
+            int pos = ((MAX_PICTURE_HEIGHT_SIZE - (cuOriginY + chromaOffset)) >> subHeightCMinus1) + (cuOriginX >> subWidthCMinus1);
             *cbWritePtr = topLeftCbReconNeighborArray[pos];
             *crWritePtr = topLeftCrReconNeighborArray[pos];
 
@@ -2864,8 +2864,9 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
 
         if(neighborAvailable == EB_TRUE) {
             // Set pad value (end of block)
-            cbPadValue = topLeftCbReconNeighborArray[MAX_PICTURE_HEIGHT_SIZE + (cuOriginX>>subWidthCMinus1) - (cuOriginY+chromaOffset)];
-            crPadValue = topLeftCrReconNeighborArray[MAX_PICTURE_HEIGHT_SIZE + (cuOriginX>>subWidthCMinus1) - (cuOriginY+chromaOffset)];
+            int pos = ((MAX_PICTURE_HEIGHT_SIZE - (cuOriginY + chromaOffset)) >> subHeightCMinus1) + (cuOriginX >> subWidthCMinus1);
+            cbPadValue = topLeftCbReconNeighborArray[pos];
+            crPadValue = topLeftCrReconNeighborArray[pos];
         } else {
             ++blockIndex;
         }
@@ -2990,10 +2991,8 @@ EB_ERRORTYPE GenerateChromaIntraReference16bitSamplesEncodePass(
              constrainedIntraFlag                     == EB_TRUE)       ? EB_FALSE : EB_TRUE;   // contrained intra check
 
         if(neighborAvailable == EB_TRUE) {
-            
             // Copy sample
-            int pos = MAX_PICTURE_HEIGHT_SIZE + (cuOriginX >> subWidthCMinus1) -
-                ((cuOriginY >> subHeightCMinus1) + chromaOffset);
+            int pos = ((MAX_PICTURE_HEIGHT_SIZE - (cuOriginY + chromaOffset)) >> subHeightCMinus1) + (cuOriginX >> subWidthCMinus1);
             *cbWritePtr = topLeftCbReconNeighborArray[pos];
             *crWritePtr = topLeftCrReconNeighborArray[pos];
 
