@@ -182,26 +182,26 @@ EB_ERRORTYPE ModeDecisionContextCtor(
 /**************************************************
  * Reset Mode Decision Neighbor Arrays
  *************************************************/
-void ResetModeDecisionNeighborArrays(PictureControlSet_t *pictureControlSetPtr)
+static void ResetModeDecisionNeighborArrays(PictureControlSet_t *pictureControlSetPtr, EB_U32 tileIndex)
 {
     EB_U8 depth;
     for (depth = 0; depth < NEIGHBOR_ARRAY_TOTAL_COUNT; depth++) {
-        NeighborArrayUnitReset(pictureControlSetPtr->mdIntraLumaModeNeighborArray[depth]);
-        NeighborArrayUnitReset(pictureControlSetPtr->mdMvNeighborArray[depth]);
-        NeighborArrayUnitReset(pictureControlSetPtr->mdSkipFlagNeighborArray[depth]);
-        NeighborArrayUnitReset(pictureControlSetPtr->mdModeTypeNeighborArray[depth]);
-        NeighborArrayUnitReset(pictureControlSetPtr->mdLeafDepthNeighborArray[depth]);
+        NeighborArrayUnitReset(pictureControlSetPtr->mdIntraLumaModeNeighborArray[depth][tileIndex]);
+        NeighborArrayUnitReset(pictureControlSetPtr->mdMvNeighborArray[depth][tileIndex]);
+        NeighborArrayUnitReset(pictureControlSetPtr->mdSkipFlagNeighborArray[depth][tileIndex]);
+        NeighborArrayUnitReset(pictureControlSetPtr->mdModeTypeNeighborArray[depth][tileIndex]);
+        NeighborArrayUnitReset(pictureControlSetPtr->mdLeafDepthNeighborArray[depth][tileIndex]);
     }
 
     return;
 }
 
 
-void ResetMdRefinmentNeighborArrays(PictureControlSet_t *pictureControlSetPtr)
+static void ResetMdRefinmentNeighborArrays(PictureControlSet_t *pictureControlSetPtr, EB_U32 tileIndex)
 {
-	NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementIntraLumaModeNeighborArray);
-	NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementModeTypeNeighborArray);
-    NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementLumaReconNeighborArray);
+	NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementIntraLumaModeNeighborArray[tileIndex]);
+	NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementModeTypeNeighborArray[tileIndex]);
+    NeighborArrayUnitReset(pictureControlSetPtr->mdRefinementLumaReconNeighborArray[tileIndex]);
 
 	return;
 }
@@ -315,6 +315,7 @@ void ProductResetModeDecision(
     ModeDecisionContext_t   *contextPtr,
     PictureControlSet_t     *pictureControlSetPtr,
     SequenceControlSet_t    *sequenceControlSetPtr,
+    EB_U32                   tileIndex,
     EB_U32                   segmentIndex)
 {
 	EB_PICTURE                     sliceType;
@@ -406,11 +407,14 @@ void ProductResetModeDecision(
 	// Reset CABAC Contexts
 	contextPtr->coeffEstEntropyCoderPtr = pictureControlSetPtr->coeffEstEntropyCoderPtr;
 
+    //Jing: Per tile
 	// Reset Neighbor Arrays at start of new Segment / Picture
 	if (segmentIndex == 0) {
-		ResetModeDecisionNeighborArrays(pictureControlSetPtr);
-        ResetMdRefinmentNeighborArrays(pictureControlSetPtr);
+		ResetModeDecisionNeighborArrays(pictureControlSetPtr, tileIndex);
+        ResetMdRefinmentNeighborArrays(pictureControlSetPtr, tileIndex);
 
+        //Jing: TODO Change to tile
+        //      Used in DLF, need to double check if need tile level parameters
         for(lcuRowIndex = 0; lcuRowIndex< ((sequenceControlSetPtr->lumaHeight + MAX_LCU_SIZE - 1)/MAX_LCU_SIZE); lcuRowIndex++){
 			pictureControlSetPtr->encPrevCodedQp[lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;
 			pictureControlSetPtr->encPrevQuantGroupCodedQp[lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;

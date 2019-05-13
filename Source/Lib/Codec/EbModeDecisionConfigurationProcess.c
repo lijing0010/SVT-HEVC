@@ -2341,6 +2341,7 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
     EncDecTasks_t                              *encDecTasksPtr;
     EB_U32                                      pictureWidthInLcu;
 	EB_U32                                      pictureHeightInLcu;
+    EB_U32                                      totalTileCount=1;
 
     for(;;) {
 
@@ -2519,16 +2520,26 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
         SVT_LOG("POC %lld MDC OUT \n", pictureControlSetPtr->pictureNumber);
 #endif
         // Post the results to the MD processes
-        EbGetEmptyObject(
-            contextPtr->modeDecisionConfigurationOutputFifoPtr,
-            &encDecTasksWrapperPtr);
 
-        encDecTasksPtr = (EncDecTasks_t*) encDecTasksWrapperPtr->objectPtr;
-        encDecTasksPtr->pictureControlSetWrapperPtr = rateControlResultsPtr->pictureControlSetWrapperPtr;
-        encDecTasksPtr->inputType = ENCDEC_TASKS_MDC_INPUT;
-        
-        // Post the Full Results Object
-        EbPostFullObject(encDecTasksWrapperPtr);
+        if (sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount > 0) {
+            totalTileCount = sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount;
+        }
+
+        for (unsigned tileIdx = 0; tileIdx < totalTileCount; tileIdx++) {
+            // Jing: Post per tile
+            // TODO: check number
+            EbGetEmptyObject(
+                    contextPtr->modeDecisionConfigurationOutputFifoPtr,
+                    &encDecTasksWrapperPtr);
+            encDecTasksPtr = (EncDecTasks_t*) encDecTasksWrapperPtr->objectPtr;
+            encDecTasksPtr->pictureControlSetWrapperPtr = rateControlResultsPtr->pictureControlSetWrapperPtr;
+            encDecTasksPtr->inputType = ENCDEC_TASKS_MDC_INPUT;
+            encDecTasksPtr->tileIndex = tileIdx;
+            //printf("MDC, post poc %d, tile %d\n", pictureControlSetPtr->pictureNumber, tileIdx);
+
+            // Post the Full Results Object
+            EbPostFullObject(encDecTasksWrapperPtr);
+        }
 
         // Release Rate Control Results
         EbReleaseObject(rateControlResultsWrapperPtr);

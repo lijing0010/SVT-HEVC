@@ -23,6 +23,8 @@ typedef struct EncDecTasks_s
     EbObjectWrapper_t            *pictureControlSetWrapperPtr;
     EB_U32                        inputType;
     EB_S16                        encDecSegmentRow;
+    //Jing:TODO
+    EB_U32                        tileIndex;
 
 } EncDecTasks_t;
 

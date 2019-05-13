@@ -961,6 +961,7 @@ typedef enum EB_SEI {
 #define MAX_NUM_OF_TU_PER_CU                        21 
 #define MIN_NUM_OF_TU_PER_CU                        5 
 #define MAX_LCU_ROWS                                ((MAX_PICTURE_HEIGHT_SIZE) / (MAX_LCU_SIZE))
+#define MAX_TILE_COUNT                              440
 
 #define MAX_NUMBER_OF_TREEBLOCKS_PER_PICTURE       ((MAX_PICTURE_WIDTH_SIZE + MAX_LCU_SIZE - 1) / MAX_LCU_SIZE) * \
                                                    ((MAX_PICTURE_HEIGHT_SIZE + MAX_LCU_SIZE - 1) / MAX_LCU_SIZE) 

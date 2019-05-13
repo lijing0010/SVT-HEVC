@@ -131,6 +131,17 @@ typedef struct MdSegmentCtrl_s
 struct CodedTreeblock_s;
 struct LargestCodingUnit_s;
 
+typedef struct EntropyTileInfo_s
+{
+    EB_S8                                 entropyCodingCurrentAvailableRow;
+    EB_BOOL                               entropyCodingRowArray[MAX_LCU_ROWS];
+    EB_S8                                 entropyCodingCurrentRow;
+    EB_S8                                 entropyCodingRowCount;
+    EB_HANDLE                             entropyCodingMutex;
+    EB_BOOL                               entropyCodingInProgress;
+	EB_BOOL                               entropyCodingPicDone;
+} EntropyTileInfo;
+
 typedef struct PictureControlSet_s 
 {
     EbObjectWrapper_t                    *sequenceControlSetWrapperPtr;
@@ -156,8 +167,14 @@ typedef struct PictureControlSet_s
 
     EB_COLOR_FORMAT                       colorFormat;
 
-    EncDecSegments_t                     *encDecSegmentCtrl;
+    EncDecSegments_t                     **encDecSegmentCtrl;
 
+    // Tile Count
+    EB_U16                                tileRowCount;
+    EB_U16                                tileColumnCount;
+
+
+#if 0
     // Entropy Process Rows
     EB_S8                                 entropyCodingCurrentAvailableRow;
     EB_BOOL                               entropyCodingRowArray[MAX_LCU_ROWS];
@@ -166,9 +183,13 @@ typedef struct PictureControlSet_s
     EB_HANDLE                             entropyCodingMutex;
     EB_BOOL                               entropyCodingInProgress;
 	EB_BOOL                               entropyCodingPicDone;
+#endif
+    EntropyTileInfo                       **entropyCodingInfo;
+    EB_HANDLE                             entropyCodingPicMutex;
 
     EB_HANDLE                             intraMutex;
     EB_U32                                intraCodedArea;
+    EB_U32                                encDecCodedLcuCount;
 
     // Mode Decision Config
     MdcLcuData_t                         *mdcLcuArray;
@@ -211,37 +232,37 @@ typedef struct PictureControlSet_s
 	CabacCost_t                          *cabacCost;
 
     // Mode Decision Neighbor Arrays
-    NeighborArrayUnit_t                  *mdIntraLumaModeNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-    NeighborArrayUnit_t                  *mdMvNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-    NeighborArrayUnit_t                  *mdSkipFlagNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-    NeighborArrayUnit_t                  *mdModeTypeNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-    NeighborArrayUnit_t                  *mdLeafDepthNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-	NeighborArrayUnit_t                  *mdLumaReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-	NeighborArrayUnit_t                  *mdCbReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
-	NeighborArrayUnit_t                  *mdCrReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+    NeighborArrayUnit_t                  **mdIntraLumaModeNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+    NeighborArrayUnit_t                  **mdMvNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+    NeighborArrayUnit_t                  **mdSkipFlagNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+    NeighborArrayUnit_t                  **mdModeTypeNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+    NeighborArrayUnit_t                  **mdLeafDepthNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+	NeighborArrayUnit_t                  **mdLumaReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+	NeighborArrayUnit_t                  **mdCbReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
+	NeighborArrayUnit_t                  **mdCrReconNeighborArray[NEIGHBOR_ARRAY_TOTAL_COUNT];
 
 	// Mode Decision Refinement Neighbor Arrays
-	NeighborArrayUnit_t                  *mdRefinementIntraLumaModeNeighborArray;
-	NeighborArrayUnit_t                  *mdRefinementModeTypeNeighborArray;
-	NeighborArrayUnit_t                  *mdRefinementLumaReconNeighborArray;
+	NeighborArrayUnit_t                  **mdRefinementIntraLumaModeNeighborArray;
+	NeighborArrayUnit_t                  **mdRefinementModeTypeNeighborArray;
+	NeighborArrayUnit_t                  **mdRefinementLumaReconNeighborArray;
 
     // Encode Pass Neighbor Arrays      
-    NeighborArrayUnit_t                  *epIntraLumaModeNeighborArray;
-    NeighborArrayUnit_t                  *epMvNeighborArray;
-    NeighborArrayUnit_t                  *epSkipFlagNeighborArray;
-    NeighborArrayUnit_t                  *epModeTypeNeighborArray;
-    NeighborArrayUnit_t                  *epLeafDepthNeighborArray;
-    NeighborArrayUnit_t                  *epLumaReconNeighborArray;
-    NeighborArrayUnit_t                  *epCbReconNeighborArray;
-    NeighborArrayUnit_t                  *epCrReconNeighborArray;
-    NeighborArrayUnit_t                  *epSaoNeighborArray;
-    NeighborArrayUnit_t                  *epLumaReconNeighborArray16bit;
-    NeighborArrayUnit_t                  *epCbReconNeighborArray16bit;
-    NeighborArrayUnit_t                  *epCrReconNeighborArray16bit;
+    NeighborArrayUnit_t                  **epIntraLumaModeNeighborArray;
+    NeighborArrayUnit_t                  **epMvNeighborArray;
+    NeighborArrayUnit_t                  **epSkipFlagNeighborArray;
+    NeighborArrayUnit_t                  **epModeTypeNeighborArray;
+    NeighborArrayUnit_t                  **epLeafDepthNeighborArray;
+    NeighborArrayUnit_t                  **epLumaReconNeighborArray;
+    NeighborArrayUnit_t                  **epCbReconNeighborArray;
+    NeighborArrayUnit_t                  **epCrReconNeighborArray;
+    NeighborArrayUnit_t                  **epSaoNeighborArray;
+    NeighborArrayUnit_t                  **epLumaReconNeighborArray16bit;
+    NeighborArrayUnit_t                  **epCbReconNeighborArray16bit;
+    NeighborArrayUnit_t                  **epCrReconNeighborArray16bit;
 
     // AMVP & MV Merge Neighbor Arrays 
-    NeighborArrayUnit_t                  *amvpMvMergeMvNeighborArray;
-    NeighborArrayUnit_t                  *amvpMvMergeModeTypeNeighborArray;
+    //NeighborArrayUnit_t                  *amvpMvMergeMvNeighborArray;
+    //NeighborArrayUnit_t                  *amvpMvMergeModeTypeNeighborArray;
 
     // Entropy Coding Neighbor Arrays
     NeighborArrayUnit_t                  *modeTypeNeighborArray;
@@ -305,6 +326,7 @@ typedef struct LcuParameters_s {
     EB_BOOL tileLeftEdgeFlag;
     EB_BOOL tileTopEdgeFlag;
     EB_BOOL tileRightEdgeFlag;
+    EB_U32  tileIndex;
 #endif
 } LcuParams_t;
 
@@ -604,7 +626,8 @@ typedef struct PictureControlSetInitData_s
 
     EB_U8                            tune;
 
-
+    EB_U16                           tileRowCount;
+    EB_U16                           tileColumnCount;
 } PictureControlSetInitData_t;
 
 /**************************************

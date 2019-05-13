@@ -506,6 +506,7 @@ void MvMergePassUpdateNeighborArrays(
 	EB_U32                   originX,
 	EB_U32                   originY,
 	EB_U32                   size,
+    EB_U16                   tileIndex,
 	EB_BOOL                 useIntraChromaflag)
 {
     
@@ -595,21 +596,21 @@ void MvMergePassUpdateNeighborArrays(
     for (depthIndex = PILLAR_NEIGHBOR_ARRAY_INDEX; depthIndex <= REFINEMENT_NEIGHBOR_ARRAY_INDEX; depthIndex++) {
 
         NeighborArrayUnitDepthSkipWrite(
-            pictureControlSetPtr->mdLeafDepthNeighborArray[depthIndex],
+            pictureControlSetPtr->mdLeafDepthNeighborArray[depthIndex][tileIndex],
             (EB_U8*)depth,
             originX,
             originY,
             size);
 
         NeighborArrayUnitModeTypeWrite(
-            pictureControlSetPtr->mdModeTypeNeighborArray[depthIndex],
+            pictureControlSetPtr->mdModeTypeNeighborArray[depthIndex][tileIndex],
             (EB_U8*)modeType,
             originX,
             originY,
             size);
 
         NeighborArrayUnitIntraWrite(
-            pictureControlSetPtr->mdIntraLumaModeNeighborArray[depthIndex],
+            pictureControlSetPtr->mdIntraLumaModeNeighborArray[depthIndex][tileIndex],
             (EB_U8*)lumaMode,
             originX,
             originY,
@@ -617,14 +618,14 @@ void MvMergePassUpdateNeighborArrays(
 
         // *Note - this has to be changed for non-square PU support -- JMJ
         NeighborArrayUnitMvWrite(
-            pictureControlSetPtr->mdMvNeighborArray[depthIndex],
+            pictureControlSetPtr->mdMvNeighborArray[depthIndex][tileIndex],
             (EB_U8*)mvUnit,
             originX,
             originY,
             size);
 
         NeighborArrayUnitDepthSkipWrite(
-             pictureControlSetPtr->mdSkipFlagNeighborArray[depthIndex],
+             pictureControlSetPtr->mdSkipFlagNeighborArray[depthIndex][tileIndex],
             (EB_U8*)skipFlag,
             originX,
             originY,
@@ -633,7 +634,7 @@ void MvMergePassUpdateNeighborArrays(
         if (intraMdOpenLoop == EB_FALSE) {
             // Recon Samples - Luma
             NeighborArrayUnitSampleWrite(
-                pictureControlSetPtr->mdLumaReconNeighborArray[depthIndex],
+                pictureControlSetPtr->mdLumaReconNeighborArray[depthIndex][tileIndex],
                 reconBuffer->bufferY,
                 reconBuffer->strideY,
                 originX & (lcuSize - 1),
@@ -647,7 +648,7 @@ void MvMergePassUpdateNeighborArrays(
             if (useIntraChromaflag){
                 // Recon Samples - Cb
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCbReconNeighborArray[depthIndex],
+                    pictureControlSetPtr->mdCbReconNeighborArray[depthIndex][tileIndex],
                     reconBuffer->bufferCb,
                     reconBuffer->strideCb,
                     (originX & (lcuSize - 1)) >> 1,
@@ -660,7 +661,7 @@ void MvMergePassUpdateNeighborArrays(
 
                 // Recon Samples - Cr
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCrReconNeighborArray[depthIndex],
+                    pictureControlSetPtr->mdCrReconNeighborArray[depthIndex][tileIndex],
                     reconBuffer->bufferCr,
                     reconBuffer->strideCr,
                     (originX & (lcuSize - 1)) >> 1,
@@ -702,6 +703,7 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
     EB_U32                   originX,
     EB_U32                   originY,
     EB_U32                   size,
+    EB_U16                   tileIndex,
     EB_BOOL                 useIntraChromaflag)
 {
 
@@ -791,7 +793,7 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
     if (pictureControlSetPtr->sliceType == EB_I_PICTURE) {
 
         NeighborArrayUnitDepthSkipWrite(
-            pictureControlSetPtr->mdLeafDepthNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+            pictureControlSetPtr->mdLeafDepthNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
             (EB_U8*)depth,
             originX,
             originY,
@@ -799,14 +801,14 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
 
         if (intra4x4Selected == EB_FALSE){
             NeighborArrayUnitModeTypeWrite(
-                pictureControlSetPtr->mdModeTypeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+                pictureControlSetPtr->mdModeTypeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
                 (EB_U8*)modeType,
                 originX,
                 originY,
                 size);
 
             NeighborArrayUnitIntraWrite(
-                pictureControlSetPtr->mdIntraLumaModeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+                pictureControlSetPtr->mdIntraLumaModeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
                 (EB_U8*)lumaMode,
                 originX,
                 originY,
@@ -815,14 +817,14 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
 
         // *Note - this has to be changed for non-square PU support -- JMJ
         NeighborArrayUnitMvWrite(
-            pictureControlSetPtr->mdMvNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+            pictureControlSetPtr->mdMvNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
             (EB_U8*)mvUnit,
             originX,
             originY,
             size);
 
         NeighborArrayUnitDepthSkipWrite(
-            pictureControlSetPtr->mdSkipFlagNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+            pictureControlSetPtr->mdSkipFlagNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
             (EB_U8*)skipFlag,
             originX,
             originY,
@@ -831,7 +833,7 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
         if (intraMdOpenLoop == EB_FALSE && intra4x4Selected == EB_FALSE){
             // Recon Samples - Luma
             NeighborArrayUnitSampleWrite(
-                pictureControlSetPtr->mdLumaReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+                pictureControlSetPtr->mdLumaReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
                 reconBuffer->bufferY,
                 reconBuffer->strideY,
                 originX & (lcuSize - 1),
@@ -845,7 +847,7 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
             if (useIntraChromaflag){
                 // Recon Samples - Cb
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCbReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+                    pictureControlSetPtr->mdCbReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
                     reconBuffer->bufferCb,
                     reconBuffer->strideCb,
                     (originX & (lcuSize - 1)) >> 1,
@@ -858,7 +860,7 @@ void Bdp16x16vs8x8RefinementUpdateNeighborArrays(
 
                 // Recon Samples - Cr
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCrReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX],
+                    pictureControlSetPtr->mdCrReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex],
                     reconBuffer->bufferCr,
                     reconBuffer->strideCr,
                     (originX & (lcuSize - 1)) >> 1,
@@ -3722,22 +3724,23 @@ void UpdateMdNeighborArrays(
     EB_BOOL                  chromaModeFull)
 {
 
+    EB_U16 tileIndex = contextPtr->tileIndex;
     NeighborArrayUnitDepthSkipWrite(
-        pictureControlSetPtr->mdLeafDepthNeighborArray[0],
+        pictureControlSetPtr->mdLeafDepthNeighborArray[0][tileIndex],
         (EB_U8*)depth,
         originX,
         originY,
         size);
 
     NeighborArrayUnitModeTypeWrite(
-        pictureControlSetPtr->mdModeTypeNeighborArray[0],
+        pictureControlSetPtr->mdModeTypeNeighborArray[0][tileIndex],
         (EB_U8*)modeType,
         originX,
         originY,
         size);
 
     NeighborArrayUnitIntraWrite(
-        pictureControlSetPtr->mdIntraLumaModeNeighborArray[0],
+        pictureControlSetPtr->mdIntraLumaModeNeighborArray[0][tileIndex],
         (EB_U8*)lumaMode,
         originX,
         originY,
@@ -3746,14 +3749,14 @@ void UpdateMdNeighborArrays(
 
     // *Note - this has to be changed for non-square PU support -- JMJ
     NeighborArrayUnitMvWrite(
-        pictureControlSetPtr->mdMvNeighborArray[0],
+        pictureControlSetPtr->mdMvNeighborArray[0][tileIndex],
         (EB_U8*)mvUnit,
         originX,
         originY,
         size);
 
     NeighborArrayUnitDepthSkipWrite(
-        pictureControlSetPtr->mdSkipFlagNeighborArray[0],
+        pictureControlSetPtr->mdSkipFlagNeighborArray[0][tileIndex],
         (EB_U8*)skipFlag,
         originX,
         originY,
@@ -3762,7 +3765,7 @@ void UpdateMdNeighborArrays(
     if (contextPtr->intraMdOpenLoopFlag == EB_FALSE){
         // Recon Samples - Luma
         NeighborArrayUnitSampleWrite(
-            pictureControlSetPtr->mdLumaReconNeighborArray[0],
+            pictureControlSetPtr->mdLumaReconNeighborArray[0][tileIndex],
             reconBuffer->bufferY,
             reconBuffer->strideY,
             originX & (lcuSize - 1),
@@ -3776,7 +3779,7 @@ void UpdateMdNeighborArrays(
         if (chromaModeFull){
             // Recon Samples - Cb
             NeighborArrayUnitSampleWrite(
-                pictureControlSetPtr->mdCbReconNeighborArray[0],
+                pictureControlSetPtr->mdCbReconNeighborArray[0][tileIndex],
                 reconBuffer->bufferCb,
                 reconBuffer->strideCb,
                 (originX & (lcuSize - 1)) >> 1,
@@ -3789,7 +3792,7 @@ void UpdateMdNeighborArrays(
 
             // Recon Samples - Cr
             NeighborArrayUnitSampleWrite(
-                pictureControlSetPtr->mdCrReconNeighborArray[0],
+                pictureControlSetPtr->mdCrReconNeighborArray[0][tileIndex],
                 reconBuffer->bufferCr,
                 reconBuffer->strideCr,
                 (originX & (lcuSize - 1)) >> 1,
@@ -3887,25 +3890,26 @@ void UpdateBdpNeighborArrays(
 {
 
     EB_U8 depthIndex;
+    EB_U16 tileIndex = contextPtr->tileIndex;
 
     for (depthIndex = PILLAR_NEIGHBOR_ARRAY_INDEX; depthIndex < NEIGHBOR_ARRAY_TOTAL_COUNT; depthIndex++) {
 
         NeighborArrayUnitDepthSkipWrite(
-            pictureControlSetPtr->mdLeafDepthNeighborArray[depthIndex],
+            pictureControlSetPtr->mdLeafDepthNeighborArray[depthIndex][tileIndex],
             (EB_U8*)depth,
             originX,
             originY,
             size);
 
         NeighborArrayUnitModeTypeWrite(
-            pictureControlSetPtr->mdModeTypeNeighborArray[depthIndex],
+            pictureControlSetPtr->mdModeTypeNeighborArray[depthIndex][tileIndex],
             (EB_U8*)modeType,
             originX,
             originY,
             size);
 
         NeighborArrayUnitIntraWrite(
-            pictureControlSetPtr->mdIntraLumaModeNeighborArray[depthIndex],
+            pictureControlSetPtr->mdIntraLumaModeNeighborArray[depthIndex][tileIndex],
             (EB_U8*)lumaMode,
             originX,
             originY,
@@ -3913,14 +3917,14 @@ void UpdateBdpNeighborArrays(
 
         // *Note - this has to be changed for non-square PU support -- JMJ
         NeighborArrayUnitMvWrite(
-            pictureControlSetPtr->mdMvNeighborArray[depthIndex],
+            pictureControlSetPtr->mdMvNeighborArray[depthIndex][tileIndex],
             (EB_U8*)mvUnit,
             originX,
             originY,
             size);
 
         NeighborArrayUnitDepthSkipWrite(
-            pictureControlSetPtr->mdSkipFlagNeighborArray[depthIndex],
+            pictureControlSetPtr->mdSkipFlagNeighborArray[depthIndex][tileIndex],
             (EB_U8*)skipFlag,
             originX,
             originY,
@@ -3929,7 +3933,7 @@ void UpdateBdpNeighborArrays(
         if (contextPtr->intraMdOpenLoopFlag == EB_FALSE){
             // Recon Samples - Luma
             NeighborArrayUnitSampleWrite(
-                pictureControlSetPtr->mdLumaReconNeighborArray[depthIndex],
+                pictureControlSetPtr->mdLumaReconNeighborArray[depthIndex][tileIndex],
                 reconBuffer->bufferY,
                 reconBuffer->strideY,
                 originX & (lcuSize - 1),
@@ -3943,7 +3947,7 @@ void UpdateBdpNeighborArrays(
             if (chromaModeFull){
                 // Recon Samples - Cb
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCbReconNeighborArray[depthIndex],
+                    pictureControlSetPtr->mdCbReconNeighborArray[depthIndex][tileIndex],
                     reconBuffer->bufferCb,
                     reconBuffer->strideCb,
                     (originX & (lcuSize - 1)) >> 1,
@@ -3956,7 +3960,7 @@ void UpdateBdpNeighborArrays(
 
                 // Recon Samples - Cr
                 NeighborArrayUnitSampleWrite(
-                    pictureControlSetPtr->mdCrReconNeighborArray[depthIndex],
+                    pictureControlSetPtr->mdCrReconNeighborArray[depthIndex][tileIndex],
                     reconBuffer->bufferCr,
                     reconBuffer->strideCr,
                     (originX & (lcuSize - 1)) >> 1,
@@ -4046,9 +4050,10 @@ EB_EXTERN EB_ERRORTYPE ModeDecisionRefinementLcu(
 {
 	EB_ERRORTYPE    return_error = EB_ErrorNone;
 
-    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdRefinementIntraLumaModeNeighborArray;
-    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdRefinementModeTypeNeighborArray;
-    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdRefinementLumaReconNeighborArray;
+    EB_U16 tileIndex = contextPtr->tileIndex;
+    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdRefinementIntraLumaModeNeighborArray[tileIndex];
+    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdRefinementModeTypeNeighborArray[tileIndex];
+    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdRefinementLumaReconNeighborArray[tileIndex];
 
 
     contextPtr->lcuPtr = lcuPtr;
@@ -4710,6 +4715,8 @@ EB_EXTERN EB_ERRORTYPE ModeDecisionLcu(
     EbPictureBufferDesc_t                  *inputPicturePtr = pictureControlSetPtr->ParentPcsPtr->chromaDownSamplePicturePtr;
 
 
+    EB_U16 tileIndex = contextPtr->tileIndex;
+
 	// Mode Decision Candidate Buffers
 	EB_U32                                  bufferTotalCount;
 	ModeDecisionCandidateBuffer_t          *candidateBuffer;
@@ -4766,14 +4773,14 @@ EB_EXTERN EB_ERRORTYPE ModeDecisionLcu(
 		mdcResultTbPtr);
 
     // Mode Decision Neighbor Arrays
-    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX];
+    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[MD_NEIGHBOR_ARRAY_INDEX][tileIndex];
     contextPtr->edgeBlockNumFlag = (EB_BOOL)pictureControlSetPtr->ParentPcsPtr->edgeResultsPtr[lcuAddr].edgeBlockNum;
     // First CU Loop  
 	cuIdx = 0;
@@ -5190,6 +5197,7 @@ EB_EXTERN EB_ERRORTYPE BdpPillar(
 
 	// Input   
     EbPictureBufferDesc_t                  *inputPicturePtr = pictureControlSetPtr->ParentPcsPtr->chromaDownSamplePicturePtr;
+    EB_U32                                  tileIndex = lcuParamPtr->tileIndex;
 
 
 	// Mode Decision Candidate Buffers
@@ -5236,14 +5244,14 @@ EB_EXTERN EB_ERRORTYPE BdpPillar(
 	contextPtr->groupOf16x16BlocksCount = 0;
 
     // Mode Decision Neighbor Arrays
-    contextPtr->intraLumaModeNeighborArray  =   pictureControlSetPtr->mdIntraLumaModeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->mvNeighborArray             =   pictureControlSetPtr->mdMvNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->skipFlagNeighborArray       =   pictureControlSetPtr->mdSkipFlagNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->modeTypeNeighborArray       =   pictureControlSetPtr->mdModeTypeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->leafDepthNeighborArray      =   pictureControlSetPtr->mdLeafDepthNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->lumaReconNeighborArray      =   pictureControlSetPtr->mdLumaReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->cbReconNeighborArray        =   pictureControlSetPtr->mdCbReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->crReconNeighborArray        =   pictureControlSetPtr->mdCrReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX];
+    contextPtr->intraLumaModeNeighborArray  =   pictureControlSetPtr->mdIntraLumaModeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->mvNeighborArray             =   pictureControlSetPtr->mdMvNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->skipFlagNeighborArray       =   pictureControlSetPtr->mdSkipFlagNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->modeTypeNeighborArray       =   pictureControlSetPtr->mdModeTypeNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->leafDepthNeighborArray      =   pictureControlSetPtr->mdLeafDepthNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->lumaReconNeighborArray      =   pictureControlSetPtr->mdLumaReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->cbReconNeighborArray        =   pictureControlSetPtr->mdCbReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->crReconNeighborArray        =   pictureControlSetPtr->mdCrReconNeighborArray[PILLAR_NEIGHBOR_ARRAY_INDEX][tileIndex];
 
     contextPtr->edgeBlockNumFlag = (EB_BOOL)pictureControlSetPtr->ParentPcsPtr->edgeResultsPtr[lcuAddr].edgeBlockNum;
 
@@ -5614,18 +5622,19 @@ EB_EXTERN EB_ERRORTYPE Bdp64x64vs32x32RefinementProcess(
     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArray;
 
     EB_U32                                  maxBuffers;
+    EB_U32                                  tileIndex = lcuParamPtr->tileIndex;
 
     // Keep track of the LCU Ptr
     contextPtr->lcuPtr = lcuPtr;
 
-    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
+    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
 
     EB_U8 leafIndex = 0;
 
@@ -5871,6 +5880,8 @@ EB_EXTERN EB_ERRORTYPE Bdp16x16vs8x8RefinementProcess(
     // Input    
     EbPictureBufferDesc_t                  *inputPicturePtr = pictureControlSetPtr->ParentPcsPtr->chromaDownSamplePicturePtr;
 
+    EB_U16                                  tileIndex = contextPtr->tileIndex;
+
     // Mode Decision Candidate Buffers
     EB_U32                                  bufferTotalCount;
     ModeDecisionCandidateBuffer_t          *candidateBuffer;
@@ -5902,14 +5913,14 @@ EB_EXTERN EB_ERRORTYPE Bdp16x16vs8x8RefinementProcess(
     // Keep track of the LCU Ptr
     contextPtr->lcuPtr = lcuPtr;  
 
-    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX];
+    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[REFINEMENT_NEIGHBOR_ARRAY_INDEX][tileIndex];
 
     EB_U8 parentLeafIndex = 0;
     
@@ -6285,6 +6296,7 @@ EB_EXTERN EB_ERRORTYPE Bdp16x16vs8x8RefinementProcess(
                     contextPtr->cuOriginX,
                     contextPtr->cuOriginY,
                     contextPtr->cuStats->size,
+                    tileIndex,
                     contextPtr->useChromaInformationInFullLoop ? EB_TRUE : EB_FALSE);
 
 				if (contextPtr->intraMdOpenLoopFlag == EB_FALSE)
@@ -6340,18 +6352,19 @@ EB_EXTERN EB_ERRORTYPE BdpMvMergePass(
     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArray;
 
     EB_U32                                  maxBuffers;
+    EB_U16                                  tileIndex = contextPtr->tileIndex;
 
     // Keep track of the LCU Ptr
     contextPtr->lcuPtr = lcuPtr;
 
-    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
-    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX];
+    contextPtr->intraLumaModeNeighborArray  = pictureControlSetPtr->mdIntraLumaModeNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->mvNeighborArray             = pictureControlSetPtr->mdMvNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->skipFlagNeighborArray       = pictureControlSetPtr->mdSkipFlagNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->modeTypeNeighborArray       = pictureControlSetPtr->mdModeTypeNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->leafDepthNeighborArray      = pictureControlSetPtr->mdLeafDepthNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->lumaReconNeighborArray      = pictureControlSetPtr->mdLumaReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->cbReconNeighborArray        = pictureControlSetPtr->mdCbReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
+    contextPtr->crReconNeighborArray        = pictureControlSetPtr->mdCrReconNeighborArray[MV_MERGE_PASS_NEIGHBOR_ARRAY_INDEX][tileIndex];
 
     // First CU Loop  
     EB_U8 leafIndex = 0;
@@ -6562,6 +6575,7 @@ EB_EXTERN EB_ERRORTYPE BdpMvMergePass(
                     contextPtr->cuOriginX,
                     contextPtr->cuOriginY,
                     contextPtr->cuStats->size,
+                    tileIndex,
                     contextPtr->useChromaInformationInFullLoop ? EB_TRUE : EB_FALSE);
 
 					if (contextPtr->intraMdOpenLoopFlag == EB_FALSE)
@@ -6619,6 +6633,7 @@ EB_EXTERN EB_ERRORTYPE BdpMvMergePass(
                     contextPtr->cuOriginX,
                     contextPtr->cuOriginY,
                     contextPtr->cuStats->size,
+                    tileIndex,
                     contextPtr->useChromaInformationInFullLoop ? EB_TRUE : EB_FALSE);
             }
             leafIndex += DepthOffset[contextPtr->cuStats->depth];

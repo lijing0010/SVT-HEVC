@@ -818,6 +818,9 @@ EB_API EB_ERRORTYPE EbInitEncoder(EB_COMPONENTTYPE *h265EncComponent)
         inputData.lcuSize           = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->lcuSize;
         inputData.maxDepth          = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->maxLcuDepth;
         inputData.is16bit           = is16bit;
+        inputData.tileRowCount      = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->staticConfig.tileRowCount;
+        inputData.tileColumnCount   = encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->staticConfig.tileColumnCount;
+
         return_error = EbSystemResourceCtor(
             &(encHandlePtr->pictureControlSetPoolPtrArray[instanceIndex]),
             encHandlePtr->sequenceControlSetInstanceArray[instanceIndex]->sequenceControlSetPtr->pictureControlSetPoolInitCountChild, //EB_PictureControlSetPoolInitCountChild,
@@ -1782,6 +1785,7 @@ void LoadDefaultBufferConfigurationSettings(
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->entropyCodingProcessInitCount                = MAX(3, coreCount / 12);
 
     sequenceControlSetPtr->totalProcessInitCount += 6; // single processes count
+
     SVT_LOG("Number of logical cores available: %u\nNumber of PPCS %u\n", coreCount, inputPic);
 
     return;
@@ -2034,7 +2038,6 @@ void SetParamBasedOnInput(
     DeriveInputResolution(
         sequenceControlSetPtr,
         sequenceControlSetPtr->lumaWidth*sequenceControlSetPtr->lumaHeight);
-
 }
 
 void CopyApiFromApp(
@@ -2088,6 +2091,9 @@ void CopyApiFromApp(
     sequenceControlSetPtr->staticConfig.tileRowCount = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileRowCount;
     sequenceControlSetPtr->staticConfig.tileColumnCount = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileColumnCount;
     sequenceControlSetPtr->staticConfig.tileSliceMode = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileSliceMode;
+    sequenceControlSetPtr->tileRowCount = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileRowCount;
+    sequenceControlSetPtr->tileColumnCount = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileColumnCount;
+    sequenceControlSetPtr->tileSliceMode = ((EB_H265_ENC_CONFIGURATION*)pComponentParameterStructure)->tileSliceMode;
 #endif
 
     // Deblock Filter

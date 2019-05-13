@@ -217,7 +217,7 @@ void* PacketizationKernel(void *inputPtr)
             lcuTotalCount               = pictureControlSetPtr->lcuTotalCount;
 
             // LCU Loop
-            if (sequenceControlSetPtr->staticConfig.rateControlMode > 0){          
+            if (sequenceControlSetPtr->staticConfig.rateControlMode > 0){
                 EB_U64  sadBits[NUMBER_OF_SAD_INTERVALS]= {0};
                 EB_U32  count[NUMBER_OF_SAD_INTERVALS] = {0};
 

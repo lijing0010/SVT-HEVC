@@ -19,7 +19,7 @@ typedef struct EncDecResults_s
     EbObjectWrapper_t      *pictureControlSetWrapperPtr;
     EB_U32                  completedLcuRowIndexStart;
     EB_U32                  completedLcuRowCount;
-
+    EB_U32                  tileIndex;
 } EncDecResults_t;
 
 typedef struct EncDecResultsInitData_s

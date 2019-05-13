@@ -1723,8 +1723,8 @@ static void EncodePassMvPrediction(
             contextPtr->cuPtr->predictionUnitArray->interPredDirectionIndex == BI_PRED)
         {
             FillAMVPCandidates(
-                pictureControlSetPtr->epMvNeighborArray,
-                pictureControlSetPtr->epModeTypeNeighborArray,
+                pictureControlSetPtr->epMvNeighborArray[contextPtr->tileIndex],
+                pictureControlSetPtr->epModeTypeNeighborArray[contextPtr->tileIndex],
                 contextPtr->cuOriginX,
                 contextPtr->cuOriginY,
                 contextPtr->cuStats->size,
@@ -1770,8 +1770,8 @@ static void EncodePassMvPrediction(
             contextPtr->cuPtr->predictionUnitArray->interPredDirectionIndex == BI_PRED)
         {
             FillAMVPCandidates(
-                pictureControlSetPtr->epMvNeighborArray,
-                pictureControlSetPtr->epModeTypeNeighborArray,
+                pictureControlSetPtr->epMvNeighborArray[contextPtr->tileIndex],
+                pictureControlSetPtr->epModeTypeNeighborArray[contextPtr->tileIndex],
                 contextPtr->cuOriginX,
                 contextPtr->cuOriginY,
                 contextPtr->cuStats->size,
@@ -2839,6 +2839,7 @@ EB_EXTERN void EncodePass(
     EB_COLOR_FORMAT         colorFormat = contextPtr->colorFormat;
     const EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
 
+    EB_U32                   tileIdx = contextPtr->tileIndex;
     EbPictureBufferDesc_t *reconBuffer = is16bit ? pictureControlSetPtr->reconPicture16bitPtr : pictureControlSetPtr->reconPicturePtr;
     EbPictureBufferDesc_t *coeffBufferTB = lcuPtr->quantizedCoeff;
 
@@ -2898,14 +2899,14 @@ EB_EXTERN void EncodePass(
     EncodeContext_t *encodeContextPtr = NULL;
 
     // Dereferencing early
-    NeighborArrayUnit_t *epModeTypeNeighborArray = pictureControlSetPtr->epModeTypeNeighborArray;
-    NeighborArrayUnit_t *epIntraLumaModeNeighborArray = pictureControlSetPtr->epIntraLumaModeNeighborArray;
-    NeighborArrayUnit_t *epMvNeighborArray = pictureControlSetPtr->epMvNeighborArray;
-    NeighborArrayUnit_t *epLumaReconNeighborArray = is16bit ? pictureControlSetPtr->epLumaReconNeighborArray16bit : pictureControlSetPtr->epLumaReconNeighborArray;
-    NeighborArrayUnit_t *epCbReconNeighborArray = is16bit ? pictureControlSetPtr->epCbReconNeighborArray16bit : pictureControlSetPtr->epCbReconNeighborArray;
-    NeighborArrayUnit_t *epCrReconNeighborArray = is16bit ? pictureControlSetPtr->epCrReconNeighborArray16bit : pictureControlSetPtr->epCrReconNeighborArray;
-    NeighborArrayUnit_t *epSkipFlagNeighborArray = pictureControlSetPtr->epSkipFlagNeighborArray;
-    NeighborArrayUnit_t *epLeafDepthNeighborArray = pictureControlSetPtr->epLeafDepthNeighborArray;
+    NeighborArrayUnit_t *epModeTypeNeighborArray = pictureControlSetPtr->epModeTypeNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epIntraLumaModeNeighborArray = pictureControlSetPtr->epIntraLumaModeNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epMvNeighborArray = pictureControlSetPtr->epMvNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epLumaReconNeighborArray = is16bit ? pictureControlSetPtr->epLumaReconNeighborArray16bit[tileIdx] : pictureControlSetPtr->epLumaReconNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epCbReconNeighborArray = is16bit ? pictureControlSetPtr->epCbReconNeighborArray16bit[tileIdx] : pictureControlSetPtr->epCbReconNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epCrReconNeighborArray = is16bit ? pictureControlSetPtr->epCrReconNeighborArray16bit[tileIdx] : pictureControlSetPtr->epCrReconNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epSkipFlagNeighborArray = pictureControlSetPtr->epSkipFlagNeighborArray[tileIdx];
+    NeighborArrayUnit_t *epLeafDepthNeighborArray = pictureControlSetPtr->epLeafDepthNeighborArray[tileIdx];
 
     EB_BOOL constrainedIntraFlag = pictureControlSetPtr->constrainedIntraFlag;
     EB_BOOL enableStrongIntraSmoothing = sequenceControlSetPtr->enableStrongIntraSmoothing;
@@ -3077,6 +3078,20 @@ EB_EXTERN void EncodePass(
                 cbQp = MIN(qpScaled, 51);
             }
 
+            //if (pictureControlSetPtr->pictureNumber == 1) {
+            //    printf("POC %d, ", pictureControlSetPtr->pictureNumber);
+            //    if (cuPtr->predictionModeFlag == INTRA_MODE) { 
+            //        printf("(%d, %d), pu size %d, intraLumaMode %d\n",
+            //                contextPtr->cuOriginX, contextPtr->cuOriginY, cuStats->size, cuPtr->predictionUnitArray->intraLumaMode);
+            //    } else {
+            //        printf("(%d, %d), pu size %d,  inter mode, merge flag  %d, mvp (%d, %d), tileIdx %d\n",
+            //                contextPtr->cuOriginX, contextPtr->cuOriginY, cuStats->size,
+            //                cuPtr->predictionUnitArray[0].mergeFlag, 
+            //                cuPtr->predictionUnitArray->mv[0].x,
+            //                cuPtr->predictionUnitArray->mv[0].y, tileIdx);
+            //    }
+            //}
+
             
             if (cuPtr->predictionModeFlag == INTRA_MODE &&
                     cuPtr->predictionUnitArray->intraLumaMode != EB_INTRA_MODE_4x4) {
@@ -3106,6 +3121,8 @@ EB_EXTERN void EncodePass(
                     EB_BOOL  tileLeftBoundary = (lcuPtr->tileLeftEdgeFlag == EB_TRUE && ((contextPtr->cuOriginX & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
                     EB_BOOL  tileTopBoundary = (lcuPtr->tileTopEdgeFlag == EB_TRUE && ((contextPtr->cuOriginY & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
                     EB_BOOL  tileRightBoundary = (lcuPtr->tileRightEdgeFlag == EB_TRUE && (((contextPtr->cuOriginX + cuStats->size) & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+                    //printf("LCU (%d, %d), left/top/right boundary %d/%d/%d\n", lcuOriginX, lcuOriginY,
+                    //        tileLeftBoundary, tileTopBoundary, tileRightBoundary);
 
 #endif
                     // Transform Loop (not supported)
@@ -4484,6 +4501,9 @@ EB_EXTERN void EncodePass(
 
     } // CU Loop
 
+    contextPtr->codedLcuCount++;
+    //Jing:
+    //For true tile mode, need to change DLF accordingly
     // First Pass Deblocking
     if (dlfEnableFlag){
 
@@ -4531,22 +4551,23 @@ EB_EXTERN void EncodePass(
         SaoParameters_t *leftSaoPtr;
         SaoParameters_t *topSaoPtr;
 
+        //Jing: Double check for multi-tile
         if (lcuOriginY != 0){
             EB_U32 topSaoIndex = GetNeighborArrayUnitTopIndex(
-                pictureControlSetPtr->epSaoNeighborArray,
+                pictureControlSetPtr->epSaoNeighborArray[tileIdx],
                 lcuOriginX);
 
-            topSaoPtr = ((SaoParameters_t*)pictureControlSetPtr->epSaoNeighborArray->topArray) + topSaoIndex;
+            topSaoPtr = ((SaoParameters_t*)pictureControlSetPtr->epSaoNeighborArray[tileIdx]->topArray) + topSaoIndex;
         }
         else{
             topSaoPtr = (SaoParameters_t*)EB_NULL;
         }
         if (lcuOriginX != 0){
             EB_U32 leftSaoIndex = GetNeighborArrayUnitLeftIndex(
-                pictureControlSetPtr->epSaoNeighborArray,
+                pictureControlSetPtr->epSaoNeighborArray[tileIdx],
                 lcuOriginY);
 
-            leftSaoPtr = ((SaoParameters_t*)pictureControlSetPtr->epSaoNeighborArray->leftArray) + leftSaoIndex;
+            leftSaoPtr = ((SaoParameters_t*)pictureControlSetPtr->epSaoNeighborArray[tileIdx]->leftArray) + leftSaoIndex;
         }
         else{
             leftSaoPtr = (SaoParameters_t*)EB_NULL;
@@ -4643,7 +4664,7 @@ EB_EXTERN void EncodePass(
 
         // Update the SAO Neighbor Array
         EncodePassUpdateSaoNeighborArrays(
-            pictureControlSetPtr->epSaoNeighborArray,
+            pictureControlSetPtr->epSaoNeighborArray[tileIdx],
             &lcuPtr->saoParams,
             lcuOriginX,
             lcuOriginY,
