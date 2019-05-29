@@ -199,6 +199,7 @@ typedef enum MINI_GOP_INDEX {
 	L3_7_INDEX = 14
 } MINI_GOP_INDEX;
 
+long EbGetSysTimeMs();
 #ifdef __cplusplus
 }
 #endif

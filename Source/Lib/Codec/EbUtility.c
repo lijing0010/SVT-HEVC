@@ -477,3 +477,9 @@ void EbComputeOverallElapsedTimeMs(unsigned long long Startseconds, unsigned lon
 
 
 
+long EbGetSysTimeMs()
+{
+    struct timeval finish;
+    gettimeofday(&finish, NULL);
+    return (finish.tv_sec * 1000 + finish.tv_usec/ 1000.0);
+}

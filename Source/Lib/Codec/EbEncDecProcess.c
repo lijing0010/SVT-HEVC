@@ -4291,8 +4291,8 @@ void* EncDecKernel(void *inputPtr)
                 encDecResultsPtr->tileIndex = encDecTasksPtr->tileIndex;
 
                 // Post EncDec Results
-                //printf("------Post tile %d to Entropy. lcu row %d - %d.\n",
-                //        encDecResultsPtr->tileIndex, lcuRowIndexStart, lcuRowIndexStart + lcuRowIndexCount);
+                printf("[%lld]------Post tile %d to Entropy. lcu row %d - %d.\n", EbGetSysTimeMs(),
+                        encDecResultsPtr->tileIndex, lcuRowIndexStart, lcuRowIndexStart + lcuRowIndexCount);
                 EbPostFullObject(encDecResultsWrapperPtr);
             }
         }

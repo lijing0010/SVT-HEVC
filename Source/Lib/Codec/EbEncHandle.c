@@ -370,6 +370,7 @@ static EB_U32 EncDecPortTotalCount(void)
         totalCount += encDecPorts[portIndex++].count;
     }
 
+    printf("enc dec port count %d\n", totalCount);
     return totalCount;
 }
 
