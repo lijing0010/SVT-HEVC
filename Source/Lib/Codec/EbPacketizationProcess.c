@@ -497,30 +497,49 @@ void* PacketizationKernel(void *inputPtr)
             }
         }
 
-        EncodeSliceHeader(
-            0,
-            packetizationQp,
-            pictureControlSetPtr,
-            (OutputBitstreamUnit_t*) pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);
-
-        // Flush the Bitstream
-        FlushBitstream(
-            pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);      
-        
-        // Copy Slice Header to the Output Bitstream
-        CopyRbspBitstreamToPayload(
-            pictureControlSetPtr->bitstreamPtr,
-            outputStreamPtr->pBuffer,
-            (EB_U32*) &(outputStreamPtr->nFilledLen),
-            (EB_U32*) &(outputStreamPtr->nAllocLen),
-            encodeContextPtr,
-			NAL_UNIT_INVALID);
-
-        // Reset the bitstream
-        ResetBitstream(pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);
 
         // Jing: process multiple tiles
         for (tileIdx = 0; tileIdx < tileCnt; tileIdx++) {
+            EB_U32 lcuSize     = sequenceControlSetPtr->lcuSize;
+            EB_U32 lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
+            EB_U32 pictureWidthInLcu = (sequenceControlSetPtr->lumaWidth + lcuSize - 1) >> lcuSizeLog2;
+            EB_U32 xLcuStart = 0;
+            EB_U32 yLcuStart = 0;
+            EB_U32 lcuIndex = 0;
+            for (EB_U32 i = 0; i < (tileIdx % pictureControlSetPtr->tileColumnCount); i++) {
+                xLcuStart += sequenceControlSetPtr->tileColumnArray[i];
+            }
+            for (EB_U32 i = 0; i < (tileIdx / pictureControlSetPtr->tileColumnCount); i++) {
+                yLcuStart += sequenceControlSetPtr->tileRowArray[i];
+            }
+            lcuIndex = xLcuStart + yLcuStart * pictureWidthInLcu;
+
+            // Encode slice header
+            if (tileIdx == 0 || sequenceControlSetPtr->tileSliceMode == 1) {
+                printf("encode slice header, lcuIdx %d\n", lcuIndex);
+                EncodeSliceHeader(
+                        lcuIndex,
+                        packetizationQp,
+                        pictureControlSetPtr,
+                        (OutputBitstreamUnit_t*) pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);
+
+                // Flush the Bitstream
+                FlushBitstream(
+                        pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);      
+
+                // Copy Slice Header to the Output Bitstream
+                CopyRbspBitstreamToPayload(
+                        pictureControlSetPtr->bitstreamPtr,
+                        outputStreamPtr->pBuffer,
+                        (EB_U32*) &(outputStreamPtr->nFilledLen),
+                        (EB_U32*) &(outputStreamPtr->nAllocLen),
+                        encodeContextPtr,
+                        NAL_UNIT_INVALID);
+
+                // Reset the bitstream
+                ResetBitstream(pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);
+            }
+
             // Write the slice data into the bitstream
             bitstream.outputBitstreamPtr = EntropyCoderGetBitstreamPtr(pictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr);
 

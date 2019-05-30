@@ -527,6 +527,9 @@ void* EntropyCodingKernel(void *inputPtr)
                     //Check for lastLcu, since tiles are parallelized, last LCU may not the the last one in slice
                     lastLcuFlagInSlice = (lcuIndex == pictureControlSetPtr->lcuTotalCount - 1) ? EB_TRUE : EB_FALSE;
                     lastLcuFlagInTile = (xLcuIndex == tileWidthInLcu - 1 && yLcuIndex == tileHeightInLcu - 1) ? EB_TRUE : EB_FALSE;
+                    if (sequenceControlSetPtr->tileSliceMode) {
+                        lastLcuFlagInSlice = lastLcuFlagInTile;
+                    }
             
                     // Configure the LCU
                     EntropyCodingConfigureLcu(
