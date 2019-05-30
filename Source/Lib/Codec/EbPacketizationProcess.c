@@ -72,7 +72,9 @@ void* PacketizationKernel(void *inputPtr)
     EB_U32                          refQpIndex = 0;       
     EB_U32                          packetizationQp;
        
-    EB_PICTURE                        sliceType;
+    EB_PICTURE                      sliceType;
+    EB_U16                          tileIdx;
+    EB_U16                          tileCnt;
     
     for(;;) {
     
@@ -84,6 +86,8 @@ void* PacketizationKernel(void *inputPtr)
         pictureControlSetPtr    = (PictureControlSet_t*)    entropyCodingResultsPtr->pictureControlSetWrapperPtr->objectPtr;
         sequenceControlSetPtr   = (SequenceControlSet_t*)   pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr;
         encodeContextPtr        = (EncodeContext_t*)        sequenceControlSetPtr->encodeContextPtr;
+        tileCnt = pictureControlSetPtr->tileRowCount * pictureControlSetPtr->tileColumnCount; 
+        assert(tileCnt >= 1);
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld PK IN \n", pictureControlSetPtr->pictureNumber);
 #endif
@@ -515,18 +519,21 @@ void* PacketizationKernel(void *inputPtr)
         // Reset the bitstream
         ResetBitstream(pictureControlSetPtr->bitstreamPtr->outputBitstreamPtr);
 
-        // Write the slice data into the bitstream
-        bitstream.outputBitstreamPtr = EntropyCoderGetBitstreamPtr(pictureControlSetPtr->entropyCoderPtr);
+        // Jing: process multiple tiles
+        for (tileIdx = 0; tileIdx < tileCnt; tileIdx++) {
+            // Write the slice data into the bitstream
+            bitstream.outputBitstreamPtr = EntropyCoderGetBitstreamPtr(pictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr);
 
-        FlushBitstream(bitstream.outputBitstreamPtr);
+            FlushBitstream(bitstream.outputBitstreamPtr);
 
-        CopyRbspBitstreamToPayload(
-            &bitstream,
-            outputStreamPtr->pBuffer,
-            (EB_U32*) &(outputStreamPtr->nFilledLen),
-            (EB_U32*) &(outputStreamPtr->nAllocLen),
-            encodeContextPtr,
-			NAL_UNIT_INVALID);
+            CopyRbspBitstreamToPayload(
+                    &bitstream,
+                    outputStreamPtr->pBuffer,
+                    (EB_U32*) &(outputStreamPtr->nFilledLen),
+                    (EB_U32*) &(outputStreamPtr->nAllocLen),
+                    encodeContextPtr,
+                    NAL_UNIT_INVALID);
+        }
         
         // Send the number of bytes per frame to RC
         pictureControlSetPtr->ParentPcsPtr->totalNumBits = outputStreamPtr->nFilledLen << 3;    

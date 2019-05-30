@@ -5,7 +5,7 @@
 
 #ifndef EbDefinitions_h
 #define EbDefinitions_h
-
+#include <assert.h>
 #include "EbApi.h"
 #ifdef __cplusplus
 extern "C" {

@@ -140,6 +140,7 @@ typedef struct EntropyTileInfo_s
     EB_HANDLE                             entropyCodingMutex;
     EB_BOOL                               entropyCodingInProgress;
 	EB_BOOL                               entropyCodingPicDone;
+    EntropyCoder_t                       *entropyCoderPtr;
 } EntropyTileInfo;
 
 typedef struct PictureControlSet_s 
@@ -149,7 +150,8 @@ typedef struct PictureControlSet_s
   
     EbPictureBufferDesc_t                *reconPicture16bitPtr;
     
-    EntropyCoder_t                       *entropyCoderPtr;
+    // Jing: move into entropyCodingInfo
+    //EntropyCoder_t                       *entropyCoderPtr;
 
     // Packetization (used to encode SPS, PPS, etc)
     Bitstream_t                          *bitstreamPtr;
@@ -186,6 +188,7 @@ typedef struct PictureControlSet_s
 #endif
     EntropyTileInfo                       **entropyCodingInfo;
     EB_HANDLE                             entropyCodingPicMutex;
+    EB_BOOL                               entropyCodingPicResetFlag;
 
     EB_HANDLE                             intraMutex;
     EB_U32                                intraCodedArea;
@@ -265,10 +268,10 @@ typedef struct PictureControlSet_s
     //NeighborArrayUnit_t                  *amvpMvMergeModeTypeNeighborArray;
 
     // Entropy Coding Neighbor Arrays
-    NeighborArrayUnit_t                  *modeTypeNeighborArray;
-    NeighborArrayUnit_t                  *leafDepthNeighborArray;
-    NeighborArrayUnit_t                  *intraLumaModeNeighborArray;
-    NeighborArrayUnit_t                  *skipFlagNeighborArray;
+    NeighborArrayUnit_t                  **modeTypeNeighborArray;
+    NeighborArrayUnit_t                  **leafDepthNeighborArray;
+    NeighborArrayUnit_t                  **intraLumaModeNeighborArray;
+    NeighborArrayUnit_t                  **skipFlagNeighborArray;
 
     EB_REFLIST                            colocatedPuRefList;
     EB_BOOL                               isLowDelay;

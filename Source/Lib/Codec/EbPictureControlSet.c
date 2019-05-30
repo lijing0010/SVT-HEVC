@@ -96,14 +96,6 @@ EB_ERRORTYPE PictureControlSetCtor(
     if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
     }
-    // Entropy Coder
-    return_error = EntropyCoderCtor(
-        &objectPtr->entropyCoderPtr,
-        SEGMENT_ENTROPY_BUFFER_SIZE);
-
-	if (return_error == EB_ErrorInsufficientResources){
-        return EB_ErrorInsufficientResources;
-    }
 	
 	// Cabaccost
     EB_MALLOC(CabacCost_t*, objectPtr->cabacCost, sizeof(CabacCost_t), EB_N_PTR);
@@ -201,6 +193,12 @@ EB_ERRORTYPE PictureControlSetCtor(
     EB_MALLOC(NeighborArrayUnit_t**, objectPtr->mdRefinementIntraLumaModeNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
     EB_MALLOC(NeighborArrayUnit_t**, objectPtr->mdRefinementModeTypeNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
     EB_MALLOC(NeighborArrayUnit_t**, objectPtr->mdRefinementLumaReconNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
+
+    // For entropy
+    EB_MALLOC(NeighborArrayUnit_t**, objectPtr->modeTypeNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
+    EB_MALLOC(NeighborArrayUnit_t**, objectPtr->leafDepthNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
+    EB_MALLOC(NeighborArrayUnit_t**, objectPtr->intraLumaModeNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
+    EB_MALLOC(NeighborArrayUnit_t**, objectPtr->skipFlagNeighborArray, sizeof(NeighborArrayUnit_t*) * totalTileCount, EB_N_PTR);
 
     // Mode Decision Neighbor Arrays
     EB_U8 depth;
@@ -511,6 +509,56 @@ EB_ERRORTYPE PictureControlSetCtor(
             if (return_error == EB_ErrorInsufficientResources){
                 return EB_ErrorInsufficientResources;
             }
+
+            // Entropy Coding Neighbor Arrays
+            return_error = NeighborArrayUnitCtor(
+                    &objectPtr->modeTypeNeighborArray[tileIndex],
+                    MAX_PICTURE_WIDTH_SIZE,
+                    MAX_PICTURE_HEIGHT_SIZE,
+                    sizeof(EB_U8),
+                    PU_NEIGHBOR_ARRAY_GRANULARITY,
+                    PU_NEIGHBOR_ARRAY_GRANULARITY,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+            if (return_error == EB_ErrorInsufficientResources){
+                return EB_ErrorInsufficientResources;
+            }
+            return_error = NeighborArrayUnitCtor(
+                    &objectPtr->leafDepthNeighborArray[tileIndex],
+                    MAX_PICTURE_WIDTH_SIZE,
+                    MAX_PICTURE_HEIGHT_SIZE,
+                    sizeof(EB_U8),
+                    CU_NEIGHBOR_ARRAY_GRANULARITY,
+                    CU_NEIGHBOR_ARRAY_GRANULARITY,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+            if (return_error == EB_ErrorInsufficientResources){
+                return EB_ErrorInsufficientResources;
+            }
+            return_error = NeighborArrayUnitCtor(
+                    &objectPtr->skipFlagNeighborArray[tileIndex],
+                    MAX_PICTURE_WIDTH_SIZE,
+                    MAX_PICTURE_HEIGHT_SIZE,
+                    sizeof(EB_U8),
+                    CU_NEIGHBOR_ARRAY_GRANULARITY,
+                    CU_NEIGHBOR_ARRAY_GRANULARITY,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+            if (return_error == EB_ErrorInsufficientResources){
+                return EB_ErrorInsufficientResources;
+            }
+
+            return_error = NeighborArrayUnitCtor(
+                    &objectPtr->intraLumaModeNeighborArray[tileIndex],
+                    MAX_PICTURE_WIDTH_SIZE,
+                    MAX_PICTURE_HEIGHT_SIZE,
+                    sizeof(EB_U8),
+                    PU_NEIGHBOR_ARRAY_GRANULARITY,
+                    PU_NEIGHBOR_ARRAY_GRANULARITY,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+            if (return_error == EB_ErrorInsufficientResources){
+                return EB_ErrorInsufficientResources;
+            }
         }
     }
     //return_error = NeighborArrayUnitCtor(
@@ -537,55 +585,6 @@ EB_ERRORTYPE PictureControlSetCtor(
     //if (return_error == EB_ErrorInsufficientResources){
     //    return EB_ErrorInsufficientResources;
     //}
-    // Entropy Coding Neighbor Arrays
-    return_error = NeighborArrayUnitCtor(
-        &objectPtr->modeTypeNeighborArray,
-        MAX_PICTURE_WIDTH_SIZE,
-        MAX_PICTURE_HEIGHT_SIZE,
-        sizeof(EB_U8),
-        PU_NEIGHBOR_ARRAY_GRANULARITY,
-        PU_NEIGHBOR_ARRAY_GRANULARITY,
-        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-
-    if (return_error == EB_ErrorInsufficientResources){
-        return EB_ErrorInsufficientResources;
-    }
-    return_error = NeighborArrayUnitCtor(
-        &objectPtr->leafDepthNeighborArray,
-        MAX_PICTURE_WIDTH_SIZE,
-        MAX_PICTURE_HEIGHT_SIZE,
-        sizeof(EB_U8),
-        CU_NEIGHBOR_ARRAY_GRANULARITY,
-        CU_NEIGHBOR_ARRAY_GRANULARITY,
-        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-
-    if (return_error == EB_ErrorInsufficientResources){
-        return EB_ErrorInsufficientResources;
-    }
-    return_error = NeighborArrayUnitCtor(
-        &objectPtr->skipFlagNeighborArray,
-        MAX_PICTURE_WIDTH_SIZE,
-        MAX_PICTURE_HEIGHT_SIZE,
-        sizeof(EB_U8),
-        CU_NEIGHBOR_ARRAY_GRANULARITY,
-        CU_NEIGHBOR_ARRAY_GRANULARITY,
-        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-
-	if (return_error == EB_ErrorInsufficientResources){
-        return EB_ErrorInsufficientResources;
-    }
-    
-    return_error = NeighborArrayUnitCtor(
-        &objectPtr->intraLumaModeNeighborArray,
-        MAX_PICTURE_WIDTH_SIZE,
-        MAX_PICTURE_HEIGHT_SIZE,
-        sizeof(EB_U8),
-        PU_NEIGHBOR_ARRAY_GRANULARITY,
-        PU_NEIGHBOR_ARRAY_GRANULARITY,
-        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-    if (return_error == EB_ErrorInsufficientResources){
-        return EB_ErrorInsufficientResources;
-    }
 
     // Note - non-zero offsets are not supported (to be fixed later in DLF chroma filtering)
     objectPtr->cbQpOffset = 0;
@@ -628,6 +627,15 @@ EB_ERRORTYPE PictureControlSetCtor(
         // Entropy Rows per tile
         EB_MALLOC(EntropyTileInfo*, objectPtr->entropyCodingInfo[tileIndex], sizeof(EntropyTileInfo), EB_N_PTR);
         EB_CREATEMUTEX(EB_HANDLE, objectPtr->entropyCodingInfo[tileIndex]->entropyCodingMutex, sizeof(EB_HANDLE), EB_MUTEX);
+
+        // Entropy Coder
+        return_error = EntropyCoderCtor(
+                &objectPtr->entropyCodingInfo[tileIndex]->entropyCoderPtr,
+                SEGMENT_ENTROPY_BUFFER_SIZE);
+
+        if (return_error == EB_ErrorInsufficientResources){
+            return EB_ErrorInsufficientResources;
+        }
     }
 
     // Entropy picture level mutex

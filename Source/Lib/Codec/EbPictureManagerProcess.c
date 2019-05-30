@@ -719,6 +719,7 @@ void* PictureManagerKernel(void *inputPtr)
                                 for(rowIndex=0; rowIndex < MAX_LCU_ROWS; ++rowIndex) {
                                     ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingRowArray[rowIndex] = EB_FALSE;
                                 }
+                                ChildPictureControlSetPtr->entropyCodingPicResetFlag = EB_TRUE;
                             }
                         }
                     }
