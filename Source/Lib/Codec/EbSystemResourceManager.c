@@ -43,17 +43,45 @@ static EB_ERRORTYPE EbFifoPushBack(
     EbObjectWrapper_t   *wrapperPtr)
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
+    
+    EbObjectWrapper_t   *iter;
+    EbObjectWrapper_t   *iter_prev;
 
+    //Jing: init the next Ptr
+    wrapperPtr->nextPtr = NULL;
     // If FIFO is empty
     if(fifoPtr->firstPtr == (EbObjectWrapper_t*) EB_NULL) {
         fifoPtr->firstPtr = wrapperPtr;
         fifoPtr->lastPtr  = wrapperPtr;
     } else {
+#if 0
+        //Jing: Insert according to the rank
+        if (wrapperPtr->rank < fifoPtr->firstPtr->rank) {
+            wrapperPtr->nextPtr = fifoPtr->firstPtr;
+            fifoPtr->firstPtr = wrapperPtr;
+        } else if (wrapperPtr->rank >= fifoPtr->lastPtr->rank) {
+            fifoPtr->lastPtr->nextPtr = wrapperPtr;
+            fifoPtr->lastPtr = wrapperPtr;
+        } else {
+            iter = fifoPtr->firstPtr->nextPtr;
+            iter_prev = fifoPtr->firstPtr;
+            while (iter != NULL) {
+                if (wrapperPtr->rank <= iter->rank) {
+                    wrapperPtr->nextPtr = iter;
+                    iter_prev->nextPtr = wrapperPtr;
+                    break;
+                }
+                iter_prev = iter;
+                iter = iter->nextPtr;
+            }
+        }
+#else
         fifoPtr->lastPtr->nextPtr = wrapperPtr;
         fifoPtr->lastPtr = wrapperPtr;
+#endif
     }
 
-    fifoPtr->lastPtr->nextPtr = (EbObjectWrapper_t*) EB_NULL;
+    //fifoPtr->lastPtr->nextPtr = (EbObjectWrapper_t*) EB_NULL;
 
     return return_error;
 }
@@ -478,6 +506,7 @@ EB_ERRORTYPE EbSystemResourceCtor(
         resourcePtr->wrapperPtrPool[wrapperIndex]->liveCount            = 0;
         resourcePtr->wrapperPtrPool[wrapperIndex]->releaseEnable        = EB_TRUE;
         resourcePtr->wrapperPtrPool[wrapperIndex]->systemResourcePtr    = resourcePtr;
+        resourcePtr->wrapperPtrPool[wrapperIndex]->rank                 = 0;
 
         // Call the Constructor for each element
         if(ObjectCtor) {

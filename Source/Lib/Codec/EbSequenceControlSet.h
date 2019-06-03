@@ -182,7 +182,7 @@ typedef struct SequenceControlSet_s
 	EB_U32						rateControlTasksFifoInitCount;           
 	EB_U32						rateControlFifoInitCount;                
 	EB_U32						modeDecisionConfigurationFifoInitCount;
-	EB_U32						modeDecisionFifoInitCount;            
+	//EB_U32						modeDecisionFifoInitCount;
 	EB_U32						encDecFifoInitCount;
 	EB_U32						entropyCodingFifoInitCount;
 	EB_U32						pictureAnalysisProcessInitCount;     

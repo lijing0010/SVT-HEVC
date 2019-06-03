@@ -45,6 +45,7 @@ typedef struct EbObjectWrapper_s {
     //   only in the implemenation of a single-linked Fifo.
     struct EbObjectWrapper_s *nextPtr;
 
+    EB_U64 rank; //Jing: for priority purpose
 } EbObjectWrapper_t;
 
 /*********************************************************************

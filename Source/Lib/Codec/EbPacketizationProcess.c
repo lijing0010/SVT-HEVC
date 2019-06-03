@@ -91,6 +91,7 @@ void* PacketizationKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld PK IN \n", pictureControlSetPtr->pictureNumber);
 #endif
+        //SVT_LOG("POC %lld PK IN, decoder order %d \n", pictureControlSetPtr->pictureNumber, pictureControlSetPtr->ParentPcsPtr->decodeOrder);
         //****************************************************
         // Input Entropy Results into Reordering Queue
         //****************************************************
@@ -516,7 +517,6 @@ void* PacketizationKernel(void *inputPtr)
 
             // Encode slice header
             if (tileIdx == 0 || sequenceControlSetPtr->tileSliceMode == 1) {
-                printf("encode slice header, lcuIdx %d\n", lcuIndex);
                 EncodeSliceHeader(
                         lcuIndex,
                         packetizationQp,
@@ -645,6 +645,7 @@ void* PacketizationKernel(void *inputPtr)
                 finishTimeSeconds,
                 finishTimeuSeconds,
                 &latency);
+            printf("Packetization latency %3.3f\n", latency);
 
             outputStreamPtr->nTickCount = (EB_U32)latency;
 			EbPostFullObject(outputStreamWrapperPtr);

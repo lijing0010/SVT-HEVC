@@ -1622,6 +1622,7 @@ EB_BOOL AssignEncDecSegments(
             feedbackTaskPtr->encDecSegmentRow = feedbackRowIndex;
             feedbackTaskPtr->pictureControlSetWrapperPtr = taskPtr->pictureControlSetWrapperPtr;
             feedbackTaskPtr->tileIndex = taskPtr->tileIndex;
+            wrapperPtr->rank = ((PictureControlSet_t*)feedbackTaskPtr->pictureControlSetWrapperPtr->objectPtr)->ParentPcsPtr->decodeOrder;
             EbPostFullObject(wrapperPtr);
         }
 
@@ -3863,9 +3864,9 @@ void* EncDecKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld ENCDEC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        //SVT_LOG("[%p]: POC %lld ENCDEC IN, tile %d, height %d \n",
-        //        contextPtr, pictureControlSetPtr->pictureNumber, encDecTasksPtr->tileIndex,
-        //        sequenceControlSetPtr->tileRowArray[tileY]);
+        SVT_LOG("[%d]: POC %lld ENCDEC IN, tile %d, height %d \n",
+                EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber, encDecTasksPtr->tileIndex,
+                sequenceControlSetPtr->tileRowArray[tileY]);
         // LCU Constants
         lcuSize = (EB_U8)sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
@@ -4247,6 +4248,7 @@ void* EncDecKernel(void *inputPtr)
             }
 
             if (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag) {
+                //Jing: TODO: double check here
 
                 // Get Empty EntropyCoding Results
                 EbGetEmptyObject(
@@ -4289,6 +4291,7 @@ void* EncDecKernel(void *inputPtr)
                 encDecResultsPtr->completedLcuRowIndexStart = lcuRowIndexStart;
                 encDecResultsPtr->completedLcuRowCount = lcuRowIndexCount;
                 encDecResultsPtr->tileIndex = encDecTasksPtr->tileIndex;
+                encDecResultsWrapperPtr->rank = pictureControlSetPtr->ParentPcsPtr->decodeOrder;
 
                 // Post EncDec Results
                 //printf("[%lld]------Post tile %d to Entropy. lcu row %d - %d.\n", EbGetSysTimeMs(),

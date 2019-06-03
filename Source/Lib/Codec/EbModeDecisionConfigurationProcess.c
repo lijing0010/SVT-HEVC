@@ -2525,31 +2525,20 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
             totalTileCount = sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount;
         }
 
-    uint64_t               finishsTime      = 0;
-    uint64_t               finishuTime      = 0;
-    uint64_t               startsTime      = 0;
-    uint64_t               startuTime      = 0;
-    double                 wait_time = 0;
+        //printf("MDC, post poc %d, decoder order %d\n",
+        //        pictureControlSetPtr->pictureNumber, pictureControlSetPtr->ParentPcsPtr->decodeOrder);
         for (unsigned tileIdx = 0; tileIdx < totalTileCount; tileIdx++) {
             // Jing: Post per tile
             // TODO: check number
-            EbStartTime((uint64_t*)&startsTime, (uint64_t*)&startuTime);
             EbGetEmptyObject(
                     contextPtr->modeDecisionConfigurationOutputFifoPtr,
                     &encDecTasksWrapperPtr);
-            EbFinishTime((uint64_t*)&finishsTime, (uint64_t*)&finishuTime);
-
-        EbComputeOverallElapsedTime(
-                startsTime, startuTime,
-            finishsTime,
-            finishuTime,
-            &wait_time);
             encDecTasksPtr = (EncDecTasks_t*) encDecTasksWrapperPtr->objectPtr;
             encDecTasksPtr->pictureControlSetWrapperPtr = rateControlResultsPtr->pictureControlSetWrapperPtr;
             encDecTasksPtr->inputType = ENCDEC_TASKS_MDC_INPUT;
             encDecTasksPtr->tileIndex = tileIdx;
-            //printf("MDC, post poc %d, tile %d, wait time %f\n",
-            //        pictureControlSetPtr->pictureNumber, tileIdx, wait_time);
+            //printf("MDC, post poc %d, tile %d\n",
+            //        pictureControlSetPtr->pictureNumber, tileIdx);
 
             // Post the Full Results Object
             EbPostFullObject(encDecTasksWrapperPtr);
