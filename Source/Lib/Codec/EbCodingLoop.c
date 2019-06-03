@@ -22,6 +22,142 @@
 #include "EbModeDecisionConfiguration.h"
 #include "emmintrin.h"
 
+#define DEBUG_REF_INFO
+#define DUMP_RECON
+#ifdef DUMP_RECON
+static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
+{
+    if (POC == 0) {
+        FILE* tmp=fopen(filename, "w");
+        fclose(tmp);
+    }
+    FILE* fp = fopen(filename, "r+");
+    assert(fp);
+    long descSize = reconBuffer->height * reconBuffer->width; //Luma
+    descSize += 2 * ((reconBuffer->height * reconBuffer->width) >> (3 - reconBuffer->colorFormat));
+    long offset = descSize * POC;
+    fseek(fp, 0, SEEK_END);
+    long fileSize = ftell(fp);
+    if (offset > fileSize) {
+        int count = (offset - fileSize) / descSize;
+        char *tmpBuf = (char*)malloc(descSize);
+        for (int i=0;i<count;i++) {
+            fwrite(tmpBuf, 1, descSize, fp);
+        }
+        free(tmpBuf);
+    }
+    //printf("---Seek to offset %d(POC pos) for writting\n", offset/descSize);
+    fseek(fp, offset, SEEK_SET);
+    assert(ftell(fp) == offset);
+
+    EB_COLOR_FORMAT colorFormat = reconBuffer->colorFormat;    // Chroma format
+    EB_U16 subWidthCMinus1 = (colorFormat == EB_YUV444 ? 1 : 2) - 1;
+    EB_U16 subHeightCMinus1 = (colorFormat >= EB_YUV422 ? 1 : 2) - 1;
+    unsigned char* luma_ptr = reconBuffer->bufferY + reconBuffer->strideY*(reconBuffer->originY) + reconBuffer->originX;
+    unsigned char* cb_ptr =  reconBuffer->bufferCb + reconBuffer->strideCb*(reconBuffer->originY>>subHeightCMinus1) + (reconBuffer->originX>>subWidthCMinus1);
+    unsigned char* cr_ptr =  reconBuffer->bufferCr + reconBuffer->strideCr*(reconBuffer->originY>>subHeightCMinus1) + (reconBuffer->originX>>subWidthCMinus1);
+    for (int i=0;i<reconBuffer->height;i++) {
+        fwrite(luma_ptr, 1, reconBuffer->width, fp);
+        luma_ptr += reconBuffer->strideY;
+    }
+
+    for (int i=0;i<reconBuffer->height>>subHeightCMinus1;i++) {
+        fwrite(cb_ptr, 1, reconBuffer->width>>subWidthCMinus1, fp);
+        cb_ptr += reconBuffer->strideCb;
+    }
+
+    for (int i=0;i<reconBuffer->height>>subHeightCMinus1;i++) {
+        fwrite(cr_ptr, 1, reconBuffer->width>>subWidthCMinus1, fp);
+        cr_ptr += reconBuffer->strideCr;
+    }
+    fseek(fp, 0, SEEK_END);
+    //printf("After write POC %d, filesize %d\n", POC, ftell(fp));
+    fclose(fp);
+
+}
+#endif
+
+#ifdef DEBUG_REF_INFO
+static void dump_left_array(NeighborArrayUnit_t *neighbor, int y_pos, int size)
+{
+    printf("*Dump left array\n");
+    for (int i=0; i<size; i++) {
+        printf("%3u ", neighbor->leftArray[i+y_pos]);
+    }
+    printf("\n----------------------\n");
+}
+
+static void dump_intra_ref(IntraReferenceSamples_t* ref, int size, int mask)
+{
+    unsigned char* ptr = NULL;
+    if (mask==0) {
+        ptr = ref->yIntraReferenceArray;
+    } else if (mask == 1) {
+        ptr = ref->cbIntraReferenceArray;
+    } else if (mask ==2) {
+        ptr = ref->crIntraReferenceArray;
+    } else {
+        assert(0);
+    }
+
+    printf("*Dumping intra reference array for component %d\n", mask);
+    for (int i=0; i<size; i++) {
+        printf("%3u ", ptr[i]);
+    }
+    printf("\n----------------------\n");
+}
+
+static void dump_block_from_desc(int size, EbPictureBufferDesc_t *buf_tmp, int startX, int startY, int componentMask)
+{
+    unsigned char* buf=NULL;
+    int stride=0;
+    int bitDepth = buf_tmp->bitDepth;
+    int val=(bitDepth==8)?1:2;
+    EB_COLOR_FORMAT colorFormat = buf_tmp->colorFormat;    // Chroma format
+    EB_U16 subWidthCMinus1 = (colorFormat==EB_YUV444?1:2)-1;
+    EB_U16 subHeightCMinus1 = (colorFormat>=EB_YUV422?1:2)-1;
+    if (componentMask ==0) {
+        buf=buf_tmp->bufferY;
+        stride=buf_tmp->strideY;
+        subWidthCMinus1=0;
+        subHeightCMinus1=0;
+    } else if (componentMask == 1) {
+        buf=buf_tmp->bufferCb;
+        stride=buf_tmp->strideCb;
+    } else if (componentMask == 2) {
+        buf=buf_tmp->bufferCr;
+        stride=buf_tmp->strideCr;
+    } else {
+        assert(0);
+    }
+
+    int offset=((stride*(buf_tmp->originY+startY))>>subHeightCMinus1) +((startX+buf_tmp->originX)>>subWidthCMinus1);
+    printf("bitDepth is %d, dump block size %d at offset %d, (%d, %d), component is %s\n",
+            bitDepth, size, offset, startX, startY, componentMask==0?"luma":(componentMask==1?"Cb":"Cr"));
+            unsigned char* start_tmp=buf+offset*val;
+            for (int i=0;i<size;i++) {
+                for (int j=0;j<size+1;j++) {
+                    if (j==size) {
+                        printf("|||");
+                    } else if (j%4 == 0) {
+                        printf("|");
+                    }
+
+                    if (bitDepth == 8) {
+                        printf("%4u ", start_tmp[j]);
+                    } else if (bitDepth == 16) {
+                        printf("%4d ", *((EB_S16*)start_tmp + j));
+                    } else {
+                        printf("bitDepth is %d\n", bitDepth);
+                        assert(0);
+                    }
+                }
+                printf("\n");
+                start_tmp += stride*val;
+            }
+    printf("------------------------\n");
+}
+#endif
 /*******************************************
 * set Penalize Skip Flag
 *
@@ -887,6 +1023,29 @@ static void EncodeLoop(
             }
         }
 	}
+#ifdef DEBUG_REF_INFO
+    if (lcuPtr->pictureControlSetPtr->pictureNumber == 0) {
+        {
+            int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+
+            printf("\n----- Dump coeff for 1st loop at (%d, %d), qp is %d -----\n", originX, originY, qp);
+            if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+                dump_block_from_desc(tuSize, coeffSamplesTB, originX&63, originY&63, 0);
+            }
+            //if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+            //    dump_block_from_desc(chroma_size, coeffSamplesTB, originX&63, originY&63, 1);
+            //}
+
+            printf("\n----- Dump residual for 1st loop at (%d, %d)-----\n", originX, originY);
+            if (componentMask & PICTURE_BUFFER_DESC_LUMA_MASK) {
+                dump_block_from_desc(tuSize, residual16bit, originX&63, originY&63, 0);
+            }
+            //if (componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) {
+            //    dump_block_from_desc(chroma_size, residual16bit, originX&63, originY&63, 1);
+            //}
+        }
+    }
+#endif
 
     if ((componentMask & PICTURE_BUFFER_DESC_CHROMA_MASK) && secondChroma) {
         tuPtr->nzCoefCount2[0] = (EB_U16)countNonZeroCoeffs[1];
@@ -3210,6 +3369,18 @@ EB_EXTERN void EncodePass(
                             (EB_U32)puPtr->intraLumaMode,
                             EB_INTRA_CHROMA_DM,
                             PICTURE_BUFFER_DESC_FULL_MASK );
+
+#ifdef DEBUG_REF_INFO
+                        int originX = contextPtr->cuOriginX;
+                        int originY = contextPtr->cuOriginY;
+                        int tuSize = cuStats->size; 
+                        printf("\n----- Dump prediction for 1st loop at (%d, %d)-----\n", originX, originY);
+
+                        int chroma_size = tuSize > MIN_PU_SIZE? (tuSize >> subWidthCMinus1): tuSize;
+
+                        //dump_block_from_desc(chroma_size, reconBuffer, originX, originY, 1);
+                        dump_block_from_desc(tuSize, reconBuffer, originX, originY, 0);
+#endif
                         // Encode Transform Unit -INTRA-
                         {
 #if TILES
