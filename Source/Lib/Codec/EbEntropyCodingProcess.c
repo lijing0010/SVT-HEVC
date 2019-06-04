@@ -467,11 +467,11 @@ void* EntropyCodingKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld EC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
-                EbGetSysTimeMs(),
-                pictureControlSetPtr->pictureNumber, tileIdx,
-                encDecResultsPtr->completedLcuRowIndexStart,
-                encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
+        //SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
+        //        EbGetSysTimeMs(),
+        //        pictureControlSetPtr->pictureNumber, tileIdx,
+        //        encDecResultsPtr->completedLcuRowIndexStart,
+        //        encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
         // LCU Constants
         lcuSize     = sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
@@ -505,9 +505,9 @@ void* EntropyCodingKernel(void *inputPtr)
                 if(yLcuIndex == 0) {
                     EbBlockOnMutex(pictureControlSetPtr->entropyCodingPicMutex);
                     if (pictureControlSetPtr->entropyCodingPicResetFlag) {
-                        printf("[%lld]:Reset pic %d at tile %d, yLcuIndex is %d\n",
-                                EbGetSysTimeMs(),
-                                pictureControlSetPtr->pictureNumber, tileIdx, yLcuIndex + yLcuStart);
+                        //printf("[%lld]:Reset pic %d at tile %d, yLcuIndex is %d\n",
+                        //        EbGetSysTimeMs(),
+                        //        pictureControlSetPtr->pictureNumber, tileIdx, yLcuIndex + yLcuStart);
                         pictureControlSetPtr->entropyCodingPicResetFlag = EB_FALSE;
                         ResetEntropyCodingPicture(
                                 contextPtr, 
@@ -638,7 +638,7 @@ void* EntropyCodingKernel(void *inputPtr)
                             entropyCodingResultsPtr = (EntropyCodingResults_t*)entropyCodingResultsWrapperPtr->objectPtr;
                             entropyCodingResultsPtr->pictureControlSetWrapperPtr = encDecResultsPtr->pictureControlSetWrapperPtr;
 
-                            SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
+                            //SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
                             // Post EntropyCoding Results
                             EbPostFullObject(entropyCodingResultsWrapperPtr);
                         }

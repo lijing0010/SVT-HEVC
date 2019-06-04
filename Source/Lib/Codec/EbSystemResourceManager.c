@@ -44,9 +44,6 @@ static EB_ERRORTYPE EbFifoPushBack(
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
     
-    EbObjectWrapper_t   *iter;
-    EbObjectWrapper_t   *iter_prev;
-
     //Jing: init the next Ptr
     wrapperPtr->nextPtr = NULL;
     // If FIFO is empty
@@ -55,6 +52,9 @@ static EB_ERRORTYPE EbFifoPushBack(
         fifoPtr->lastPtr  = wrapperPtr;
     } else {
 #if 0
+        EbObjectWrapper_t   *iter;
+        EbObjectWrapper_t   *iter_prev;
+
         //Jing: Insert according to the rank
         if (wrapperPtr->rank < fifoPtr->firstPtr->rank) {
             wrapperPtr->nextPtr = fifoPtr->firstPtr;

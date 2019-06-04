@@ -3864,9 +3864,9 @@ void* EncDecKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld ENCDEC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        SVT_LOG("[%d]: POC %lld ENCDEC IN, tile %d, height %d \n",
-                EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber, encDecTasksPtr->tileIndex,
-                sequenceControlSetPtr->tileRowArray[tileY]);
+        //SVT_LOG("[%d]: POC %lld ENCDEC IN, tile %d, height %d \n",
+        //        EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber, encDecTasksPtr->tileIndex,
+        //        sequenceControlSetPtr->tileRowArray[tileY]);
         // LCU Constants
         lcuSize = (EB_U8)sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);

@@ -22,8 +22,8 @@
 #include "EbModeDecisionConfiguration.h"
 #include "emmintrin.h"
 
-#define DEBUG_REF_INFO
-#define DUMP_RECON
+//#define DEBUG_REF_INFO
+//#define DUMP_RECON
 #ifdef DUMP_RECON
 static void dump_buf_desc_to_file(EbPictureBufferDesc_t* reconBuffer, const char* filename, int POC)
 {

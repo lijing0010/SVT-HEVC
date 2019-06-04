@@ -645,7 +645,7 @@ void* PacketizationKernel(void *inputPtr)
                 finishTimeSeconds,
                 finishTimeuSeconds,
                 &latency);
-            printf("Packetization latency %3.3f\n", latency);
+            //printf("pts %d, dts %d, Packetization latency %3.3f\n", outputStreamPtr->pts, outputStreamPtr->dts, latency);
 
             outputStreamPtr->nTickCount = (EB_U32)latency;
 			EbPostFullObject(outputStreamWrapperPtr);
