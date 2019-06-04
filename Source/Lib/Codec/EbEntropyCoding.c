@@ -7318,6 +7318,7 @@ EB_ERRORTYPE EncodeLcu(
 	NeighborArrayUnit_t     *leafDepthNeighborArray,
 	NeighborArrayUnit_t     *intraLumaModeNeighborArray,
 	NeighborArrayUnit_t     *skipFlagNeighborArray,
+    EB_U16                   tileIdx,
 	EB_U32                   pictureOriginX,
 	EB_U32                   pictureOriginY)
 {
@@ -7421,8 +7422,8 @@ EB_ERRORTYPE EncodeLcu(
 					sequenceControlSetPtr->staticConfig.improveSharpness || sequenceControlSetPtr->staticConfig.bitRateReduction ? EB_TRUE : EB_FALSE,
                     &entropyDeltaQpNotCoded,
                     pictureControlSetPtr->difCuDeltaQpDepth,
-                    &pictureControlSetPtr->prevCodedQp,
-                    &pictureControlSetPtr->prevQuantGroupCodedQp,
+                    &pictureControlSetPtr->prevCodedQp[tileIdx],
+                    &pictureControlSetPtr->prevQuantGroupCodedQp[tileIdx],
                     tbPtr->qp,
                     pictureControlSetPtr,
 					pictureOriginX,

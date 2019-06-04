@@ -223,8 +223,8 @@ typedef struct PictureControlSet_s
     EB_U8                                *cbfMapArray;
 
     // QP Assignment
-    EB_U8                                 prevCodedQp;
-    EB_U8                                 prevQuantGroupCodedQp;
+    EB_U8                                 prevCodedQp[EB_TILE_MAX_COUNT];
+    EB_U8                                 prevQuantGroupCodedQp[EB_TILE_MAX_COUNT];
 
     // Enc/DecQP Assignment
     EB_U8                                 encPrevCodedQp[MAX_PICTURE_HEIGHT_SIZE / MAX_LCU_SIZE];

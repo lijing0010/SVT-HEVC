@@ -89,10 +89,10 @@ static void ResetEntropyCodingPicture(
 
 	// Reset CABAC Contexts
 	// Reset QP Assignement
-	pictureControlSetPtr->prevCodedQp = pictureControlSetPtr->pictureQp;
-	pictureControlSetPtr->prevQuantGroupCodedQp = pictureControlSetPtr->pictureQp;
-
     for (tileIdx = 0; tileIdx < tileCnt; tileIdx++) {
+        pictureControlSetPtr->prevCodedQp[tileIdx] = pictureControlSetPtr->pictureQp;
+        pictureControlSetPtr->prevQuantGroupCodedQp[tileIdx] = pictureControlSetPtr->pictureQp;
+
         ResetEntropyCoder(
                 sequenceControlSetPtr->encodeContextPtr,
                 pictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr,
@@ -181,6 +181,7 @@ static void EntropyCodingLcu(
         pictureControlSetPtr->leafDepthNeighborArray[tileIdx],
         pictureControlSetPtr->intraLumaModeNeighborArray[tileIdx],
         pictureControlSetPtr->skipFlagNeighborArray[tileIdx],
+        tileIdx,
 		pictureOriginX,
 		pictureOriginY);
 
@@ -450,7 +451,6 @@ void* EntropyCodingKernel(void *inputPtr)
     EB_U32                                   xLcuStart;
     EB_U32                                   yLcuStart;
 
-    SVT_LOG("\n\n");
     for(;;) {
 
         // Get Mode Decision Results
@@ -505,9 +505,9 @@ void* EntropyCodingKernel(void *inputPtr)
                 if(yLcuIndex == 0) {
                     EbBlockOnMutex(pictureControlSetPtr->entropyCodingPicMutex);
                     if (pictureControlSetPtr->entropyCodingPicResetFlag) {
-                        //printf("[%lld]:Reset pic %d at tile %d\n",
-                        //        EbGetSysTimeMs(),
-                        //        pictureControlSetPtr->pictureNumber, tileIdx);
+                        printf("[%lld]:Reset pic %d at tile %d, yLcuIndex is %d\n",
+                                EbGetSysTimeMs(),
+                                pictureControlSetPtr->pictureNumber, tileIdx, yLcuIndex + yLcuStart);
                         pictureControlSetPtr->entropyCodingPicResetFlag = EB_FALSE;
                         ResetEntropyCodingPicture(
                                 contextPtr, 

@@ -58,8 +58,9 @@ extern "C" {
 
 #if TILES
 //Maximum 8192x4320
-#define EB_TILE_COLUMN_MAX_COUNT                    32
-#define EB_TILE_ROW_MAX_COUNT                       68
+#define EB_TILE_COLUMN_MAX_COUNT                    20u
+#define EB_TILE_ROW_MAX_COUNT                       22u
+#define EB_TILE_MAX_COUNT                           440u
 #endif
 
 #define EB_MIN(a,b)             (((a) < (b)) ? (a) : (b))
