@@ -80,6 +80,10 @@ typedef struct EntropyCodingContext_s
     // MCP Context
     EB_BOOL                         is16bit; //enable 10 bit encode in CL
 
+    //debug info
+    EbWaitTimeInfo_t                debug_info;
+    ////
+
 } EntropyCodingContext_t;
 
 /**************************************

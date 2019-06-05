@@ -60,6 +60,7 @@ EB_ERRORTYPE EncDecContextCtor(
 
     // Input/Output System Resource Manager FIFOs
     contextPtr->modeDecisionInputFifoPtr = modeDecisionConfigurationInputFifoPtr;
+    contextPtr->modeDecisionInputFifoPtr->dbg_info = &contextPtr->debug_info;
     contextPtr->encDecOutputFifoPtr = packetizationOutputFifoPtr;
     contextPtr->encDecFeedbackFifoPtr = feedbackFifoPtr;
     contextPtr->pictureDemuxOutputFifoPtr = pictureDemuxFifoPtr;
@@ -201,7 +202,9 @@ EB_ERRORTYPE EncDecContextCtor(
         contextPtr->saoLeftBuffer16[1] = contextPtr->saoLeftBuffer16[0] + (MAX_LCU_SIZE + 2);
     }
 
-
+    contextPtr->debug_info.total_wait_counts = 0;
+    contextPtr->debug_info.max_wait_time_ms = 0;
+    contextPtr->debug_info.total_wait_time_ms = 0;
     return EB_ErrorNone;
 }
 
@@ -4294,8 +4297,11 @@ void* EncDecKernel(void *inputPtr)
                 encDecResultsWrapperPtr->rank = pictureControlSetPtr->ParentPcsPtr->decodeOrder;
 
                 // Post EncDec Results
-                //printf("[%lld]------Post tile %d to Entropy. lcu row %d - %d.\n", EbGetSysTimeMs(),
-                //        encDecResultsPtr->tileIndex, lcuRowIndexStart, lcuRowIndexStart + lcuRowIndexCount);
+                SVT_LOG("[%lld]: POC %d ED OUT, tile %d, (%d, %d), rank %d\n",
+                        EbGetSysTimeMs(),
+                        pictureControlSetPtr->pictureNumber,
+                        encDecResultsPtr->tileIndex, lcuRowIndexStart, lcuRowIndexStart + lcuRowIndexCount,
+                        encDecResultsWrapperPtr->rank);
                 EbPostFullObject(encDecResultsWrapperPtr);
             }
         }

@@ -76,6 +76,11 @@ void* PacketizationKernel(void *inputPtr)
     EB_U16                          tileIdx;
     EB_U16                          tileCnt;
     
+    //debug
+    long                     last_time = 0;
+    long                            curr_time = 0;
+    int                             duration = 0;
+    ///
     for(;;) {
     
         // Get EntropyCoding Results
@@ -91,7 +96,14 @@ void* PacketizationKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld PK IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        //SVT_LOG("POC %lld PK IN, decoder order %d \n", pictureControlSetPtr->pictureNumber, pictureControlSetPtr->ParentPcsPtr->decodeOrder);
+        curr_time = EbGetSysTimeMs();
+        duration = (curr_time - last_time);
+        SVT_LOG("[%lld]: POC %lld PK IN, decoder order %d, interval %lld \n",
+                curr_time,
+                pictureControlSetPtr->pictureNumber,
+                pictureControlSetPtr->ParentPcsPtr->decodeOrder,
+                duration);
+        last_time = curr_time;
         //****************************************************
         // Input Entropy Results into Reordering Queue
         //****************************************************

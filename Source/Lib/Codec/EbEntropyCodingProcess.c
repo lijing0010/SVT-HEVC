@@ -29,6 +29,7 @@ EB_ERRORTYPE EntropyCodingContextCtor(
 
     // Input/Output System Resource Manager FIFOs
     contextPtr->encDecInputFifoPtr          = encDecInputFifoPtr;
+    contextPtr->encDecInputFifoPtr->dbg_info = &contextPtr->debug_info;
     contextPtr->entropyCodingOutputFifoPtr  = packetizationOutputFifoPtr;
     contextPtr->rateControlOutputFifoPtr    = rateControlOutputFifoPtr;
 
@@ -467,11 +468,11 @@ void* EntropyCodingKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld EC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        //SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
-        //        EbGetSysTimeMs(),
-        //        pictureControlSetPtr->pictureNumber, tileIdx,
-        //        encDecResultsPtr->completedLcuRowIndexStart,
-        //        encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
+        SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
+                EbGetSysTimeMs(),
+                pictureControlSetPtr->pictureNumber, tileIdx,
+                encDecResultsPtr->completedLcuRowIndexStart,
+                encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
         // LCU Constants
         lcuSize     = sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
@@ -638,7 +639,7 @@ void* EntropyCodingKernel(void *inputPtr)
                             entropyCodingResultsPtr = (EntropyCodingResults_t*)entropyCodingResultsWrapperPtr->objectPtr;
                             entropyCodingResultsPtr->pictureControlSetWrapperPtr = encDecResultsPtr->pictureControlSetWrapperPtr;
 
-                            //SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
+                            SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
                             // Post EntropyCoding Results
                             EbPostFullObject(entropyCodingResultsWrapperPtr);
                         }

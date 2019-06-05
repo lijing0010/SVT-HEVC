@@ -1536,6 +1536,35 @@ EB_API EB_ERRORTYPE EbDeinitEncoder(EB_COMPONENTTYPE *h265EncComponent)
     EB_S32              ptrIndex     = 0 ;
     EbMemoryMapEntry*   memoryEntry  = (EbMemoryMapEntry*)EB_NULL;
     if (encHandlePtr){
+#if 1
+        {
+            int total_wait_counts = 0;
+            int total_wait_time_ms = 0;
+            for(unsigned int processIndex=0; processIndex < encHandlePtr->sequenceControlSetInstanceArray[0]->sequenceControlSetPtr->encDecProcessInitCount; ++processIndex) {
+                EncDecContext_t* context_ptr = (EncDecContext_t*)encHandlePtr->encDecContextPtrArray[processIndex];
+                total_wait_counts += context_ptr->debug_info.total_wait_counts;
+                total_wait_time_ms += context_ptr->debug_info.total_wait_time_ms;
+                //printf("max_wait_time_ms %d, total_wait_counts %d, total_wait_time_ms %d\n",
+                //        context_ptr->debug_info.max_wait_time_ms,
+                //        context_ptr->debug_info.total_wait_counts,
+                //        context_ptr->debug_info.total_wait_time_ms);
+            }
+            printf("EncDec kernel: total_wait_time_ms %d, counts %d, %3.4f per block\n",
+                    total_wait_time_ms, total_wait_counts, (float)total_wait_time_ms / total_wait_counts);
+        }
+
+        {
+            int total_wait_counts = 0;
+            int total_wait_time_ms = 0;
+            for(unsigned int processIndex=0; processIndex < encHandlePtr->sequenceControlSetInstanceArray[0]->sequenceControlSetPtr->entropyCodingProcessInitCount; ++processIndex) {
+                EntropyCodingContext_t* context_ptr = (EntropyCodingContext_t*)encHandlePtr->entropyCodingContextPtrArray[processIndex];
+                total_wait_counts += context_ptr->debug_info.total_wait_counts;
+                total_wait_time_ms += context_ptr->debug_info.total_wait_time_ms;
+            }
+            printf("Entropy kernel: total_wait_time_ms %d, counts %d, %3.4f per block\n",
+                    total_wait_time_ms, total_wait_counts, (float)total_wait_time_ms / total_wait_counts);
+        }
+#endif
         if (encHandlePtr->memoryMapIndex){
     // Loop through the ptr table and free all malloc'd pointers per channel
             for (ptrIndex = (encHandlePtr->memoryMapIndex) - 1; ptrIndex >= 0; --ptrIndex){
@@ -1772,7 +1801,7 @@ void LoadDefaultBufferConfigurationSettings(
     sequenceControlSetPtr->rateControlTasksFifoInitCount = 300;
     sequenceControlSetPtr->rateControlFifoInitCount = 301;
     //sequenceControlSetPtr->modeDecisionFifoInitCount = 300;
-    sequenceControlSetPtr->modeDecisionConfigurationFifoInitCount = (300 * tileCnt);//*tileCnt;
+    sequenceControlSetPtr->modeDecisionConfigurationFifoInitCount = 300;//(300 * tileCnt);//*tileCnt;
     sequenceControlSetPtr->motionEstimationFifoInitCount = 300;
     sequenceControlSetPtr->entropyCodingFifoInitCount = 300;
     sequenceControlSetPtr->encDecFifoInitCount = 900;//*tileCnt;
@@ -1784,7 +1813,7 @@ void LoadDefaultBufferConfigurationSettings(
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->sourceBasedOperationsProcessInitCount        = MAX(3, coreCount / 12);
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->modeDecisionConfigurationProcessInitCount    = MAX(3, coreCount / 12);
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->encDecProcessInitCount                       = MAX(40, coreCount);
-    sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->entropyCodingProcessInitCount                = MAX(3, coreCount / 12);
+    sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->entropyCodingProcessInitCount                = 1;//MAX(3, coreCount / 12);
 
     sequenceControlSetPtr->totalProcessInitCount += 6; // single processes count
 

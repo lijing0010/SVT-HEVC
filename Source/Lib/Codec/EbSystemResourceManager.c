@@ -3,9 +3,10 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
+#include <assert.h>
 #include <stdlib.h>
-
 #include "EbSystemResourceManager.h"
+#include "EbUtility.h"
 
 /**************************************
  * EbFifoCtor
@@ -31,6 +32,7 @@ static EB_ERRORTYPE EbFifoCtor(
     // Copy the Muxing Queue ptr this Fifo belongs to
     fifoPtr->queuePtr           = queuePtr;
 
+    fifoPtr->dbg_info           = NULL;
     return EB_ErrorNone;
 }
 
@@ -51,34 +53,8 @@ static EB_ERRORTYPE EbFifoPushBack(
         fifoPtr->firstPtr = wrapperPtr;
         fifoPtr->lastPtr  = wrapperPtr;
     } else {
-#if 0
-        EbObjectWrapper_t   *iter;
-        EbObjectWrapper_t   *iter_prev;
-
-        //Jing: Insert according to the rank
-        if (wrapperPtr->rank < fifoPtr->firstPtr->rank) {
-            wrapperPtr->nextPtr = fifoPtr->firstPtr;
-            fifoPtr->firstPtr = wrapperPtr;
-        } else if (wrapperPtr->rank >= fifoPtr->lastPtr->rank) {
-            fifoPtr->lastPtr->nextPtr = wrapperPtr;
-            fifoPtr->lastPtr = wrapperPtr;
-        } else {
-            iter = fifoPtr->firstPtr->nextPtr;
-            iter_prev = fifoPtr->firstPtr;
-            while (iter != NULL) {
-                if (wrapperPtr->rank <= iter->rank) {
-                    wrapperPtr->nextPtr = iter;
-                    iter_prev->nextPtr = wrapperPtr;
-                    break;
-                }
-                iter_prev = iter;
-                iter = iter->nextPtr;
-            }
-        }
-#else
         fifoPtr->lastPtr->nextPtr = wrapperPtr;
         fifoPtr->lastPtr = wrapperPtr;
-#endif
     }
 
     //fifoPtr->lastPtr->nextPtr = (EbObjectWrapper_t*) EB_NULL;
@@ -131,6 +107,7 @@ static EB_ERRORTYPE EbCircularBufferCtor(
     EbCircularBuffer_t  **bufferDblPtr,
     EB_U32                bufferTotalCount)
 {
+    // Jing: Change to link list
     EB_U32 bufferIndex;
     EbCircularBuffer_t *bufferPtr;
 
@@ -140,14 +117,16 @@ static EB_ERRORTYPE EbCircularBufferCtor(
 
     bufferPtr->bufferTotalCount = bufferTotalCount;
 
-    EB_MALLOC(EB_PTR*, bufferPtr->arrayPtr, sizeof(EB_PTR) * bufferPtr->bufferTotalCount, EB_N_PTR);
+    EB_MALLOC(EbLinkNode_t*, bufferPtr->arrayPtr, sizeof(EbLinkNode_t) * bufferPtr->bufferTotalCount, EB_N_PTR);
 
-    for(bufferIndex=0; bufferIndex < bufferPtr->bufferTotalCount; ++bufferIndex) {
-        bufferPtr->arrayPtr[bufferIndex] = EB_NULL;
+    for(bufferIndex=0; bufferIndex < bufferTotalCount; ++bufferIndex) {
+        bufferPtr->arrayPtr[bufferIndex].ptr = EB_NULL;
+        bufferPtr->arrayPtr[bufferIndex].nextPtr = &bufferPtr->arrayPtr[(bufferIndex + 1) % bufferTotalCount];
+        bufferPtr->arrayPtr[bufferIndex].prevPtr = &bufferPtr->arrayPtr[(bufferIndex + bufferTotalCount - 1) % bufferTotalCount];
     }
 
-    bufferPtr->headIndex = 0;
-    bufferPtr->tailIndex = 0;
+    bufferPtr->headPtr = bufferPtr->arrayPtr;
+    bufferPtr->tailPtr = bufferPtr->arrayPtr;
 
     bufferPtr->currentCount = 0;
 
@@ -162,7 +141,7 @@ static EB_ERRORTYPE EbCircularBufferCtor(
 static EB_BOOL EbCircularBufferEmptyCheck(
     EbCircularBuffer_t   *bufferPtr)
 {
-    return ((bufferPtr->headIndex == bufferPtr->tailIndex) && (bufferPtr->arrayPtr[bufferPtr->headIndex] == EB_NULL)) ? EB_TRUE : EB_FALSE;
+    return ((bufferPtr->headPtr == bufferPtr->tailPtr) && (bufferPtr->headPtr->ptr == EB_NULL)) ? EB_TRUE : EB_FALSE;
 }
 
 /**************************************
@@ -175,11 +154,11 @@ static EB_ERRORTYPE EbCircularBufferPopFront(
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
     // Copy the head of the buffer into the objectPtr
-    *objectPtr = bufferPtr->arrayPtr[bufferPtr->headIndex];
-    bufferPtr->arrayPtr[bufferPtr->headIndex] = EB_NULL;
+    *objectPtr = bufferPtr->headPtr->ptr;
+    bufferPtr->headPtr->ptr = EB_NULL;
 
     // Increment the head & check for rollover
-    bufferPtr->headIndex = (bufferPtr->headIndex == bufferPtr->bufferTotalCount - 1) ? 0 : bufferPtr->headIndex + 1;
+    bufferPtr->headPtr = bufferPtr->headPtr->nextPtr;
 
     // Decrement the Current Count
     --bufferPtr->currentCount;
@@ -192,15 +171,107 @@ static EB_ERRORTYPE EbCircularBufferPopFront(
  **************************************/
 static EB_ERRORTYPE EbCircularBufferPushBack(
     EbCircularBuffer_t   *bufferPtr,
-    EB_PTR                objectPtr)
+    EbObjectWrapper_t    *objectPtr)
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
     // Copy the pointer into the array
-    bufferPtr->arrayPtr[bufferPtr->tailIndex] = objectPtr;
+    bufferPtr->tailPtr->ptr = (EB_PTR)objectPtr;
 
     // Increment the tail & check for rollover
-    bufferPtr->tailIndex = (bufferPtr->tailIndex == bufferPtr->bufferTotalCount - 1) ? 0 : bufferPtr->tailIndex + 1;
+    bufferPtr->tailPtr = bufferPtr->tailPtr->nextPtr;
+
+    // Increment the Current Count
+    ++bufferPtr->currentCount;
+
+    return return_error;
+}
+
+// Jing:
+// Insert objectPtr according to the rank
+// The list will be in an increasing order
+static EB_ERRORTYPE EbCircularBufferRankInsert(
+    EbCircularBuffer_t   *bufferPtr,
+    EbObjectWrapper_t    *objectPtr)
+{
+    EB_ERRORTYPE return_error = EB_ErrorNone;
+
+    //Put the value to tailPtr and sort/update the link list
+    if (bufferPtr->tailPtr == bufferPtr->headPtr && bufferPtr->tailPtr->ptr == EB_NULL) {
+        //empty, when it's full this function should not be called
+        bufferPtr->tailPtr->ptr = (EB_PTR)objectPtr;
+        bufferPtr->tailPtr = bufferPtr->tailPtr->nextPtr;
+    } else {
+        EbLinkNode_t* node = bufferPtr->headPtr;
+        while (node != bufferPtr->tailPtr) {
+            assert(node->ptr != EB_NULL);
+            if (objectPtr->rank < ((EbObjectWrapper_t *)node->ptr)->rank) {
+                //Insert it before current Node
+                break;
+            }
+            node = node->nextPtr;
+        }
+
+        bufferPtr->tailPtr->ptr = (EB_PTR)objectPtr;
+
+        if (node == bufferPtr->tailPtr) {
+            bufferPtr->tailPtr = bufferPtr->tailPtr->nextPtr;
+        } else {
+            //Get tail object out
+            EbLinkNode_t* new_tail = bufferPtr->tailPtr->nextPtr;
+            bufferPtr->tailPtr->prevPtr->nextPtr = bufferPtr->tailPtr->nextPtr;
+            bufferPtr->tailPtr->nextPtr->prevPtr = bufferPtr->tailPtr->prevPtr;
+
+            //Insert it before current node
+            bufferPtr->tailPtr->nextPtr = node;
+            bufferPtr->tailPtr->prevPtr = node->prevPtr;
+            node->prevPtr->nextPtr = bufferPtr->tailPtr;
+            node->prevPtr = bufferPtr->tailPtr;
+
+            bufferPtr->tailPtr = new_tail;
+            if (node == bufferPtr->headPtr) {
+                bufferPtr->headPtr = bufferPtr->headPtr->prevPtr;
+            }
+        }
+    }
+
+    //debug, validate the link list
+    {
+        EbLinkNode_t* hd = bufferPtr->headPtr;
+        EbLinkNode_t* hd_prev = bufferPtr->headPtr;
+        for (unsigned int i = 0; i < bufferPtr->bufferTotalCount; i++) {
+            hd = hd->nextPtr;
+            hd_prev = hd_prev->prevPtr;
+        }
+        assert(hd == bufferPtr->headPtr);
+        assert(hd_prev == bufferPtr->headPtr);
+
+        while (hd != bufferPtr->tailPtr) {
+            assert(hd->ptr != EB_NULL);
+            hd = hd->nextPtr;
+        }
+
+        EbLinkNode_t* tail = bufferPtr->tailPtr;
+        EbLinkNode_t* tail_prev = bufferPtr->tailPtr;
+        for (unsigned int i = 0; i < bufferPtr->bufferTotalCount; i++) {
+            tail = tail->nextPtr;
+            tail_prev = tail_prev->prevPtr;
+        }
+        assert(tail == bufferPtr->tailPtr);
+        assert(tail_prev == bufferPtr->tailPtr);
+
+        while (tail != bufferPtr->headPtr) {
+            assert(tail->ptr == EB_NULL);
+            tail = tail->nextPtr;
+        }
+
+        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 2) {
+            bufferPtr->tailPtr->nextPtr == bufferPtr->headPtr;
+        }
+        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 1) {
+            bufferPtr->tailPtr == bufferPtr->headPtr;
+        }
+    }
 
     // Increment the Current Count
     ++bufferPtr->currentCount;
@@ -218,10 +289,10 @@ static EB_ERRORTYPE EbCircularBufferPushFront(
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
     // Decrement the headIndex
-    bufferPtr->headIndex = (bufferPtr->headIndex == 0) ? bufferPtr->bufferTotalCount - 1 : bufferPtr->headIndex - 1;
+    bufferPtr->headPtr = bufferPtr->headPtr->prevPtr;
 
     // Copy the pointer into the array
-    bufferPtr->arrayPtr[bufferPtr->headIndex] = objectPtr;
+    bufferPtr->headPtr->ptr = objectPtr;
 
     // Increment the Current Count
     ++bufferPtr->currentCount;
@@ -336,7 +407,8 @@ static EB_ERRORTYPE EbMuxingQueueObjectPushBack(
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
-    EbCircularBufferPushBack(
+    //EbCircularBufferPushBack(
+    EbCircularBufferRankInsert(
         queuePtr->objectQueue,
         objectPtr);
 
@@ -710,6 +782,12 @@ EB_ERRORTYPE EbGetFullObject(
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
+    long start = 0;
+    long duration = 0;
+    if (fullFifoPtr->dbg_info) {
+        start = EbGetSysTimeMs();
+    }
+
     // Queue the process requesting the full fifo
     EbReleaseProcess(fullFifoPtr);
 
@@ -725,6 +803,14 @@ EB_ERRORTYPE EbGetFullObject(
 
     // Release Mutex
     EbReleaseMutex(fullFifoPtr->lockoutMutex);
+    if (fullFifoPtr->dbg_info) {
+        duration = EbGetSysTimeMs() - start;
+        fullFifoPtr->dbg_info->total_wait_time_ms += duration;
+        fullFifoPtr->dbg_info->total_wait_counts++;
+        if (duration > fullFifoPtr->dbg_info->max_wait_time_ms) {
+            fullFifoPtr->dbg_info->max_wait_time_ms = duration;
+        }
+    }
 
     return return_error;
 }

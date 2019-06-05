@@ -2200,6 +2200,13 @@ static const EB_U8 SearchAreaHeightSq[5][MAX_SUPPORTED_MODES] = {
 	{  64,   64,   64,   64,   24,   16,   13,    9,    9,    7,    7,    7,    5 }
 };
 
+typedef struct EbWaitTimeInfo_s
+{
+    EB_U32                          total_wait_counts;
+    EB_U32                          max_wait_time_ms;
+    EB_U32                          total_wait_time_ms;
+} EbWaitTimeInfo_t;
+
 #define MAX_SUPPORTED_SEGMENTS       7
 
 #ifdef __cplusplus

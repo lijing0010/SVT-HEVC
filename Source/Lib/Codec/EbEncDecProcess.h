@@ -148,6 +148,10 @@ typedef struct EncDecContext_s
     EB_BOOL                         pmMethod;   // 1-stgae   vs. 2-stage 
 
     EB_U16                          tileIndex;
+    
+    //debug info
+    EbWaitTimeInfo_t                debug_info;
+    ////
 } EncDecContext_t;
 
 /**************************************

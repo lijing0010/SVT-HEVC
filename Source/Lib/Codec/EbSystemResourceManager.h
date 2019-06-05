@@ -76,15 +76,25 @@ typedef struct EbFifo_s {
     //   associated with.
     struct EbMuxingQueue_s *queuePtr;
 
+    struct EbWaitTimeInfo_s *dbg_info;
+
 } EbFifo_t;
+
+typedef struct EbLinkNode_s {
+    EB_PTR ptr;
+    struct EbLinkNode_s *nextPtr;
+    struct EbLinkNode_s *prevPtr;
+} EbLinkNode_t;
 
 /*********************************************************************
  * CircularBuffer
  *********************************************************************/
 typedef struct EbCircularBuffer_s {
-    EB_PTR *arrayPtr;
-    EB_U32  headIndex;
-    EB_U32  tailIndex;
+    EbLinkNode_t *arrayPtr;
+    EbLinkNode_t *headPtr;
+    EbLinkNode_t *tailPtr;
+    //EB_U32  headIndex;
+    //EB_U32  tailIndex;
     EB_U32  bufferTotalCount;
     EB_U32  currentCount;
 
