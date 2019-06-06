@@ -230,13 +230,20 @@ static EB_ERRORTYPE EbCircularBufferRankInsert(
 
             bufferPtr->tailPtr = new_tail;
             if (node == bufferPtr->headPtr) {
-                bufferPtr->headPtr = bufferPtr->headPtr->prevPtr;
+                bufferPtr->headPtr = bufferPtr->headPtr == bufferPtr->tailPtr ? bufferPtr->headPtr:bufferPtr->headPtr->prevPtr;
             }
         }
     }
 
     //debug, validate the link list
     {
+        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 2) {
+            assert(bufferPtr->tailPtr->nextPtr == bufferPtr->headPtr);
+        }
+        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 1) {
+            assert(bufferPtr->tailPtr == bufferPtr->headPtr);
+        }
+
         EbLinkNode_t* hd = bufferPtr->headPtr;
         EbLinkNode_t* hd_prev = bufferPtr->headPtr;
         for (unsigned int i = 0; i < bufferPtr->bufferTotalCount; i++) {
@@ -265,12 +272,6 @@ static EB_ERRORTYPE EbCircularBufferRankInsert(
             tail = tail->nextPtr;
         }
 
-        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 2) {
-            bufferPtr->tailPtr->nextPtr == bufferPtr->headPtr;
-        }
-        if (bufferPtr->currentCount == bufferPtr->bufferTotalCount - 1) {
-            bufferPtr->tailPtr == bufferPtr->headPtr;
-        }
     }
 
     // Increment the Current Count
