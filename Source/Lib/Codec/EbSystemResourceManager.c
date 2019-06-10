@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "EbSystemResourceManager.h"
 #include "EbUtility.h"
 
@@ -32,7 +33,7 @@ static EB_ERRORTYPE EbFifoCtor(
     // Copy the Muxing Queue ptr this Fifo belongs to
     fifoPtr->queuePtr           = queuePtr;
 
-    fifoPtr->dbg_info           = NULL;
+    //fifoPtr->dbg_info           = NULL;
     return EB_ErrorNone;
 }
 
@@ -308,6 +309,9 @@ static EB_ERRORTYPE EbMuxingQueueCtor(
     EbMuxingQueue_t   **queueDblPtr,
     EB_U32              objectTotalCount,
     EB_U32              processTotalCount,
+#ifdef BENCHMARK
+    EbSystemResource_t* srmPtr,
+#endif
     EbFifo_t         ***processFifoPtrArrayPtr)
 {
     EbMuxingQueue_t *queuePtr;
@@ -318,6 +322,10 @@ static EB_ERRORTYPE EbMuxingQueueCtor(
     *queueDblPtr = queuePtr;
 
     queuePtr->processTotalCount = processTotalCount;
+#ifdef BENCHMARK
+    queuePtr->srmPtr = srmPtr;
+    queuePtr->get_count = 0;
+#endif
 
     // Lockout Mutex
     EB_CREATEMUTEX(EB_HANDLE, queuePtr->lockoutMutex, sizeof(EB_HANDLE), EB_MUTEX);
@@ -408,10 +416,15 @@ static EB_ERRORTYPE EbMuxingQueueObjectPushBack(
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
-    //EbCircularBufferPushBack(
+#if 1
     EbCircularBufferRankInsert(
         queuePtr->objectQueue,
         objectPtr);
+#else
+    EbCircularBufferPushBack(
+        queuePtr->objectQueue,
+        objectPtr);
+#endif
 
     EbMuxingQueueAssignation(queuePtr);
 
@@ -568,6 +581,9 @@ EB_ERRORTYPE EbSystemResourceCtor(
     EB_MALLOC(EbSystemResource_t*, resourcePtr, sizeof(EbSystemResource_t), EB_N_PTR);
     *resourceDblPtr = resourcePtr;
 
+#ifdef BENCHMARK
+    printf("-----SRM %p created, total obj count %d...\n", resourcePtr, objectTotalCount);
+#endif
     resourcePtr->objectTotalCount = objectTotalCount;
 
     // Allocate array for wrapper pointers
@@ -597,6 +613,9 @@ EB_ERRORTYPE EbSystemResourceCtor(
         &resourcePtr->emptyQueue,
         resourcePtr->objectTotalCount,
         producerProcessTotalCount,
+#ifdef BENCHMARK
+        resourcePtr,
+#endif
         producerFifoPtrArrayPtr);
     if (return_error == EB_ErrorInsufficientResources){
         return EB_ErrorInsufficientResources;
@@ -614,6 +633,9 @@ EB_ERRORTYPE EbSystemResourceCtor(
             &resourcePtr->fullQueue,
             resourcePtr->objectTotalCount,
             consumerProcessTotalCount,
+#ifdef BENCHMARK
+        resourcePtr,
+#endif
             consumerFifoPtrArrayPtr);
         if (return_error == EB_ErrorInsufficientResources){
             return EB_ErrorInsufficientResources;
@@ -783,12 +805,27 @@ EB_ERRORTYPE EbGetFullObject(
 {
     EB_ERRORTYPE return_error = EB_ErrorNone;
 
+#if 0
     long start = 0;
     long duration = 0;
     if (fullFifoPtr->dbg_info) {
         start = EbGetSysTimeMs();
     }
-
+#endif
+#ifdef BENCHMARK
+    fullFifoPtr->queuePtr->get_count++;
+    if (fullFifoPtr->queuePtr->get_count % 50 == 0 && fullFifoPtr->queuePtr->srmPtr->objectTotalCount == 307) {
+        printf("[%p]: Total obj %d, current fullness %d, percent %3.3f%%\n",
+                fullFifoPtr->queuePtr->srmPtr,
+                fullFifoPtr->queuePtr->srmPtr->objectTotalCount,
+                fullFifoPtr->queuePtr->objectQueue->currentCount,
+                ((float)(fullFifoPtr->queuePtr->objectQueue->currentCount) * 100 / fullFifoPtr->queuePtr->srmPtr->objectTotalCount));
+        if (fullFifoPtr->queuePtr->objectQueue->currentCount > 10) {
+            //printf("Total obj %d, need more threads\n", fullFifoPtr->queuePtr->srmPtr->objectTotalCount);
+        }
+    }
+    assert(fullFifoPtr->queuePtr->srmPtr->objectTotalCount == fullFifoPtr->queuePtr->objectQueue->bufferTotalCount); 
+#endif
     // Queue the process requesting the full fifo
     EbReleaseProcess(fullFifoPtr);
 
@@ -804,6 +841,7 @@ EB_ERRORTYPE EbGetFullObject(
 
     // Release Mutex
     EbReleaseMutex(fullFifoPtr->lockoutMutex);
+#if 0
     if (fullFifoPtr->dbg_info) {
         duration = EbGetSysTimeMs() - start;
         fullFifoPtr->dbg_info->total_wait_time_ms += duration;
@@ -812,6 +850,7 @@ EB_ERRORTYPE EbGetFullObject(
             fullFifoPtr->dbg_info->max_wait_time_ms = duration;
         }
     }
+#endif
 
     return return_error;
 }

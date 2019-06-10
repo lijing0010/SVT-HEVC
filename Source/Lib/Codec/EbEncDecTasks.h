@@ -24,7 +24,7 @@ typedef struct EncDecTasks_s
     EB_U32                        inputType;
     EB_S16                        encDecSegmentRow;
     //Jing:TODO
-    EB_U32                        tileIndex;
+    EB_U32                        tileRowIndex;
 
 } EncDecTasks_t;
 

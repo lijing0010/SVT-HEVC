@@ -29,7 +29,7 @@ EB_ERRORTYPE EntropyCodingContextCtor(
 
     // Input/Output System Resource Manager FIFOs
     contextPtr->encDecInputFifoPtr          = encDecInputFifoPtr;
-    contextPtr->encDecInputFifoPtr->dbg_info = &contextPtr->debug_info;
+    //contextPtr->encDecInputFifoPtr->dbg_info = &contextPtr->debug_info;
     contextPtr->entropyCodingOutputFifoPtr  = packetizationOutputFifoPtr;
     contextPtr->rateControlOutputFifoPtr    = rateControlOutputFifoPtr;
 
@@ -468,11 +468,11 @@ void* EntropyCodingKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld EC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
-                EbGetSysTimeMs(),
-                pictureControlSetPtr->pictureNumber, tileIdx,
-                encDecResultsPtr->completedLcuRowIndexStart,
-                encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
+        //SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
+        //        EbGetSysTimeMs(),
+        //        pictureControlSetPtr->pictureNumber, tileIdx,
+        //        encDecResultsPtr->completedLcuRowIndexStart,
+        //        encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
         // LCU Constants
         lcuSize     = sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
@@ -639,7 +639,7 @@ void* EntropyCodingKernel(void *inputPtr)
                             entropyCodingResultsPtr = (EntropyCodingResults_t*)entropyCodingResultsWrapperPtr->objectPtr;
                             entropyCodingResultsPtr->pictureControlSetWrapperPtr = encDecResultsPtr->pictureControlSetWrapperPtr;
 
-                            SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
+                            //SVT_LOG("[%lld]: Entropy post result, POC %d\n", EbGetSysTimeMs(), pictureControlSetPtr->pictureNumber);
                             // Post EntropyCoding Results
                             EbPostFullObject(entropyCodingResultsWrapperPtr);
                         }
@@ -648,131 +648,6 @@ void* EntropyCodingKernel(void *inputPtr)
 				EbReleaseMutex(pictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingMutex);
 			}
         }
-#if 0//TILES
-        else
-        {
-            unsigned xLcuStart, yLcuStart, rowIndex, columnIndex;
-
-            yLcuIndex = encDecResultsPtr->completedLcuRowIndexStart;
-
-            // Jing: TODO: wait for a whole picture for simplicity
-            // Update EC-rows, exit if picture is "in-progress" 
-            if (WaitForAllEntropyCodingRows(pictureControlSetPtr, yLcuIndex, encDecResultsPtr->completedLcuRowCount, tileIdx) == EB_TRUE) {
-                //printf("EntropyCoding start to work on POC %d... \n", pictureControlSetPtr->pictureNumber);
-                ResetEntropyCodingPicture(
-                        contextPtr,
-                        pictureControlSetPtr,
-                        sequenceControlSetPtr);
-
-                // Tile-loops
-                yLcuStart = 0;
-                for (rowIndex = 0; rowIndex < sequenceControlSetPtr->tileRowCount; ++rowIndex)
-                {
-                    xLcuStart = 0;
-                    for (columnIndex = 0; columnIndex < sequenceControlSetPtr->tileColumnCount; ++columnIndex)
-                    {
-                        //printf("Reset tile, Index %d, poc %d\n",
-                        //        columnIndex + rowIndex * sequenceControlSetPtr->tileColumnCount,
-                        //        pictureControlSetPtr->pictureNumber);
-                        ResetEntropyCodingTile(
-                                contextPtr,
-                                pictureControlSetPtr,
-                                sequenceControlSetPtr);
-
-                        if (sequenceControlSetPtr->tileSliceMode == 1 && (xLcuStart !=0 || yLcuStart != 0)) {
-                            CabacEncodeContext_t *cabacEncodeCtxPtr = (CabacEncodeContext_t*)pictureControlSetPtr->entropyCoderPtr->cabacEncodeContextPtr;
-                            EncodeSliceHeader(
-                                    xLcuStart + yLcuStart * pictureWidthInLcu,
-                                    pictureControlSetPtr->pictureQp,
-                                    pictureControlSetPtr,
-                                    (OutputBitstreamUnit_t*) &(cabacEncodeCtxPtr->bacEncContext.m_pcTComBitIf));
-                        }
-
-                        // LCU-loops
-                        for (yLcuIndex = yLcuStart; yLcuIndex < yLcuStart + sequenceControlSetPtr->tileRowArray[rowIndex]; ++yLcuIndex)
-                        {
-                            for (xLcuIndex = xLcuStart; xLcuIndex < xLcuStart + sequenceControlSetPtr->tileColumnArray[columnIndex]; ++xLcuIndex)
-                            {
-                                lcuIndex = xLcuIndex + yLcuIndex * pictureWidthInLcu;
-                                lcuPtr = pictureControlSetPtr->lcuPtrArray[lcuIndex];
-                                lcuOriginX = xLcuIndex << lcuSizeLog2;
-                                lcuOriginY = yLcuIndex << lcuSizeLog2;
-                                if (sequenceControlSetPtr->tileSliceMode == 0) {
-                                    lastLcuFlag = (lcuIndex == pictureControlSetPtr->lcuTotalCount - 1) ? EB_TRUE : EB_FALSE;
-                                } else {
-                                    lastLcuFlag = (xLcuIndex == (xLcuStart + sequenceControlSetPtr->tileColumnArray[columnIndex] -1) && yLcuIndex == (yLcuStart + sequenceControlSetPtr->tileRowArray[rowIndex] -1)) ? EB_TRUE : EB_FALSE;
-                                }
-
-                                // Configure the LCU
-                                EntropyCodingConfigureLcu(
-                                        contextPtr,
-                                        lcuPtr,
-                                        pictureControlSetPtr);
-
-                                // Entropy Coding
-                                EntropyCodingLcu(
-                                        lcuPtr,
-                                        pictureControlSetPtr,
-                                        sequenceControlSetPtr,
-                                        lcuOriginX,
-                                        lcuOriginY,
-                                        lastLcuFlag,
-                                        xLcuIndex * lcuSize,
-                                        yLcuIndex * lcuSize);
-                            }
-                        }
-
-                        if (sequenceControlSetPtr->tileSliceMode == 0 && lastLcuFlag == EB_FALSE) {
-                            EncodeTileFinish(pictureControlSetPtr->entropyCoderPtr);
-                        } else if (sequenceControlSetPtr->tileSliceMode) {
-                            EncodeSliceFinish(pictureControlSetPtr->entropyCoderPtr);
-                        }
-
-                        xLcuStart += sequenceControlSetPtr->tileColumnArray[columnIndex];
-                    }
-                    yLcuStart += sequenceControlSetPtr->tileRowArray[rowIndex];
-                }
-
-                assert(lastLcuFlag == EB_TRUE);
-                // If the picture is complete, terminate the slice, 2nd pass DLF, SAO application
-                if (lastLcuFlag == EB_TRUE) {
-                    EB_U32 refIdx;
-
-                    if (sequenceControlSetPtr->tileSliceMode == 0) {
-                        EncodeSliceFinish(pictureControlSetPtr->entropyCoderPtr);
-                    }
-
-                    // Release the List 0 Reference Pictures
-                    for (refIdx = 0; refIdx < pictureControlSetPtr->ParentPcsPtr->refList0Count; ++refIdx) {
-                        if (pictureControlSetPtr->refPicPtrArray[0]/*[refIdx]*/ != EB_NULL) {
-                            EbReleaseObject(pictureControlSetPtr->refPicPtrArray[0]/*[refIdx]*/);
-                        }
-                    }
-
-                    // Release the List 1 Reference Pictures
-                    for (refIdx = 0; refIdx < pictureControlSetPtr->ParentPcsPtr->refList1Count; ++refIdx) {
-                        if (pictureControlSetPtr->refPicPtrArray[1]/*[refIdx]*/ != EB_NULL) {
-                            EbReleaseObject(pictureControlSetPtr->refPicPtrArray[1]/*[refIdx]*/);
-                        }
-                    }
-
-                    // Get Empty Entropy Coding Results
-                    EbGetEmptyObject(
-                            contextPtr->entropyCodingOutputFifoPtr,
-                            &entropyCodingResultsWrapperPtr);
-                    entropyCodingResultsPtr = (EntropyCodingResults_t*)entropyCodingResultsWrapperPtr->objectPtr;
-                    entropyCodingResultsPtr->pictureControlSetWrapperPtr = encDecResultsPtr->pictureControlSetWrapperPtr;
-
-                    //printf("----Posting POC %d to packetization kernel\n", pictureControlSetPtr->pictureNumber);
-                    printf("[%lld]: Entropy post result\n", EbGetSysTimeMs());
-                    // Post EntropyCoding Results
-                    EbPostFullObject(entropyCodingResultsWrapperPtr);
-
-                } // End if(PictureCompleteFlag)
-            }
-        }
-#endif
-
 
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld EC OUT \n", pictureControlSetPtr->pictureNumber);

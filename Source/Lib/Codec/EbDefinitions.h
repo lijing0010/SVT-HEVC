@@ -5,6 +5,9 @@
 
 #ifndef EbDefinitions_h
 #define EbDefinitions_h
+
+//#define BENCHMARK 0
+
 #include <assert.h>
 #include "EbApi.h"
 #ifdef __cplusplus

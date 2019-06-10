@@ -96,6 +96,8 @@ void* PacketizationKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld PK IN \n", pictureControlSetPtr->pictureNumber);
 #endif
+#ifdef BENCHMARK
+//#if 1
         curr_time = EbGetSysTimeMs();
         duration = (curr_time - last_time);
         SVT_LOG("[%lld]: POC %lld PK IN, decoder order %d, interval %lld \n",
@@ -104,6 +106,7 @@ void* PacketizationKernel(void *inputPtr)
                 pictureControlSetPtr->ParentPcsPtr->decodeOrder,
                 duration);
         last_time = curr_time;
+#endif
         //****************************************************
         // Input Entropy Results into Reordering Queue
         //****************************************************

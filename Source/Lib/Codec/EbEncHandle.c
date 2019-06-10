@@ -1536,7 +1536,7 @@ EB_API EB_ERRORTYPE EbDeinitEncoder(EB_COMPONENTTYPE *h265EncComponent)
     EB_S32              ptrIndex     = 0 ;
     EbMemoryMapEntry*   memoryEntry  = (EbMemoryMapEntry*)EB_NULL;
     if (encHandlePtr){
-#if 1
+#ifdef BENCHMARK 
         {
             int total_wait_counts = 0;
             int total_wait_time_ms = 0;
@@ -1728,7 +1728,7 @@ void LoadDefaultBufferConfigurationSettings(
 
     EB_U32 inputPic = SetParentPcs(&sequenceControlSetPtr->staticConfig);
 
-    EB_U32 tileCnt = MAX(sequenceControlSetPtr->tileRowCount, sequenceControlSetPtr->tileColumnCount);
+    //EB_U32 tileCnt = MAX(sequenceControlSetPtr->tileRowCount, sequenceControlSetPtr->tileColumnCount);
     unsigned int lpCount = GetNumProcessors();
     unsigned int coreCount = lpCount;
 #if defined(_WIN32) || defined(__linux__)
@@ -1794,16 +1794,16 @@ void LoadDefaultBufferConfigurationSettings(
 
     //#====================== Inter process Fifos ======================
     sequenceControlSetPtr->resourceCoordinationFifoInitCount = 300;
-    sequenceControlSetPtr->pictureAnalysisFifoInitCount = 300;
-    sequenceControlSetPtr->pictureDecisionFifoInitCount = 300;
-    sequenceControlSetPtr->initialRateControlFifoInitCount = 300;
-    sequenceControlSetPtr->pictureDemuxFifoInitCount = 300;
-    sequenceControlSetPtr->rateControlTasksFifoInitCount = 300;
-    sequenceControlSetPtr->rateControlFifoInitCount = 301;
+    sequenceControlSetPtr->pictureAnalysisFifoInitCount = 301;
+    sequenceControlSetPtr->pictureDecisionFifoInitCount = 302;
+    sequenceControlSetPtr->initialRateControlFifoInitCount = 303;
+    sequenceControlSetPtr->pictureDemuxFifoInitCount = 304;
+    sequenceControlSetPtr->rateControlTasksFifoInitCount = 305;
+    sequenceControlSetPtr->rateControlFifoInitCount = 306;
     //sequenceControlSetPtr->modeDecisionFifoInitCount = 300;
-    sequenceControlSetPtr->modeDecisionConfigurationFifoInitCount = 300;//(300 * tileCnt);//*tileCnt;
-    sequenceControlSetPtr->motionEstimationFifoInitCount = 300;
-    sequenceControlSetPtr->entropyCodingFifoInitCount = 300;
+    sequenceControlSetPtr->modeDecisionConfigurationFifoInitCount = (300 * sequenceControlSetPtr->tileRowCount); //307
+    sequenceControlSetPtr->motionEstimationFifoInitCount = 308;
+    sequenceControlSetPtr->entropyCodingFifoInitCount = 309;
     sequenceControlSetPtr->encDecFifoInitCount = 900;//*tileCnt;
 
     //#====================== Processes number ======================
@@ -1813,7 +1813,7 @@ void LoadDefaultBufferConfigurationSettings(
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->sourceBasedOperationsProcessInitCount        = MAX(3, coreCount / 12);
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->modeDecisionConfigurationProcessInitCount    = MAX(3, coreCount / 12);
     sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->encDecProcessInitCount                       = MAX(40, coreCount);
-    sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->entropyCodingProcessInitCount                = 1;//MAX(3, coreCount / 12);
+    sequenceControlSetPtr->totalProcessInitCount += sequenceControlSetPtr->entropyCodingProcessInitCount                = MAX(3, coreCount / 12);
 
     sequenceControlSetPtr->totalProcessInitCount += 6; // single processes count
 

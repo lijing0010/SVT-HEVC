@@ -76,7 +76,7 @@ typedef struct EbFifo_s {
     //   associated with.
     struct EbMuxingQueue_s *queuePtr;
 
-    struct EbWaitTimeInfo_s *dbg_info;
+//    struct EbWaitTimeInfo_s *dbg_info;
 
 } EbFifo_t;
 
@@ -109,6 +109,10 @@ typedef struct EbMuxingQueue_s {
     EbCircularBuffer_t *processQueue;
     EB_U32              processTotalCount;
     EbFifo_t          **processFifoPtrArray;
+#ifdef BENCHMARK
+    struct EbSystemResource_s* srmPtr;
+    EB_U64              get_count;
+#endif
 
 } EbMuxingQueue_t;
 

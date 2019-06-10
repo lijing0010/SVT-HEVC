@@ -2525,18 +2525,22 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
             totalTileCount = sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount;
         }
 
-        //printf("MDC, post poc %d, decoder order %d\n",
+        //printf("MDC, post POC %d, decoder order %d\n",
         //        pictureControlSetPtr->pictureNumber, pictureControlSetPtr->ParentPcsPtr->decodeOrder);
-        for (unsigned tileIdx = 0; tileIdx < totalTileCount; tileIdx++) {
+        for (unsigned tileRowIdx = 0; tileRowIdx < totalTileCount; tileRowIdx++) {
+        //for (unsigned tileRowIdx = 0; tileRowIdx < sequenceControlSetPtr->tileRowCount; tileRowIdx++) {
             // Jing: Post per tile
-            // TODO: check number
+            // TODO: Change to per tile row, not per tile. too many objects will drain the FIFO and downgrade the perf
             EbGetEmptyObject(
                     contextPtr->modeDecisionConfigurationOutputFifoPtr,
                     &encDecTasksWrapperPtr);
             encDecTasksPtr = (EncDecTasks_t*) encDecTasksWrapperPtr->objectPtr;
             encDecTasksPtr->pictureControlSetWrapperPtr = rateControlResultsPtr->pictureControlSetWrapperPtr;
             encDecTasksPtr->inputType = ENCDEC_TASKS_MDC_INPUT;
-            encDecTasksPtr->tileIndex = tileIdx;
+            encDecTasksPtr->tileRowIndex = tileRowIdx;
+            int rank_offset = (pictureControlSetPtr->sliceType == EB_I_PICTURE) ? 2 :
+                                (pictureControlSetPtr->ParentPcsPtr->isUsedAsReferenceFlag) ? 1 : 0;
+            encDecTasksWrapperPtr->rank = pictureControlSetPtr->ParentPcsPtr->decodeOrder + 2 - rank_offset;
             //printf("MDC, post poc %d, tile %d\n",
             //        pictureControlSetPtr->pictureNumber, tileIdx);
 

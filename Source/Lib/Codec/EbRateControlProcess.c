@@ -2493,7 +2493,6 @@ void* RateControlKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
             SVT_LOG("POC %lld RC OUT \n", pictureControlSetPtr->pictureNumber);
 #endif
-
             // Post Full Rate Control Results
             EbPostFullObject(rateControlResultsWrapperPtr);
 
