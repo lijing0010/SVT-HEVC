@@ -28,7 +28,7 @@ EB_ERRORTYPE PictureControlSetCtor(
     // Tile info
     EB_U32 totalTileCount = initDataPtr->tileRowCount * initDataPtr->tileColumnCount;
     totalTileCount = (totalTileCount > 0) ? totalTileCount : 1;
-    EB_U16 tileIndex;
+    EB_U16 tileIdx;
     EB_U16 r, c;
     
     // LCUs
@@ -216,10 +216,10 @@ EB_ERRORTYPE PictureControlSetCtor(
 
     for (r = 0; r < initDataPtr->tileRowCount; r++) {
         for (c = 0; c < initDataPtr->tileColumnCount; c++) {
-            tileIndex = r * initDataPtr->tileColumnCount + c;
+            tileIdx = r * initDataPtr->tileColumnCount + c;
             for (depth = 0; depth < NEIGHBOR_ARRAY_TOTAL_COUNT; depth++) {
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdIntraLumaModeNeighborArray[depth][tileIndex],
+                        &objectPtr->mdIntraLumaModeNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U8),
@@ -231,7 +231,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdMvNeighborArray[depth][tileIndex],
+                        &objectPtr->mdMvNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(MvUnit_t),
@@ -243,7 +243,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdSkipFlagNeighborArray[depth][tileIndex],
+                        &objectPtr->mdSkipFlagNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U8),
@@ -255,7 +255,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdModeTypeNeighborArray[depth][tileIndex],
+                        &objectPtr->mdModeTypeNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U8),
@@ -268,7 +268,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 }
 
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdLeafDepthNeighborArray[depth][tileIndex],
+                        &objectPtr->mdLeafDepthNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U8),
@@ -280,7 +280,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdLumaReconNeighborArray[depth][tileIndex],
+                        &objectPtr->mdLumaReconNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U8),
@@ -292,7 +292,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 }
 
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdCbReconNeighborArray[depth][tileIndex],
+                        &objectPtr->mdCbReconNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE >> 1,
                         MAX_PICTURE_HEIGHT_SIZE >> 1,
                         sizeof(EB_U8),
@@ -305,7 +305,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 }
 
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->mdCrReconNeighborArray[depth][tileIndex],
+                        &objectPtr->mdCrReconNeighborArray[depth][tileIdx],
                         MAX_PICTURE_WIDTH_SIZE >> 1,
                         MAX_PICTURE_HEIGHT_SIZE >> 1,
                         sizeof(EB_U8),
@@ -318,7 +318,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->mdRefinementIntraLumaModeNeighborArray[tileIndex],
+                    &objectPtr->mdRefinementIntraLumaModeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -331,7 +331,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->mdRefinementModeTypeNeighborArray[tileIndex],
+                    &objectPtr->mdRefinementModeTypeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -344,7 +344,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->mdRefinementLumaReconNeighborArray[tileIndex],
+                    &objectPtr->mdRefinementLumaReconNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -357,7 +357,7 @@ EB_ERRORTYPE PictureControlSetCtor(
 
             // Encode Pass Neighbor Arrays
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epIntraLumaModeNeighborArray[tileIndex],
+                    &objectPtr->epIntraLumaModeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE, //Jing: change to tile size
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -369,7 +369,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epMvNeighborArray[tileIndex],
+                    &objectPtr->epMvNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(MvUnit_t),
@@ -381,7 +381,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epSkipFlagNeighborArray[tileIndex],
+                    &objectPtr->epSkipFlagNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -393,7 +393,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epModeTypeNeighborArray[tileIndex],
+                    &objectPtr->epModeTypeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -405,7 +405,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epLeafDepthNeighborArray[tileIndex],
+                    &objectPtr->epLeafDepthNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -418,7 +418,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epLumaReconNeighborArray[tileIndex],
+                    &objectPtr->epLumaReconNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -430,7 +430,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epCbReconNeighborArray[tileIndex],
+                    &objectPtr->epCbReconNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE >> subWidthCMinus1,
                     MAX_PICTURE_HEIGHT_SIZE >> subHeightCMinus1,
                     sizeof(EB_U8),
@@ -442,7 +442,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epCrReconNeighborArray[tileIndex],
+                    &objectPtr->epCrReconNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE >> subWidthCMinus1,
                     MAX_PICTURE_HEIGHT_SIZE >> subHeightCMinus1,
                     sizeof(EB_U8),
@@ -456,7 +456,7 @@ EB_ERRORTYPE PictureControlSetCtor(
 
             if(is16bit){
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->epLumaReconNeighborArray16bit[tileIndex],
+                        &objectPtr->epLumaReconNeighborArray16bit[tileIdx],
                         MAX_PICTURE_WIDTH_SIZE,
                         MAX_PICTURE_HEIGHT_SIZE,
                         sizeof(EB_U16),
@@ -468,7 +468,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->epCbReconNeighborArray16bit[tileIndex],
+                        &objectPtr->epCbReconNeighborArray16bit[tileIdx],
                         MAX_PICTURE_WIDTH_SIZE >> subWidthCMinus1,
                         MAX_PICTURE_HEIGHT_SIZE >> subHeightCMinus1,
                         sizeof(EB_U16),
@@ -480,7 +480,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                     return EB_ErrorInsufficientResources;
                 }
                 return_error = NeighborArrayUnitCtor(
-                        &objectPtr->epCrReconNeighborArray16bit[tileIndex],
+                        &objectPtr->epCrReconNeighborArray16bit[tileIdx],
                         MAX_PICTURE_WIDTH_SIZE >> subWidthCMinus1,
                         MAX_PICTURE_HEIGHT_SIZE >> subHeightCMinus1,
                         sizeof(EB_U16),
@@ -498,7 +498,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->epSaoNeighborArray[tileIndex],
+                    &objectPtr->epSaoNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(SaoParameters_t),
@@ -512,7 +512,7 @@ EB_ERRORTYPE PictureControlSetCtor(
 
             // Entropy Coding Neighbor Arrays
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->modeTypeNeighborArray[tileIndex],
+                    &objectPtr->modeTypeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -524,7 +524,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->leafDepthNeighborArray[tileIndex],
+                    &objectPtr->leafDepthNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -536,7 +536,7 @@ EB_ERRORTYPE PictureControlSetCtor(
                 return EB_ErrorInsufficientResources;
             }
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->skipFlagNeighborArray[tileIndex],
+                    &objectPtr->skipFlagNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -549,7 +549,7 @@ EB_ERRORTYPE PictureControlSetCtor(
             }
 
             return_error = NeighborArrayUnitCtor(
-                    &objectPtr->intraLumaModeNeighborArray[tileIndex],
+                    &objectPtr->intraLumaModeNeighborArray[tileIdx],
                     MAX_PICTURE_WIDTH_SIZE,
                     MAX_PICTURE_HEIGHT_SIZE,
                     sizeof(EB_U8),
@@ -602,19 +602,19 @@ EB_ERRORTYPE PictureControlSetCtor(
     objectPtr->constrainedIntraFlag = EB_FALSE;
 
     //Jing:
-    //Alloc segment per tile
+    //Alloc segment per tile group
     // Segments
-    EB_MALLOC(EncDecSegments_t**, objectPtr->encDecSegmentCtrl, sizeof(EncDecSegments_t*) * totalTileCount, EB_N_PTR);
+    EB_MALLOC(EncDecSegments_t**, objectPtr->encDecSegmentCtrl, sizeof(EncDecSegments_t*) * initDataPtr->tileRowCount, EB_N_PTR);
     
-    for (tileIndex = 0; tileIndex < totalTileCount; tileIndex++) {
+    for (tileIdx = 0; tileIdx < initDataPtr->tileRowCount; tileIdx++) {
         if (totalTileCount > 1) {
             //Jing: Tuning segments number, put tile info to pps
             encDecSegRow = pictureLcuHeight / initDataPtr->tileRowCount;
-            encDecSegCol = pictureLcuWidth / initDataPtr->tileColumnCount; 
+            encDecSegCol = pictureLcuWidth; 
         }
 
         return_error = EncDecSegmentsCtor(
-                &(objectPtr->encDecSegmentCtrl[tileIndex]),
+                &(objectPtr->encDecSegmentCtrl[tileIdx]),
                 encDecSegCol,
                 encDecSegRow);
         if (return_error == EB_ErrorInsufficientResources){
@@ -623,14 +623,14 @@ EB_ERRORTYPE PictureControlSetCtor(
     }
 
     EB_MALLOC(EntropyTileInfo**, objectPtr->entropyCodingInfo, sizeof(EntropyTileInfo*) * totalTileCount, EB_N_PTR);
-    for (tileIndex = 0; tileIndex < totalTileCount; tileIndex++) {
+    for (tileIdx = 0; tileIdx < totalTileCount; tileIdx++) {
         // Entropy Rows per tile
-        EB_MALLOC(EntropyTileInfo*, objectPtr->entropyCodingInfo[tileIndex], sizeof(EntropyTileInfo), EB_N_PTR);
-        EB_CREATEMUTEX(EB_HANDLE, objectPtr->entropyCodingInfo[tileIndex]->entropyCodingMutex, sizeof(EB_HANDLE), EB_MUTEX);
+        EB_MALLOC(EntropyTileInfo*, objectPtr->entropyCodingInfo[tileIdx], sizeof(EntropyTileInfo), EB_N_PTR);
+        EB_CREATEMUTEX(EB_HANDLE, objectPtr->entropyCodingInfo[tileIdx]->entropyCodingMutex, sizeof(EB_HANDLE), EB_MUTEX);
 
         // Entropy Coder
         return_error = EntropyCoderCtor(
-                &objectPtr->entropyCodingInfo[tileIndex]->entropyCoderPtr,
+                &objectPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr,
                 SEGMENT_ENTROPY_BUFFER_SIZE);
 
         if (return_error == EB_ErrorInsufficientResources){

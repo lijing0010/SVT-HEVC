@@ -2341,10 +2341,8 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
     EncDecTasks_t                              *encDecTasksPtr;
     EB_U32                                      pictureWidthInLcu;
 	EB_U32                                      pictureHeightInLcu;
-    EB_U32                                      totalTileCount=1;
 
     for(;;) {
-
 		// Get RateControl Results
 		EbGetFullObject(
 			contextPtr->rateControlInputFifoPtr,
@@ -2521,16 +2519,10 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
 #endif
         // Post the results to the MD processes
 
-        if (sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount > 0) {
-            totalTileCount = sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount;
-        }
-
         //printf("MDC, post POC %d, decoder order %d\n",
         //        pictureControlSetPtr->pictureNumber, pictureControlSetPtr->ParentPcsPtr->decodeOrder);
-        for (unsigned tileRowIdx = 0; tileRowIdx < totalTileCount; tileRowIdx++) {
-        //for (unsigned tileRowIdx = 0; tileRowIdx < sequenceControlSetPtr->tileRowCount; tileRowIdx++) {
-            // Jing: Post per tile
-            // TODO: Change to per tile row, not per tile. too many objects will drain the FIFO and downgrade the perf
+        for (unsigned tileRowIdx = 0; tileRowIdx < sequenceControlSetPtr->tileRowCount; tileRowIdx++) {
+            // TODO: Too many objects may drain the FIFO and downgrade the perf
             EbGetEmptyObject(
                     contextPtr->modeDecisionConfigurationOutputFifoPtr,
                     &encDecTasksWrapperPtr);

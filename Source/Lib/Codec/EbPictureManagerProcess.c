@@ -688,40 +688,39 @@ void* PictureManagerKernel(void *inputPtr)
 #endif
                     EB_U32 encDecSegRow = entrySequenceControlSetPtr->encDecSegmentRowCountArray[entryPictureControlSetPtr->temporalLayerIndex];
                     EB_U32 encDecSegCol = entrySequenceControlSetPtr->encDecSegmentColCountArray[entryPictureControlSetPtr->temporalLayerIndex]; 
+
+                    // Jing: TODO Tuning the seg row/col later
+                    if (entrySequenceControlSetPtr->tileRowCount * entrySequenceControlSetPtr->tileColumnCount> 1) {
+                        //Jing: Tuning segments number, put tile info to pps
+                        encDecSegCol = pictureWidthInLcu;//  / entrySequenceControlSetPtr->tileColumnCount;
+                        encDecSegRow = pictureHeightInLcu / entrySequenceControlSetPtr->tileRowCount;
+                    }
+
                     // EncDec Segments 
                     for (int r = 0; r < entrySequenceControlSetPtr->tileRowCount; r++) {
+                        EncDecSegmentsInit(
+                                ChildPictureControlSetPtr->encDecSegmentCtrl[r],
+                                encDecSegCol,
+                                encDecSegRow,
+                                //sequenceControlSetPtr->tileColumnArray[c],
+                                pictureWidthInLcu,
+                                sequenceControlSetPtr->tileRowArray[r]);
+
+                        // Jing: TODO: change later to apply with tile row..
+                        // Entropy Coding Rows
                         for (int c = 0; c < entrySequenceControlSetPtr->tileColumnCount; c++) {
-                            int tileIdx = c + r * entrySequenceControlSetPtr->tileColumnCount; //In raster order
+                            int tileIdx = r * entrySequenceControlSetPtr->tileColumnCount + c;
+                            ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingCurrentRow = 0;
+                            ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingCurrentAvailableRow = 0;
+                            ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingRowCount = sequenceControlSetPtr->tileRowArray[r];
+                            ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingInProgress = EB_FALSE;
+                            ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingPicDone = EB_FALSE;
 
-                            // Jing: TODO Tuning the seg row/col later
-                            if (entrySequenceControlSetPtr->tileRowCount * entrySequenceControlSetPtr->tileColumnCount> 1) {
-                                //Jing: Tuning segments number, put tile info to pps
-                                encDecSegCol = pictureWidthInLcu / entrySequenceControlSetPtr->tileColumnCount;
-                                encDecSegRow = pictureHeightInLcu / entrySequenceControlSetPtr->tileRowCount;
-                            }
-                            EncDecSegmentsInit(
-                                    ChildPictureControlSetPtr->encDecSegmentCtrl[tileIdx],
-                                    encDecSegCol,
-                                    encDecSegRow,
-                                    sequenceControlSetPtr->tileColumnArray[c],
-                                    sequenceControlSetPtr->tileRowArray[r]);
-
-                            // Entropy Coding Rows
-                            {
-                                unsigned rowIndex;
-
-                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingCurrentRow = 0;
-                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingCurrentAvailableRow = 0;
-                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingRowCount = sequenceControlSetPtr->tileRowArray[r];
-                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingInProgress = EB_FALSE;
-                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingPicDone = EB_FALSE;
-
-                                for(rowIndex=0; rowIndex < MAX_LCU_ROWS; ++rowIndex) {
-                                    ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingRowArray[rowIndex] = EB_FALSE;
-                                }
-                                ChildPictureControlSetPtr->entropyCodingPicResetFlag = EB_TRUE;
+                            for(unsigned rowIndex=0; rowIndex < MAX_LCU_ROWS; ++rowIndex) {
+                                ChildPictureControlSetPtr->entropyCodingInfo[tileIdx]->entropyCodingRowArray[rowIndex] = EB_FALSE;
                             }
                         }
+                        ChildPictureControlSetPtr->entropyCodingPicResetFlag = EB_TRUE;
                     }
 
                     //Jing: TODO
