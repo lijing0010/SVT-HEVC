@@ -539,7 +539,7 @@ void* PictureManagerKernel(void *inputPtr)
             encodeContextPtr        = (EncodeContext_t*) EB_NULL;
             
             break;
-        } 
+        }
         
         // ***********************************
         //  Common Code
@@ -850,6 +850,25 @@ void* PictureManagerKernel(void *inputPtr)
                                         
                     // Post the Full Results Object
                     EbPostFullObject(outputWrapperPtr);
+#if LATENCY_PROFILE
+                    double latency = 0.0;
+                    EB_U64 finishTimeSeconds = 0;
+                    EB_U64 finishTimeuSeconds = 0;
+                    EbFinishTime((uint64_t*)&finishTimeSeconds, (uint64_t*)&finishTimeuSeconds);
+
+                    EbComputeOverallElapsedTimeMs(
+                            ChildPictureControlSetPtr->ParentPcsPtr->startTimeSeconds,
+                            ChildPictureControlSetPtr->ParentPcsPtr->startTimeuSeconds,
+                            finishTimeSeconds,
+                            finishTimeuSeconds,
+                            &latency);
+
+                    SVT_LOG("[%lld]: POC %lld PM OUT, decoder order %d, latency %3.3f \n",
+                            EbGetSysTimeMs(),
+                            ChildPictureControlSetPtr->pictureNumber,
+                            ChildPictureControlSetPtr->ParentPcsPtr->decodeOrder,
+                            latency);
+#endif
 
                     // Remove the Input Entry from the Input Queue
                     inputEntryPtr->inputObjectPtr = (EbObjectWrapper_t*) EB_NULL;

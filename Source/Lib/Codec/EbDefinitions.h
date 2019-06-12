@@ -7,7 +7,7 @@
 #define EbDefinitions_h
 
 //#define BENCHMARK 0
-
+#define LATENCY_PROFILE 0
 #include <assert.h>
 #include "EbApi.h"
 #ifdef __cplusplus

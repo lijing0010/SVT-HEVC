@@ -2539,6 +2539,25 @@ void* ModeDecisionConfigurationKernel(void *inputPtr)
             // Post the Full Results Object
             EbPostFullObject(encDecTasksWrapperPtr);
         }
+#if LATENCY_PROFILE
+        double latency = 0.0;
+        EB_U64 finishTimeSeconds = 0;
+        EB_U64 finishTimeuSeconds = 0;
+        EbFinishTime((uint64_t*)&finishTimeSeconds, (uint64_t*)&finishTimeuSeconds);
+
+        EbComputeOverallElapsedTimeMs(
+                pictureControlSetPtr->ParentPcsPtr->startTimeSeconds,
+                pictureControlSetPtr->ParentPcsPtr->startTimeuSeconds,
+                finishTimeSeconds,
+                finishTimeuSeconds,
+                &latency);
+
+        SVT_LOG("[%lld]: POC %lld MDC OUT, decoder order %d, latency %3.3f \n",
+                EbGetSysTimeMs(),
+                pictureControlSetPtr->ParentPcsPtr->pictureNumber,
+                pictureControlSetPtr->ParentPcsPtr->decodeOrder,
+                latency);
+#endif
 
         // Release Rate Control Results
         EbReleaseObject(rateControlResultsWrapperPtr);

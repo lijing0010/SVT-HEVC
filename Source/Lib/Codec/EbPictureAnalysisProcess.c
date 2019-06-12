@@ -4444,6 +4444,9 @@ void* PictureAnalysisKernel(void *inputPtr)
 		pictureHeighInLcu = (sequenceControlSetPtr->lumaHeight + sequenceControlSetPtr->lcuSize - 1) / sequenceControlSetPtr->lcuSize;
 		lcuTotalCount = pictureWidthInLcu * pictureHeighInLcu;
 
+#if LATENCY_PROFILE0
+        long first = EbGetSysTimeMs();
+#endif
         // Set picture parameters to account for subpicture, picture scantype, and set regions by resolutions
 		SetPictureParametersForStatisticsGathering(
 			sequenceControlSetPtr);
@@ -4479,6 +4482,9 @@ void* PictureAnalysisKernel(void *inputPtr)
 			inputPaddedPicturePtr
         );
         
+#if LATENCY_PROFILE0
+        long second = EbGetSysTimeMs();
+#endif
 		// 1/4 & 1/16 input picture decimation 
 		DecimateInputPicture(
             sequenceControlSetPtr,
@@ -4486,6 +4492,10 @@ void* PictureAnalysisKernel(void *inputPtr)
 			inputPaddedPicturePtr,
 			quarterDecimatedPicturePtr,
 			sixteenthDecimatedPicturePtr);
+
+#if LATENCY_PROFILE0
+        long third = EbGetSysTimeMs();
+#endif
 
 		// Gathering statistics of input picture, including Variance Calculation, Histogram Bins
 		GatheringPictureStatistics(
@@ -4497,6 +4507,10 @@ void* PictureAnalysisKernel(void *inputPtr)
 			sixteenthDecimatedPicturePtr,
 			lcuTotalCount);
 
+#if LATENCY_PROFILE0
+        long forth= EbGetSysTimeMs();
+        printf("first: %lld, sec %lld, third %lld\n", second - first, third - second, forth - third);
+#endif
 
 		// Hold the 64x64 variance and mean in the reference frame 
 		EB_U32 lcuIndex;
@@ -4523,6 +4537,25 @@ void* PictureAnalysisKernel(void *inputPtr)
 
 		// Post the Full Results Object
 		EbPostFullObject(outputResultsWrapperPtr);
+#if LATENCY_PROFILE
+        double latency = 0.0;
+        EB_U64 finishTimeSeconds = 0;
+        EB_U64 finishTimeuSeconds = 0;
+        EbFinishTime((uint64_t*)&finishTimeSeconds, (uint64_t*)&finishTimeuSeconds);
+
+        EbComputeOverallElapsedTimeMs(
+                pictureControlSetPtr->startTimeSeconds,
+                pictureControlSetPtr->startTimeuSeconds,
+                finishTimeSeconds,
+                finishTimeuSeconds,
+                &latency);
+
+        SVT_LOG("[%lld]: POC %lld PA OUT, decoder order %d, latency %3.3f \n",
+                EbGetSysTimeMs(),
+                pictureControlSetPtr->pictureNumber,
+                pictureControlSetPtr->decodeOrder,
+                latency);
+#endif
 
 	}
 	return EB_NULL;

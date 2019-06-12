@@ -76,11 +76,6 @@ void* PacketizationKernel(void *inputPtr)
     EB_U16                          tileIdx;
     EB_U16                          tileCnt;
     
-    //debug
-    long                     last_time = 0;
-    long                            curr_time = 0;
-    int                             duration = 0;
-    ///
     for(;;) {
     
         // Get EntropyCoding Results
@@ -98,14 +93,38 @@ void* PacketizationKernel(void *inputPtr)
 #endif
 #ifdef BENCHMARK
 //#if 1
-        curr_time = EbGetSysTimeMs();
-        duration = (curr_time - last_time);
-        SVT_LOG("[%lld]: POC %lld PK IN, decoder order %d, interval %lld \n",
-                curr_time,
-                pictureControlSetPtr->pictureNumber,
+    static long last_time = 0;
+    static long curr_time = 0;
+    static int  duration = 0;
+
+    curr_time = EbGetSysTimeMs();
+    duration = (curr_time - last_time);
+    SVT_LOG("[%lld]: POC %lld PK IN, decoder order %d, interval %lld \n",
+            curr_time,
+            pictureControlSetPtr->pictureNumber,
+            pictureControlSetPtr->ParentPcsPtr->decodeOrder,
+            duration);
+    last_time = curr_time;
+#endif
+
+#if LATENCY_PROFILE
+        double latency = 0.0;
+        EB_U64 finishTimeSeconds = 0;
+        EB_U64 finishTimeuSeconds = 0;
+        EbFinishTime((uint64_t*)&finishTimeSeconds, (uint64_t*)&finishTimeuSeconds);
+
+        EbComputeOverallElapsedTimeMs(
+                pictureControlSetPtr->ParentPcsPtr->startTimeSeconds,
+                pictureControlSetPtr->ParentPcsPtr->startTimeuSeconds,
+                finishTimeSeconds,
+                finishTimeuSeconds,
+                &latency);
+
+        SVT_LOG("[%lld]: POC %lld PK INT, decoder order %d, latency %3.3f \n",
+                EbGetSysTimeMs(),
+                pictureControlSetPtr->ParentPcsPtr->pictureNumber,
                 pictureControlSetPtr->ParentPcsPtr->decodeOrder,
-                duration);
-        last_time = curr_time;
+                latency);
 #endif
         //****************************************************
         // Input Entropy Results into Reordering Queue

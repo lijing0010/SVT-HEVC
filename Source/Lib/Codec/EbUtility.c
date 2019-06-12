@@ -483,3 +483,10 @@ long EbGetSysTimeMs()
     gettimeofday(&finish, NULL);
     return (finish.tv_sec * 1000 + finish.tv_usec/ 1000.0);
 }
+
+long EbGetSysTimeUs()
+{
+    struct timeval finish;
+    gettimeofday(&finish, NULL);
+    return ((long)finish.tv_sec * 1000000 + finish.tv_usec);
+}

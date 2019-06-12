@@ -327,7 +327,9 @@ void CalculateAcEnergy(
 		EB_U32 cuNum, cuSize;
 		EB_U16 cuH, cuW;
 
-
+#if LATENCY_PROFILE0
+        long prev = EbGetSysTimeUs();
+#endif
 		pictureControlSetPtr->lcuYSrcEnergyCuArray[lcuIndex][0] = ComputeNxMSatdSadLCU(
 			&(inputPicturePtr->bufferY[inputOriginIndex]),
 			inputPicturePtr->strideY,
@@ -353,6 +355,10 @@ void CalculateAcEnergy(
 			}
 		}
 
+#if LATENCY_PROFILE0
+        long now = EbGetSysTimeUs();
+        printf("SRC: CalculateAcEnergy takes %lld us\n", now - prev);
+#endif
 
 	}
 	else{
@@ -1693,6 +1699,25 @@ void* SourceBasedOperationsKernel(void *inputPtr)
 
         // Post the Full Results Object
         EbPostFullObject(outputResultsWrapperPtr);
+#if LATENCY_PROFILE
+        double latency = 0.0;
+        EB_U64 finishTimeSeconds = 0;
+        EB_U64 finishTimeuSeconds = 0;
+        EbFinishTime((uint64_t*)&finishTimeSeconds, (uint64_t*)&finishTimeuSeconds);
+
+        EbComputeOverallElapsedTimeMs(
+                pictureControlSetPtr->startTimeSeconds,
+                pictureControlSetPtr->startTimeuSeconds,
+                finishTimeSeconds,
+                finishTimeuSeconds,
+                &latency);
+
+        SVT_LOG("[%lld]: POC %lld SRC OUT, decoder order %d, latency %3.3f \n",
+                EbGetSysTimeMs(),
+                pictureControlSetPtr->pictureNumber,
+                pictureControlSetPtr->decodeOrder,
+                latency);
+#endif
 
     }
     return EB_NULL;
