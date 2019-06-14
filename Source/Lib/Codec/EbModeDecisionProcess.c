@@ -415,14 +415,15 @@ void ProductResetModeDecision(
                 tileIdx++) {
             ResetModeDecisionNeighborArrays(pictureControlSetPtr, tileIdx);
             ResetMdRefinmentNeighborArrays(pictureControlSetPtr, tileIdx);
+
+            //Jing: TODO Change to tile
+            //      Used in DLF, need to double check if need tile level parameters
+            for(lcuRowIndex = 0; lcuRowIndex< ((sequenceControlSetPtr->lumaHeight + MAX_LCU_SIZE - 1)/MAX_LCU_SIZE); lcuRowIndex++){
+                pictureControlSetPtr->encPrevCodedQp[tileIdx][lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;
+                pictureControlSetPtr->encPrevQuantGroupCodedQp[tileIdx][lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;
+            }
         }
 
-        //Jing: TODO Change to tile
-        //      Used in DLF, need to double check if need tile level parameters
-        for(lcuRowIndex = 0; lcuRowIndex< ((sequenceControlSetPtr->lumaHeight + MAX_LCU_SIZE - 1)/MAX_LCU_SIZE); lcuRowIndex++){
-			pictureControlSetPtr->encPrevCodedQp[lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;
-			pictureControlSetPtr->encPrevQuantGroupCodedQp[lcuRowIndex] = (EB_U8)pictureControlSetPtr->pictureQp;
-		}
 	}
 
 	return;

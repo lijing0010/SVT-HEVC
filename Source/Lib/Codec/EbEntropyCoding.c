@@ -6360,7 +6360,7 @@ static void CodePPS(
         //if(scsPtr->staticConfig.tileColumnCount != 1 || scsPtr->staticConfig.tileRowCount > 1) {
         WriteFlagCavlc(
             bitstreamPtr,
-            1);
+            0);
         //}
     }
 #endif
@@ -6368,7 +6368,7 @@ static void CodePPS(
 	// "loop_filter_across_slices_enabled_flag"
 	WriteFlagCavlc(
 		bitstreamPtr,
-		1);
+		0);
 
 	// "deblocking_filter_control_present_flag"
 	WriteFlagCavlc(

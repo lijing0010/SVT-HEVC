@@ -1989,10 +1989,8 @@ static void EncodePassUpdateQp(
     EB_U32                   difCuDeltaQpDepth,
     EB_U8                   *prevCodedQp,
     EB_U8                   *prevQuantGroupCodedQp,
-#if TILES
     EB_U32                   tileOriginX,
     EB_U32                   tileOriginY,
-#endif
     EB_U32                   lcuQp
     )
 {
@@ -2033,11 +2031,7 @@ static void EncodePassUpdateQp(
         *prevCodedQp = *prevQuantGroupCodedQp;
     }
 
-#if TILES
     if ((quantGroupY > tileOriginY) && sameLcuCheckTop) {
-#else
-    if (sameLcuCheckTop)  {
-#endif
         qpTopNeighborIndex =
             LUMA_SAMPLE_PIC_WISE_LOCATION_TO_QP_ARRAY_IDX(
             quantGroupX,
@@ -2049,11 +2043,7 @@ static void EncodePassUpdateQp(
         qpTopNeighbor = *prevCodedQp;
     }
 
-#if TILES
     if ((quantGroupX > tileOriginX) && sameLcuCheckLeft) {
-#else
-    if (sameLcuCheckLeft)  {
-#endif
         qpLeftNeighborIndex =
             LUMA_SAMPLE_PIC_WISE_LOCATION_TO_QP_ARRAY_IDX(
             quantGroupX - 1,
@@ -4541,8 +4531,8 @@ EB_EXTERN void EncodePass(
                     useDeltaQp,
                     &isDeltaQpNotCoded,
                     pictureControlSetPtr->difCuDeltaQpDepth,
-                    &(pictureControlSetPtr->encPrevCodedQp[singleSegment ? 0 : lcuRowIndex]),
-                    &(pictureControlSetPtr->encPrevQuantGroupCodedQp[singleSegment ? 0 : lcuRowIndex]),
+                    &(pictureControlSetPtr->encPrevCodedQp[tileIdx][singleSegment ? 0 : lcuRowIndex]),
+                    &(pictureControlSetPtr->encPrevQuantGroupCodedQp[tileIdx][singleSegment ? 0 : lcuRowIndex]),
 #if TILES
                     tileOriginX,
                     tileOriginY,
@@ -4698,8 +4688,10 @@ EB_EXTERN void EncodePass(
             lcuHeight,
             pictureControlSetPtr->verticalEdgeBSArray[tbAddr],
             pictureControlSetPtr->horizontalEdgeBSArray[tbAddr],
-            lcuOriginY == 0 ? (EB_U8*)EB_NULL : pictureControlSetPtr->verticalEdgeBSArray[tbAddr - pictureWidthInLcu],
-            lcuOriginX == 0 ? (EB_U8*)EB_NULL : pictureControlSetPtr->horizontalEdgeBSArray[tbAddr - 1],
+            //lcuOriginY == 0 ? (EB_U8*)EB_NULL : pictureControlSetPtr->verticalEdgeBSArray[tbAddr - pictureWidthInLcu],
+            //lcuOriginX == 0 ? (EB_U8*)EB_NULL : pictureControlSetPtr->horizontalEdgeBSArray[tbAddr - 1],
+            lcuPtr->tileTopEdgeFlag ? (EB_U8*)EB_NULL : pictureControlSetPtr->verticalEdgeBSArray[tbAddr - pictureWidthInLcu],
+            lcuPtr->tileLeftEdgeFlag ? (EB_U8*)EB_NULL : pictureControlSetPtr->horizontalEdgeBSArray[tbAddr - 1],
             pictureControlSetPtr);
 
         LcuPicEdgeDLFCoreFuncTable[is16bit](

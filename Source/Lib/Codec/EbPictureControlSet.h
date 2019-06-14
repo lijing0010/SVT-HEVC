@@ -227,8 +227,8 @@ typedef struct PictureControlSet_s
     EB_U8                                 prevQuantGroupCodedQp[EB_TILE_MAX_COUNT];
 
     // Enc/DecQP Assignment
-    EB_U8                                 encPrevCodedQp[MAX_PICTURE_HEIGHT_SIZE / MAX_LCU_SIZE];
-    EB_U8                                 encPrevQuantGroupCodedQp[MAX_PICTURE_HEIGHT_SIZE / MAX_LCU_SIZE];
+    EB_U8                                 encPrevCodedQp[EB_TILE_MAX_COUNT][MAX_PICTURE_HEIGHT_SIZE / MAX_LCU_SIZE];
+    EB_U8                                 encPrevQuantGroupCodedQp[EB_TILE_MAX_COUNT][MAX_PICTURE_HEIGHT_SIZE / MAX_LCU_SIZE];
                                                                               
     // EncDec Entropy Coder (for rate estimation)           
     EntropyCoder_t                       *coeffEstEntropyCoderPtr;
