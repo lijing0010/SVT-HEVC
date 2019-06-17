@@ -6368,7 +6368,7 @@ static void CodePPS(
 	// "loop_filter_across_slices_enabled_flag"
 	WriteFlagCavlc(
 		bitstreamPtr,
-		0);
+		1);
 
 	// "deblocking_filter_control_present_flag"
 	WriteFlagCavlc(

@@ -345,6 +345,8 @@ void SetBSArrayBasedOnPUBoundary(
 	const CodedUnitStats_t      *cuStatsPtr,
 	EB_U32                       tbOriginX,
 	EB_U32                       tbOriginY,
+    EB_BOOL                      tileLeftBoundary,
+    EB_BOOL                      tileTopBoundary,
 	PictureControlSet_t         *pictureControlSetPtr,
 	EB_U8                       *horizontalEdgeBSArray,
 	EB_U8                       *verticalEdgeBSArray)
@@ -371,7 +373,8 @@ void SetBSArrayBasedOnPUBoundary(
 	EB_U32               neighborPuIdx;
 
 	// set bS for the horizontal PU boundary which lies on the 8 sample edge
-	if ((cuStatsPtr->originY & 7) == 0 && cuStatsPtr->originY + tbOriginY != 0) {
+	//if ((cuStatsPtr->originY & 7) == 0 && cuStatsPtr->originY + tbOriginY != 0) {
+	if ((cuStatsPtr->originY & 7) == 0 && !tileTopBoundary) {
 
 		for (blk4x4Addr = puTopLeft4x4blkAddr; blk4x4Addr <= puTopRight4x4blkAddr; ++blk4x4Addr) {
 
@@ -400,7 +403,8 @@ void SetBSArrayBasedOnPUBoundary(
 	}
 
 	// set bS for the vertical PU boundary which lies on the 8 sample edge
-	if ((cuStatsPtr->originX & 7) == 0 && cuStatsPtr->originX + tbOriginX != 0) {
+	//if ((cuStatsPtr->originX & 7) == 0 && cuStatsPtr->originX + tbOriginX != 0) {
+	if ((cuStatsPtr->originX & 7) == 0 && !tileLeftBoundary) {
 		for (blk4x4Addr = puTopLeft4x4blkAddr; blk4x4Addr <= puBottomLeft4x4blkAddr; blk4x4Addr += MaxLcuSizeIn4x4blk) {
 			blk4x4Pos_x = (blk4x4Addr & (MaxLcuSizeIn4x4blk - 1)) << 2;
 			blk4x4Pos_y = (blk4x4Addr >> logMaxLcuSizeIn4x4blk) << 2;
@@ -3537,8 +3541,10 @@ void LCUPictureEdgeDLFCore(
 	EB_U32  blk2x2Addr;
 	EB_U32  pictureWidthInLcu;
 	EB_U32  pictureHeightInLcu;
-	EB_U32  tileWidthInLcu;
-	EB_U32  tileHeightInLcu;
+	EB_U32  tileWidthInPxl;
+	EB_U32  tileHeightInPxl;
+	EB_U32  tileWidthEndInLcu;
+	EB_U32  tileHeightEndInLcu;
 	EB_U32  fourSampleEdgeStartSamplePos_x;
 	EB_U32  fourSampleEdgeStartSamplePos_y;
 	EB_U8   bS;
@@ -3571,14 +3577,16 @@ void LCUPictureEdgeDLFCore(
 
 	pictureWidthInLcu = (sequenceControlSet->lumaWidth + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
 	pictureHeightInLcu = (sequenceControlSet->lumaHeight + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
-	tileWidthInLcu = (lcuPtr->tileEndX + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
-	tileHeightInLcu = (lcuPtr->tileEndY + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
+	tileWidthEndInLcu = (lcuPtr->tileEndX + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
+	tileHeightEndInLcu = (lcuPtr->tileEndY + sequenceControlSet->lcuSize - 1) / sequenceControlSet->lcuSize;
+    tileWidthInPxl = lcuPtr->tileEndX - lcuPtr->tileOriginX;
+	tileHeightInPxl = lcuPtr->tileEndY - lcuPtr->tileOriginY;
 	lcuSize = sequenceControlSet->lcuSize;
 	chromaLcuSizeX = lcuSize >> (colorFormat==EB_YUV444?0:1);
 	chromaLcuSizeY = lcuSize >> (colorFormat==EB_YUV420?1:0);
     const EB_U32 subWidthShfitMinus1  = colorFormat==EB_YUV444?1:0;
     const EB_U32 subHeightShfitMinus1 = colorFormat==EB_YUV420?0:1;
-	if (lcuPos_x >> lcuPtr->sizeLog2 == tileWidthInLcu - 1) {
+	if (lcuPos_x >> lcuPtr->sizeLog2 == tileWidthEndInLcu - 1) {
 		/***** picture right-most 4 sample horizontal edges filtering *****/
 		// luma component filtering
 		//num4SampleHorizontalEdges     = (sequenceControlSet->lumaHeight >> 3) - 1;
@@ -3640,13 +3648,13 @@ void LCUPictureEdgeDLFCore(
 		}
 
 		// chroma component filtering
-		if ((sequenceControlSet->chromaWidth & 7) == 0) {
+		//if ((sequenceControlSet->chromaWidth & 7) == 0) {
+		if (((tileWidthInPxl >> subWidthCMinus1) & 7) == 0) {
 			//num4SampleHorizontalEdges     = (sequenceControlSet->chromaHeight >> 3) + ((sequenceControlSet->chromaHeight & 7) != 0) - 1;
 			num4SampleHorizontalEdges = (lcuHeight >> (colorFormat==EB_YUV420?4:3)) + (((lcuHeight >> (colorFormat==EB_YUV420?1:0)) & (colorFormat==EB_YUV420?7:15)) != 0);
 			//fourSampleEdgeStartSamplePos_x = sequenceControlSet->chromaWidth - 4;       // Picture wise location
-			fourSampleEdgeStartSamplePos_x = (lcuPtr->tileEndX >> subWidthShfitMinus1) - 4; // Tile wise location
+			fourSampleEdgeStartSamplePos_x = (lcuPtr->tileEndX >> subWidthCMinus1) - 4; // Tile wise location
 			//for(verticalIdx = 1; verticalIdx <= num4SampleHorizontalEdges; ++verticalIdx) {
-			//for (verticalIdx = (lcuPos_y == 0); verticalIdx < num4SampleHorizontalEdges; ++verticalIdx) {
 			for (verticalIdx = (lcuPos_y == lcuPtr->tileOriginY); verticalIdx < num4SampleHorizontalEdges; ++verticalIdx) {
 				//fourSampleEdgeStartSamplePos_y = verticalIdx << 3;                      // Picture wise location
 				fourSampleEdgeStartSamplePos_y = (lcuPos_y >> (colorFormat==EB_YUV420?1:0)) + (verticalIdx << 3);                      // Picture wise location
@@ -3753,7 +3761,7 @@ void LCUPictureEdgeDLFCore(
 		}
 	}
 
-	if (lcuPos_y >> lcuPtr->sizeLog2 == tileHeightInLcu - 1) {
+	if (lcuPos_y >> lcuPtr->sizeLog2 == tileHeightEndInLcu - 1) {
 		/***** picture bottom 4 sample vertical edges filtering *****/
 		// luma component filtering
 		//num4SampleVerticalEdges       = (sequenceControlSet->lumaWidth >> 3) - 1;
@@ -3813,7 +3821,8 @@ void LCUPictureEdgeDLFCore(
 		}
 
 		// chroma component filtering
-		if ((sequenceControlSet->chromaHeight & 7) == 0) {
+//		if ((sequenceControlSet->chromaHeight & 7) == 0) {
+		if (((tileHeightInPxl>> subHeightCMinus1) & 7) == 0) {
 			//num4SampleVerticalEdges       = (sequenceControlSet->chromaWidth >> 3) + ((sequenceControlSet->chromaWidth & 7) != 0) - 1;
 			num4SampleVerticalEdges = (lcuWidth >> (3+(colorFormat==EB_YUV444?0:1))) + (((lcuWidth >> (colorFormat==EB_YUV444?0:1)) & (colorFormat==EB_YUV444?15:7)) != 0);
 

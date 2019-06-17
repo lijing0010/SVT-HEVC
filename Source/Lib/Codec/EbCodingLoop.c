@@ -3181,6 +3181,15 @@ EB_EXTERN void EncodePass(
             contextPtr->cuOriginX = (EB_U16)(lcuOriginX + cuStats->originX);
             contextPtr->cuOriginY = (EB_U16)(lcuOriginY + cuStats->originY);
 
+#if TILES
+            EB_BOOL  tileLeftBoundary = (lcuPtr->tileLeftEdgeFlag == EB_TRUE && ((contextPtr->cuOriginX & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+            EB_BOOL  tileTopBoundary = (lcuPtr->tileTopEdgeFlag == EB_TRUE && ((contextPtr->cuOriginY & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+            EB_BOOL  tileRightBoundary = (lcuPtr->tileRightEdgeFlag == EB_TRUE && (((contextPtr->cuOriginX + cuStats->size) & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+            //printf("LCU (%d, %d), left/top/right boundary %d/%d/%d\n", lcuOriginX, lcuOriginY,
+            //        tileLeftBoundary, tileTopBoundary, tileRightBoundary);
+
+#endif
+
             EncodePassPreFetchRef(
                 pictureControlSetPtr,
                 contextPtr,
@@ -3266,14 +3275,14 @@ EB_EXTERN void EncodePass(
                         epModeTypeNeighborArray);
 
 
-#if TILES
-                    EB_BOOL  tileLeftBoundary = (lcuPtr->tileLeftEdgeFlag == EB_TRUE && ((contextPtr->cuOriginX & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
-                    EB_BOOL  tileTopBoundary = (lcuPtr->tileTopEdgeFlag == EB_TRUE && ((contextPtr->cuOriginY & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
-                    EB_BOOL  tileRightBoundary = (lcuPtr->tileRightEdgeFlag == EB_TRUE && (((contextPtr->cuOriginX + cuStats->size) & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
-                    //printf("LCU (%d, %d), left/top/right boundary %d/%d/%d\n", lcuOriginX, lcuOriginY,
-                    //        tileLeftBoundary, tileTopBoundary, tileRightBoundary);
-
-#endif
+//#if TILES
+//                    EB_BOOL  tileLeftBoundary = (lcuPtr->tileLeftEdgeFlag == EB_TRUE && ((contextPtr->cuOriginX & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+//                    EB_BOOL  tileTopBoundary = (lcuPtr->tileTopEdgeFlag == EB_TRUE && ((contextPtr->cuOriginY & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+//                    EB_BOOL  tileRightBoundary = (lcuPtr->tileRightEdgeFlag == EB_TRUE && (((contextPtr->cuOriginX + cuStats->size) & (lcuPtr->size - 1)) == 0)) ? EB_TRUE : EB_FALSE;
+//                    //printf("LCU (%d, %d), left/top/right boundary %d/%d/%d\n", lcuOriginX, lcuOriginY,
+//                    //        tileLeftBoundary, tileTopBoundary, tileRightBoundary);
+//
+//#endif
                     // Transform Loop (not supported)
                     {
                         // Generate Intra Reference Samples  
@@ -3579,6 +3588,8 @@ EB_EXTERN void EncodePass(
                             cuStats,
                             lcuOriginX,
                             lcuOriginY,
+                            tileLeftBoundary,
+                            tileTopBoundary,
                             pictureControlSetPtr,
                             pictureControlSetPtr->horizontalEdgeBSArray[tbAddr],
                             pictureControlSetPtr->verticalEdgeBSArray[tbAddr]);
@@ -4422,6 +4433,8 @@ EB_EXTERN void EncodePass(
                                 cuStats,
                                 lcuOriginX,
                                 lcuOriginY,
+                                tileLeftBoundary,
+                                tileTopBoundary,
                                 pictureControlSetPtr,
                                 pictureControlSetPtr->horizontalEdgeBSArray[tbAddr],
                                 pictureControlSetPtr->verticalEdgeBSArray[tbAddr]);
@@ -4507,22 +4520,23 @@ EB_EXTERN void EncodePass(
                 }
 
 
-#if TILES
-                EB_U16 tileOriginX = 0;
-                EB_U16 tileOriginY = 0;
-                {
-                    unsigned i = 0, j = 0;
-
-                    while (i < sequenceControlSetPtr->tileColumnCount && tileOriginX + sequenceControlSetPtr->tileColumnArray[i] * MAX_LCU_SIZE < lcuOriginX) {
-                        tileOriginX += sequenceControlSetPtr->tileColumnArray[i++] * MAX_LCU_SIZE;
-                    }
-
-                    while (j < sequenceControlSetPtr->tileRowCount && tileOriginY + sequenceControlSetPtr->tileRowArray[j] * MAX_LCU_SIZE < lcuOriginY) {
-                        tileOriginY += sequenceControlSetPtr->tileRowArray[j++] * MAX_LCU_SIZE;
-                    }
-
-                }
-#endif
+//#if TILES
+//                EB_U16 tileOriginX = 0;
+//                EB_U16 tileOriginY = 0;
+//                {
+//                    unsigned i = 0, j = 0;
+//
+//                    while (i < sequenceControlSetPtr->tileColumnCount && tileOriginX + sequenceControlSetPtr->tileColumnArray[i] * MAX_LCU_SIZE < lcuOriginX) {
+//                        tileOriginX += sequenceControlSetPtr->tileColumnArray[i++] * MAX_LCU_SIZE;
+//                    }
+//
+//                    while (j < sequenceControlSetPtr->tileRowCount && tileOriginY + sequenceControlSetPtr->tileRowArray[j] * MAX_LCU_SIZE < lcuOriginY) {
+//                        tileOriginY += sequenceControlSetPtr->tileRowArray[j++] * MAX_LCU_SIZE;
+//                    }
+//
+//                }
+//                printf("LCU (%d, %d), tile Idx %d, Tile origin (%d, %d)\n", lcuOriginX, lcuOriginY, tileIdx, tileOriginX, tileOriginY);
+//#endif
                 // Assign the LCU-level QP
                 EncodePassUpdateQp(
                     pictureControlSetPtr,
@@ -4534,8 +4548,8 @@ EB_EXTERN void EncodePass(
                     &(pictureControlSetPtr->encPrevCodedQp[tileIdx][singleSegment ? 0 : lcuRowIndex]),
                     &(pictureControlSetPtr->encPrevQuantGroupCodedQp[tileIdx][singleSegment ? 0 : lcuRowIndex]),
 #if TILES
-                    tileOriginX,
-                    tileOriginY,
+                    lcuPtr->tileOriginX,
+                    lcuPtr->tileOriginY,
 #endif
                     lcuQp);
 
