@@ -215,6 +215,7 @@ EB_ERRORTYPE EncDecContextCtor(
  ********************************************/
 static EB_ERRORTYPE ApplySaoOffsetsLcu(
     PictureControlSet_t              *pictureControlSetPtr,
+    EB_U32                            lcuIndex,
     EncDecContext_t                  *contextPtr,        // input parameter, DLF context Ptr, used to store the intermediate source samples
     EB_U32                            videoComponent,    // input parameter, video component, Y:0 - U:1 - V:2
     SaoParameters_t                  *saoPtr,            // input parameter, LCU Ptr
@@ -247,6 +248,14 @@ static EB_ERRORTYPE ApplySaoOffsetsLcu(
 
     encodeContextPtr = ((SequenceControlSet_t*)(pictureControlSetPtr->sequenceControlSetWrapperPtr->objectPtr))->encodeContextPtr;
 
+    LargestCodingUnit_t *lcuPtr = pictureControlSetPtr->lcuPtrArray[lcuIndex];
+
+    FirstColLcu = lcuPtr->tileLeftEdgeFlag;
+    LastColLcu = lcuPtr->tileRightEdgeFlag;
+    FirstRowLcu = lcuPtr->tileTopEdgeFlag;
+    LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
+    LastRowLcu = (lcuPtr->tileEndY <= lcuPtr->originY + MAX_LCU_SIZE);
+
     (void)bitDepth;
     lcuHeightCount = 0;
 
@@ -273,8 +282,8 @@ static EB_ERRORTYPE ApplySaoOffsetsLcu(
 
     case 1: // EO - 0 degrees
 
-        FirstColLcu = (EB_BOOL)(tbOriginX == 0);
-        LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
+        //FirstColLcu = (EB_BOOL)(tbOriginX == 0);
+        //LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
 
         //save the non filtered first colomn if it is the first LCU in the row.
         if (FirstColLcu) {
@@ -315,8 +324,8 @@ static EB_ERRORTYPE ApplySaoOffsetsLcu(
 
     case 2: // EO - 90 degrees
 
-        FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
-        LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
+        //FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
+        //LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
 
         //save the non filtered first row if this LCU is on the first LCU Row
         if (FirstRowLcu) {
@@ -355,10 +364,10 @@ static EB_ERRORTYPE ApplySaoOffsetsLcu(
 
     case 3: // EO - 135 degrees
 
-        FirstColLcu = (EB_BOOL)(tbOriginX == 0);
-        LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
-        FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
-        LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
+        //FirstColLcu = (EB_BOOL)(tbOriginX == 0);
+        //LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
+        //FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
+        //LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
 
         //save the non filtered first colomn if it is the first LCU in the row.
         if (FirstColLcu) {
@@ -421,10 +430,10 @@ static EB_ERRORTYPE ApplySaoOffsetsLcu(
 
     case 4: // EO - 45 degrees
 
-        FirstColLcu = (EB_BOOL)(tbOriginX == 0);
-        LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
-        FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
-        LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
+        //FirstColLcu = (EB_BOOL)(tbOriginX == 0);
+        //LastColLcu = (EB_BOOL)((tbOriginX >> (isChroma ? subWidthCMinus1 : 0)) + lcuWidth == pictureWidth);
+        //FirstRowLcu = (EB_BOOL)(tbOriginY == 0);
+        //LastRowLcu = (EB_BOOL)((tbOriginY >> (isChroma ? subHeightCMinus1:0)) + lcuHeight == pictureHeight);
 
         //save the non filtered first colomn if it is the first LCU in the row.
         if (FirstColLcu) {
@@ -582,7 +591,7 @@ static EB_ERRORTYPE ApplySaoOffsetsPicture(
 
                 lcuHeightPlusOne = (sequenceControlSetPtr->lumaHeight == tbOriginY + lcuHeight) ? lcuHeight : lcuHeight + 1;
 
-                //Save last pixel colunm of this LCU  for next LCU
+                //Save last pixel column of this LCU  for next LCU
                 for (lcuRow = 0; lcuRow < lcuHeightPlusOne; ++lcuRow) {
                     contextPtr->saoLeftBuffer[pingpongIdxLeft][lcuRow] = reconPicturePtr->bufferY[reconSampleLumaIndex + lcuWidth - 1 + lcuRow*reconPicturePtr->strideY];
                 }
@@ -590,6 +599,7 @@ static EB_ERRORTYPE ApplySaoOffsetsPicture(
                 if (saoParams->saoTypeIndex[0])
                     ApplySaoOffsetsLcu(
                         pictureControlSetPtr,
+                        lcuIndex,
                         contextPtr,
                         0,
                         saoParams,
@@ -651,6 +661,7 @@ static EB_ERRORTYPE ApplySaoOffsetsPicture(
                 if (saoParams->saoTypeIndex[1])
                     ApplySaoOffsetsLcu(
                         pictureControlSetPtr,
+                        lcuIndex,
                         contextPtr,
                         1,
                         saoParams,
@@ -714,6 +725,7 @@ static EB_ERRORTYPE ApplySaoOffsetsPicture(
                 if (saoParams->saoTypeIndex[1])
                     ApplySaoOffsetsLcu(
                         pictureControlSetPtr,
+                        lcuIndex,
                         contextPtr,
                         2,
                         saoParams,
@@ -4189,7 +4201,6 @@ void* EncDecKernel(void *inputPtr)
 
             if (applySAOAtEncoderFlag)
             {
-
                 if (is16bit) {
                     ApplySaoOffsetsPicture16bit(
                             contextPtr,

@@ -4729,7 +4729,8 @@ EB_EXTERN void EncodePass(
         SaoParameters_t *topSaoPtr;
 
         //Jing: Double check for multi-tile
-        if (lcuOriginY != 0){
+        //if (lcuOriginY != 0){
+        if (!lcuPtr->tileTopEdgeFlag) {
             EB_U32 topSaoIndex = GetNeighborArrayUnitTopIndex(
                 pictureControlSetPtr->epSaoNeighborArray[tileIdx],
                 lcuOriginX);
@@ -4739,7 +4740,8 @@ EB_EXTERN void EncodePass(
         else{
             topSaoPtr = (SaoParameters_t*)EB_NULL;
         }
-        if (lcuOriginX != 0){
+        //if (lcuOriginX != 0){
+        if (!lcuPtr->tileLeftEdgeFlag) {
             EB_U32 leftSaoIndex = GetNeighborArrayUnitLeftIndex(
                 pictureControlSetPtr->epSaoNeighborArray[tileIdx],
                 lcuOriginY);
@@ -4836,7 +4838,7 @@ EB_EXTERN void EncodePass(
                         lcuPtr->saoParams.saoMergeUpFlag = EB_FALSE;
                     }
                 }
-            }           
+            }
         }
 
         // Update the SAO Neighbor Array
