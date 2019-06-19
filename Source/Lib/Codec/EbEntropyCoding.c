@@ -6429,6 +6429,30 @@ static void CodePPS(
 	return;
 }
 
+static EB_U32 GetEntropyCoderGetBitstreamSize(EntropyCoder_t *entropyCoderPtr)
+{
+	CabacEncodeContext_t *cabacEncCtxPtr = (CabacEncodeContext_t*)entropyCoderPtr->cabacEncodeContextPtr;
+    OutputBitstreamUnit_t *bitstreamPtr = &cabacEncCtxPtr->bacEncContext.m_pcTComBitIf;
+    unsigned payloadBytes = (cabacEncCtxPtr->bacEncContext.m_pcTComBitIf.writtenBitsCount) >> 3;
+    FlushBitstream(bitstreamPtr);
+
+    unsigned char *buf = (unsigned char *)bitstreamPtr->bufferBegin;
+    unsigned int emulationCount = 0;
+
+    //Count emulation counts 0x000001 and 0x000002
+    for (unsigned i = 0; i <= payloadBytes - 3; i++) {
+        if (buf[i] == 0 && buf[i+1] == 0 && (buf[i+2] <= 3)) {
+            emulationCount++;
+            i++;
+        }
+    }
+    //if (emulationCount > 0) {
+    //    printf("emulation count %d\n", emulationCount);
+    //}
+
+	return (payloadBytes + emulationCount);
+}
+
 static void CodeSliceHeader(
 	EB_U32         firstLcuAddr,
 	EB_U32         pictureQp,
@@ -6729,12 +6753,40 @@ static void CodeSliceHeader(
     if (tileMode) {
         unsigned tileColumnNumMinus1 = sequenceControlSetPtr->tileColumnCount - 1;
         unsigned tileRowNumMinus1 = sequenceControlSetPtr->tileRowCount - 1;
+        unsigned num_entry_point_offsets = sequenceControlSetPtr->tileColumnCount * sequenceControlSetPtr->tileRowCount - 1;
 
         if (tileColumnNumMinus1 > 0 || tileRowNumMinus1 > 0) {
+            EB_U32 maxOffset = 0;
+            EB_U32 offset[MAX_TILE_COUNT];
+            for (unsigned tileIdx = 0; tileIdx < num_entry_point_offsets; tileIdx++) {
+                offset[tileIdx] = GetEntropyCoderGetBitstreamSize(pcsPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr);
+                if (offset[tileIdx] > maxOffset) {
+                    maxOffset = offset[tileIdx];
+                }
+                //printf("tile %d, size %d\n", tileIdx, offset);
+            }
+
+            EB_U32 offsetLenMinus1 = 0;
+            while (maxOffset >= (1u << (offsetLenMinus1 + 1))) {
+                offsetLenMinus1++;
+                assert(offsetLenMinus1 + 1 < 32);
+            }
+
             // "num_entry_point_offsets"
             WriteUvlc(
                 bitstreamPtr,
-                0);
+                num_entry_point_offsets);
+
+            if (num_entry_point_offsets > 0) {
+                WriteUvlc(
+                        bitstreamPtr,
+                        offsetLenMinus1);
+
+                for (unsigned tileIdx = 0; tileIdx < num_entry_point_offsets; tileIdx++) {
+                    //EB_U32 offset = GetEntropyCoderGetBitstreamSize(pcsPtr->entropyCodingInfo[tileIdx]->entropyCoderPtr);
+                    WriteCodeCavlc(bitstreamPtr, offset[tileIdx] - 1, offsetLenMinus1 + 1);
+                }
+            }
         }
     }
 #endif
@@ -9197,6 +9249,7 @@ EB_PTR EntropyCoderGetBitstreamPtr(
 
 	return bitstreamPtr;
 }
+
 
 EB_ERRORTYPE EstimateQuantizedCoefficients_Update_SSE2(
     CoeffCtxtMdl_t               *updatedCoeffCtxModel,
