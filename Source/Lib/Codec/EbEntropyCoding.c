@@ -6440,10 +6440,12 @@ static EB_U32 GetEntropyCoderGetBitstreamSize(EntropyCoder_t *entropyCoderPtr)
     unsigned int emulationCount = 0;
 
     //Count emulation counts 0x000001 and 0x000002
-    for (unsigned i = 0; i <= payloadBytes - 3; i++) {
-        if (buf[i] == 0 && buf[i+1] == 0 && (buf[i+2] <= 3)) {
-            emulationCount++;
-            i++;
+    if (payloadBytes >= 3) {
+        for (unsigned i = 0; i <= payloadBytes - 3; i++) {
+            if (buf[i] == 0 && buf[i+1] == 0 && (buf[i+2] <= 3)) {
+                emulationCount++;
+                i++;
+            }
         }
     }
     //if (emulationCount > 0) {
