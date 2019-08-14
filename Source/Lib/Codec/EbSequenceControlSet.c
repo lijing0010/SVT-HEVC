@@ -182,6 +182,7 @@ EB_ERRORTYPE CopySequenceControlSet(
     SequenceControlSet_t *dst,
     SequenceControlSet_t *src)
 {
+    *dst = *src;
     EB_U32  writeCount = 0;
     EB_U32  segmentIndex = 0;
     
@@ -241,10 +242,12 @@ EB_ERRORTYPE CopySequenceControlSet(
 
     // Segments
     for (segmentIndex = 0; segmentIndex < MAX_TEMPORAL_LAYERS; ++segmentIndex) {
-        dst->meSegmentColumnCountArray[segmentIndex] = src->meSegmentColumnCountArray[segmentIndex]; writeCount += sizeof(EB_U32);
-        dst->meSegmentRowCountArray[segmentIndex] = src->meSegmentRowCountArray[segmentIndex]; writeCount += sizeof(EB_U32);
-        dst->encDecSegmentColCountArray[segmentIndex] = src->encDecSegmentColCountArray[segmentIndex]; writeCount += sizeof(EB_U32);
-        dst->encDecSegmentRowCountArray[segmentIndex] = src->encDecSegmentRowCountArray[segmentIndex]; writeCount += sizeof(EB_U32);
+        dst->meSegmentColumnCountArray[segmentIndex] = src->meSegmentColumnCountArray[segmentIndex]; writeCount += sizeof(EB_U16);
+        dst->meSegmentRowCountArray[segmentIndex] = src->meSegmentRowCountArray[segmentIndex]; writeCount += sizeof(EB_U16);
+        dst->encDecSegmentColCountArray[segmentIndex] = src->encDecSegmentColCountArray[segmentIndex]; writeCount += sizeof(EB_U16);
+        dst->encDecSegmentRowCountArray[segmentIndex] = src->encDecSegmentRowCountArray[segmentIndex]; writeCount += sizeof(EB_U16);
+        dst->tileGroupColCountArray[segmentIndex] = src->tileGroupColCountArray[segmentIndex];writeCount += sizeof(EB_U16);
+        dst->tileGroupRowCountArray[segmentIndex] = dst->tileGroupRowCountArray[segmentIndex];writeCount += sizeof(EB_U16);
     }
 
     EB_MEMCPY(

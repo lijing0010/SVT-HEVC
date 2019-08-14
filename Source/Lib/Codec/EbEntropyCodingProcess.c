@@ -371,11 +371,6 @@ void* EntropyCodingKernel(void *inputPtr)
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld EC IN \n", pictureControlSetPtr->pictureNumber);
 #endif
-        //SVT_LOG("[%lld]: POC %lld EC IN, tile %d, (%d, %d) \n",
-        //        EbGetSysTimeMs(),
-        //        pictureControlSetPtr->pictureNumber, tileIdx,
-        //        encDecResultsPtr->completedLcuRowIndexStart,
-        //        encDecResultsPtr->completedLcuRowIndexStart + encDecResultsPtr->completedLcuRowCount);
         // LCU Constants
         lcuSize     = sequenceControlSetPtr->lcuSize;
         lcuSizeLog2 = (EB_U8)Log2f(lcuSize);
@@ -387,6 +382,9 @@ void* EntropyCodingKernel(void *inputPtr)
         xLcuStart = pictureControlSetPtr->ParentPcsPtr->tileColStartLcu[tileColIdx];
         yLcuStart = pictureControlSetPtr->ParentPcsPtr->tileRowStartLcu[tileRowIdx];
 
+        // Jing:TODO
+        // Clean up the mess here.
+        // If we don't reset context for each line, should be able to simplify the process below 
         {
             initialProcessCall = EB_TRUE;
             yLcuIndex = encDecResultsPtr->completedLcuRowIndexStart;   
