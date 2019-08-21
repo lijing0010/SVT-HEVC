@@ -3971,6 +3971,7 @@ void* EncDecKernel(void *inputPtr)
         }
         EbReleaseMutex(pictureControlSetPtr->intraMutex);
 
+        EbObjectIncLiveCount(encDecTasksPtr->pictureControlSetWrapperPtr, 1);
         // Segment-loop
         while (AssignEncDecSegments(segmentsPtr, &segmentIndex, encDecTasksPtr, contextPtr->encDecFeedbackFifoPtr) == EB_TRUE) {
             lcuRowTileIdx = -1;
@@ -4363,6 +4364,7 @@ void* EncDecKernel(void *inputPtr)
             // we are trying to avoid making a such change in the APP (ideally an input buffer live count should be set in the APP (under EB_BUFFERHEADERTYPE data structure))
 
         }
+        EbReleaseObject(encDecTasksPtr->pictureControlSetWrapperPtr);
 
 #if DEADLOCK_DEBUG
         SVT_LOG("POC %lld ENCDEC OUT \n", pictureControlSetPtr->pictureNumber);
